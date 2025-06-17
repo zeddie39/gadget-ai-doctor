@@ -9,7 +9,143 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      battery_reports: {
+        Row: {
+          battery_health: Json | null
+          battery_level: number | null
+          created_at: string
+          device_info: Json | null
+          id: string
+          recommendations: string[] | null
+        }
+        Insert: {
+          battery_health?: Json | null
+          battery_level?: number | null
+          created_at?: string
+          device_info?: Json | null
+          id?: string
+          recommendations?: string[] | null
+        }
+        Update: {
+          battery_health?: Json | null
+          battery_level?: number | null
+          created_at?: string
+          device_info?: Json | null
+          id?: string
+          recommendations?: string[] | null
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          created_at: string
+          id: string
+          is_user: boolean
+          message: string
+          session_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_user?: boolean
+          message: string
+          session_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_user?: boolean
+          message?: string
+          session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          session_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          session_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          session_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      image_diagnostics: {
+        Row: {
+          created_at: string
+          diagnosis_result: Json | null
+          id: string
+          image_url: string
+          severity_level: string | null
+        }
+        Insert: {
+          created_at?: string
+          diagnosis_result?: Json | null
+          id?: string
+          image_url: string
+          severity_level?: string | null
+        }
+        Update: {
+          created_at?: string
+          diagnosis_result?: Json | null
+          id?: string
+          image_url?: string
+          severity_level?: string | null
+        }
+        Relationships: []
+      }
+      troubleshooting_sessions: {
+        Row: {
+          completed: boolean | null
+          created_at: string
+          current_step: number | null
+          device_type: string
+          id: string
+          issue_category: string
+          session_data: Json | null
+          updated_at: string
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string
+          current_step?: number | null
+          device_type: string
+          id?: string
+          issue_category: string
+          session_data?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string
+          current_step?: number | null
+          device_type?: string
+          id?: string
+          issue_category?: string
+          session_data?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

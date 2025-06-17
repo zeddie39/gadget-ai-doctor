@@ -2,8 +2,19 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera, MessageCircle, Zap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Hero = () => {
+  const navigate = useNavigate();
+
+  const handleDiagnoseClick = () => {
+    navigate('/diagnose');
+  };
+
+  const handleChatClick = () => {
+    navigate('/diagnose?tab=chat');
+  };
+
   return (
     <section className="relative overflow-hidden px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
       {/* Background gradient circles */}
@@ -27,6 +38,7 @@ const Hero = () => {
           
           <div className="mt-10 flex items-center justify-center gap-x-6 flex-wrap">
             <Button 
+              onClick={handleDiagnoseClick}
               size="lg" 
               className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
             >
@@ -34,6 +46,7 @@ const Hero = () => {
               Diagnose with Photo
             </Button>
             <Button 
+              onClick={handleChatClick}
               variant="outline" 
               size="lg"
               className="border-2 border-gray-300 hover:border-blue-500 hover:text-blue-600 px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-300 hover:scale-105"

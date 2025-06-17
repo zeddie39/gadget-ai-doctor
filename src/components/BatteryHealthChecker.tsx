@@ -116,9 +116,9 @@ const BatteryHealthChecker = () => {
           user_agent: navigator.userAgent,
           platform: navigator.platform,
           battery_api_supported: 'getBattery' in navigator
-        },
+        } as any,
         battery_level: battery?.level || null,
-        battery_health: health,
+        battery_health: health as any,
         recommendations: recs
       });
     } catch (error) {

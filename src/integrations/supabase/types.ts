@@ -89,6 +89,51 @@ export type Database = {
         }
         Relationships: []
       }
+      health_scores: {
+        Row: {
+          battery_score: number | null
+          created_at: string
+          device_id: string | null
+          device_info: Json | null
+          id: string
+          improvement_tips: Json | null
+          overall_score: number | null
+          potential_improvement: number | null
+          recommendations: Json | null
+          storage_score: number | null
+          temperature_score: number | null
+          usage_score: number | null
+        }
+        Insert: {
+          battery_score?: number | null
+          created_at?: string
+          device_id?: string | null
+          device_info?: Json | null
+          id?: string
+          improvement_tips?: Json | null
+          overall_score?: number | null
+          potential_improvement?: number | null
+          recommendations?: Json | null
+          storage_score?: number | null
+          temperature_score?: number | null
+          usage_score?: number | null
+        }
+        Update: {
+          battery_score?: number | null
+          created_at?: string
+          device_id?: string | null
+          device_info?: Json | null
+          id?: string
+          improvement_tips?: Json | null
+          overall_score?: number | null
+          potential_improvement?: number | null
+          recommendations?: Json | null
+          storage_score?: number | null
+          temperature_score?: number | null
+          usage_score?: number | null
+        }
+        Relationships: []
+      }
       image_diagnostics: {
         Row: {
           created_at: string
@@ -110,6 +155,90 @@ export type Database = {
           id?: string
           image_url?: string
           severity_level?: string | null
+        }
+        Relationships: []
+      }
+      issue_history: {
+        Row: {
+          actions_taken: string[] | null
+          created_at: string
+          device_id: string | null
+          diagnosis_result: Json | null
+          id: string
+          issue_description: string | null
+          issue_type: string
+          repair_cost: number | null
+          repair_status: string | null
+          resolved: boolean | null
+          severity_level: string | null
+          updated_at: string
+        }
+        Insert: {
+          actions_taken?: string[] | null
+          created_at?: string
+          device_id?: string | null
+          diagnosis_result?: Json | null
+          id?: string
+          issue_description?: string | null
+          issue_type: string
+          repair_cost?: number | null
+          repair_status?: string | null
+          resolved?: boolean | null
+          severity_level?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actions_taken?: string[] | null
+          created_at?: string
+          device_id?: string | null
+          diagnosis_result?: Json | null
+          id?: string
+          issue_description?: string | null
+          issue_type?: string
+          repair_cost?: number | null
+          repair_status?: string | null
+          resolved?: boolean | null
+          severity_level?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      storage_analysis: {
+        Row: {
+          cache_files: Json | null
+          created_at: string
+          device_info: Json | null
+          duplicate_photos: Json | null
+          id: string
+          potential_cleanup_size: number | null
+          recommendations: Json | null
+          total_storage_available: number | null
+          total_storage_used: number | null
+          unused_apps: Json | null
+        }
+        Insert: {
+          cache_files?: Json | null
+          created_at?: string
+          device_info?: Json | null
+          duplicate_photos?: Json | null
+          id?: string
+          potential_cleanup_size?: number | null
+          recommendations?: Json | null
+          total_storage_available?: number | null
+          total_storage_used?: number | null
+          unused_apps?: Json | null
+        }
+        Update: {
+          cache_files?: Json | null
+          created_at?: string
+          device_info?: Json | null
+          duplicate_photos?: Json | null
+          id?: string
+          potential_cleanup_size?: number | null
+          recommendations?: Json | null
+          total_storage_available?: number | null
+          total_storage_used?: number | null
+          unused_apps?: Json | null
         }
         Relationships: []
       }

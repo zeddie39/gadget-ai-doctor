@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Camera, MessageCircle, Zap, Shield, Trash, Battery, FileText, BookOpen, AlertTriangle } from 'lucide-react';
+import { Camera, MessageCircle, Zap, Shield, Trash, Battery, FileText, BookOpen, AlertTriangle, Brain } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Hero = () => {
@@ -20,11 +19,12 @@ const Hero = () => {
     { icon: AlertTriangle, label: 'Security Alerts', tab: 'security', color: 'red' },
     { icon: FileText, label: 'Issue History', tab: 'history', color: 'blue' },
     { icon: BookOpen, label: 'Knowledge Hub', tab: 'knowledge', color: 'teal' },
+    { icon: Brain, label: 'AI Training', tab: 'training', color: 'purple' },
   ];
 
   return (
     <section className="relative overflow-hidden px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
-      {/* Background gradient circles */}
+      {/* ... keep existing code (background gradient circles) */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-20 left-20 w-72 h-72 bg-blue-400/20 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-20 right-20 w-96 h-96 bg-teal-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
@@ -32,6 +32,7 @@ const Hero = () => {
       
       <div className="mx-auto max-w-7xl text-center">
         <div className="mx-auto max-w-4xl">
+          {/* ... keep existing code (title and description) */}
           <h1 className="text-5xl font-bold tracking-tight text-gray-900 sm:text-7xl lg:text-8xl">
             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent">
               ZediFix
@@ -43,7 +44,7 @@ const Hero = () => {
             From photo analysis to battery health monitoring - everything you need to keep your gadgets running perfectly.
           </p>
           
-          {/* Main Action Buttons */}
+          {/* ... keep existing code (main action buttons) */}
           <div className="mt-10 flex items-center justify-center gap-x-6 flex-wrap">
             <Button 
               onClick={() => handleFeatureClick('photo')}
@@ -64,8 +65,8 @@ const Hero = () => {
             </Button>
           </div>
 
-          {/* Feature Grid */}
-          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          {/* Feature Grid - Updated to 3x3 grid to accommodate new AI Training feature */}
+          <div className="mt-16 grid grid-cols-3 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
             {features.map((feature, index) => {
               const IconComponent = feature.icon;
               return (
@@ -83,7 +84,7 @@ const Hero = () => {
             })}
           </div>
           
-          {/* Feature Highlights */}
+          {/* ... keep existing code (feature highlights) */}
           <div className="mt-16 flex justify-center items-center gap-8 text-sm text-gray-500 flex-wrap">
             <div className="flex items-center gap-2">
               <Zap className="h-4 w-4 text-yellow-500" />
@@ -100,6 +101,10 @@ const Hero = () => {
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-purple-500 rounded-full"></div>
               <span>Complete Tracking</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Brain className="h-4 w-4 text-purple-500" />
+              <span>Self-Learning AI</span>
             </div>
           </div>
         </div>

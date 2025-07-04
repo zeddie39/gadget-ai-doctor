@@ -1,9 +1,9 @@
-
 import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload, Camera, X, CheckCircle, AlertTriangle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import AIFeedback from './AIFeedback';
 
 interface DiagnosisResult {
   issue: string;
@@ -18,6 +18,7 @@ const PhotoUpload = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [diagnosisResult, setDiagnosisResult] = useState<DiagnosisResult | null>(null);
+  const [diagnosisId, setDiagnosisId] = useState<string | null>(null);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -93,13 +94,17 @@ const PhotoUpload = () => {
 
     const randomResult = possibleIssues[Math.floor(Math.random() * possibleIssues.length)];
     
-    // Store in database
+    // Store in database and get ID for feedback
     try {
-      await supabase.from('image_diagnostics').insert({
+      const { data, error } = await supabase.from('image_diagnostics').insert({
         image_url: imageData,
         diagnosis_result: randomResult,
         severity_level: randomResult.severity
-      });
+      }).select().single();
+
+      if (data) {
+        setDiagnosisId(data.id);
+      }
     } catch (error) {
       console.error('Error storing diagnosis:', error);
     }
@@ -143,6 +148,7 @@ const PhotoUpload = () => {
     setUploadedImage(null);
     setAnalyzing(false);
     setDiagnosisResult(null);
+    setDiagnosisId(null);
   };
 
   const getSeverityIcon = (severity: string) => {
@@ -235,51 +241,64 @@ const PhotoUpload = () => {
               </p>
             </div>
           ) : diagnosisResult ? (
-            <div className={`border rounded-lg p-6 ${getSeverityColor(diagnosisResult.severity)}`}>
-              <div className="flex items-start gap-3 mb-4">
-                {getSeverityIcon(diagnosisResult.severity)}
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                    {diagnosisResult.issue} Detected
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-2">
-                    Confidence: {Math.round(diagnosisResult.confidence * 100)}%
-                  </p>
-                  <p className="text-gray-700 mb-4">
-                    {diagnosisResult.description}
-                  </p>
+            <>
+              <div className={`border rounded-lg p-6 ${getSeverityColor(diagnosisResult.severity)}`}>
+                <div className="flex items-start gap-3 mb-4">
+                  {getSeverityIcon(diagnosisResult.severity)}
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                      {diagnosisResult.issue} Detected
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-2">
+                      Confidence: {Math.round(diagnosisResult.confidence * 100)}%
+                    </p>
+                    <p className="text-gray-700 mb-4">
+                      {diagnosisResult.description}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="mb-4">
+                  <h4 className="font-semibold text-gray-900 mb-2">Recommendations:</h4>
+                  <ul className="space-y-1">
+                    {diagnosisResult.recommendations.map((rec, index) => (
+                      <li key={index} className="text-sm text-gray-700 flex items-start gap-2">
+                        <span className="text-blue-600 mt-1">•</span>
+                        {rec}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    diagnosisResult.severity === 'critical' ? 'bg-red-100 text-red-800' :
+                    diagnosisResult.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-green-100 text-green-800'
+                  }`}>
+                    {diagnosisResult.severity.toUpperCase()} PRIORITY
+                  </span>
+                  <Button
+                    onClick={clearImage}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Analyze Another Image
+                  </Button>
                 </div>
               </div>
               
-              <div className="mb-4">
-                <h4 className="font-semibold text-gray-900 mb-2">Recommendations:</h4>
-                <ul className="space-y-1">
-                  {diagnosisResult.recommendations.map((rec, index) => (
-                    <li key={index} className="text-sm text-gray-700 flex items-start gap-2">
-                      <span className="text-blue-600 mt-1">•</span>
-                      {rec}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              
-              <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                  diagnosisResult.severity === 'critical' ? 'bg-red-100 text-red-800' :
-                  diagnosisResult.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-green-100 text-green-800'
-                }`}>
-                  {diagnosisResult.severity.toUpperCase()} PRIORITY
-                </span>
-                <Button
-                  onClick={clearImage}
-                  variant="outline"
-                  size="sm"
-                >
-                  Analyze Another Image
-                </Button>
-              </div>
-            </div>
+              {diagnosisId && (
+                <AIFeedback
+                  diagnosisId={diagnosisId}
+                  feature="Photo Diagnosis"
+                  aiResponse={diagnosisResult}
+                  onFeedbackSubmitted={() => {
+                    toast.success('Feedback submitted! Thank you for helping improve our AI.');
+                  }}
+                />
+              )}
+            </>
           ) : null}
         </div>
       )}

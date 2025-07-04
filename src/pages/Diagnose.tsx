@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Camera, MessageCircle, Settings, Battery, Wrench, Trash, Shield, BookOpen, FileText, AlertTriangle } from 'lucide-react';
+import { Camera, MessageCircle, Settings, Battery, Wrench, Trash, Shield, BookOpen, FileText, AlertTriangle, Brain } from 'lucide-react';
 import PhotoUpload from '../components/PhotoUpload';
 import AIChat from '../components/AIChat';
 import TroubleshootingWizard from '../components/TroubleshootingWizard';
@@ -13,6 +12,7 @@ import HealthScore from '../components/HealthScore';
 import IssueHistory from '../components/IssueHistory';
 import KnowledgeHub from '../components/KnowledgeHub';
 import SecurityAlerts from '../components/SecurityAlerts';
+import AITrainingDashboard from '../components/AITrainingDashboard';
 
 const Diagnose = () => {
   const [searchParams] = useSearchParams();
@@ -20,7 +20,7 @@ const Diagnose = () => {
 
   useEffect(() => {
     const tab = searchParams.get('tab');
-    const validTabs = ['photo', 'chat', 'troubleshoot', 'battery', 'storage', 'health', 'history', 'knowledge', 'security'];
+    const validTabs = ['photo', 'chat', 'troubleshoot', 'battery', 'storage', 'health', 'history', 'knowledge', 'security', 'training'];
     if (tab && validTabs.includes(tab)) {
       setActiveTab(tab);
     }
@@ -41,7 +41,7 @@ const Diagnose = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-9 mb-8 h-auto">
+          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 mb-8 h-auto">
             <TabsTrigger value="photo" className="flex flex-col items-center gap-1 py-3">
               <Camera className="h-4 w-4" />
               <span className="text-xs">Photo</span>
@@ -77,6 +77,10 @@ const Diagnose = () => {
             <TabsTrigger value="security" className="flex flex-col items-center gap-1 py-3">
               <AlertTriangle className="h-4 w-4" />
               <span className="text-xs">Security</span>
+            </TabsTrigger>
+            <TabsTrigger value="training" className="flex flex-col items-center gap-1 py-3">
+              <Brain className="h-4 w-4" />
+              <span className="text-xs">AI Training</span>
             </TabsTrigger>
           </TabsList>
 
@@ -205,6 +209,23 @@ const Diagnose = () => {
 
           <TabsContent value="security">
             <SecurityAlerts />
+          </TabsContent>
+
+          <TabsContent value="training">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="h-6 w-6 text-purple-600" />
+                  AI Training & Analytics
+                </CardTitle>
+                <CardDescription>
+                  Monitor AI performance, collect feedback, and improve diagnostic accuracy
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AITrainingDashboard />
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ai_feedback: {
+        Row: {
+          ai_response_data: Json | null
+          created_at: string
+          diagnosis_id: string
+          feature_used: string
+          feedback_type: string
+          helpful: boolean
+          id: string
+          user_comments: string | null
+        }
+        Insert: {
+          ai_response_data?: Json | null
+          created_at?: string
+          diagnosis_id: string
+          feature_used: string
+          feedback_type: string
+          helpful?: boolean
+          id?: string
+          user_comments?: string | null
+        }
+        Update: {
+          ai_response_data?: Json | null
+          created_at?: string
+          diagnosis_id?: string
+          feature_used?: string
+          feedback_type?: string
+          helpful?: boolean
+          id?: string
+          user_comments?: string | null
+        }
+        Relationships: []
+      }
       battery_reports: {
         Row: {
           battery_health: Json | null

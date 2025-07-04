@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { ThumbsUp, ThumbsDown, MessageSquare, Send } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Send } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -30,18 +30,26 @@ const AIFeedback: React.FC<AIFeedbackProps> = ({
     
     setIsSubmitting(true);
     try {
-      await supabase.from('ai_feedback').insert({
-        diagnosis_id: diagnosisId,
-        feature_used: feature,
-        feedback_type: feedback,
-        user_comments: comments,
-        ai_response_data: aiResponse,
-        helpful: feedback === 'positive',
-        created_at: new Date().toISOString()
-      });
+      // Use direct insert without strict typing since the table is newly created
+      const { error } = await supabase
+        .from('ai_feedback')
+        .insert({
+          diagnosis_id: diagnosisId,
+          feature_used: feature,
+          feedback_type: feedback,
+          user_comments: comments,
+          ai_response_data: aiResponse,
+          helpful: feedback === 'positive',
+          created_at: new Date().toISOString()
+        });
 
-      toast.success('Thank you for your feedback! This helps improve our AI.');
-      onFeedbackSubmitted?.();
+      if (error) {
+        console.error('Error submitting feedback:', error);
+        toast.error('Failed to submit feedback. Please try again.');
+      } else {
+        toast.success('Thank you for your feedback! This helps improve our AI.');
+        onFeedbackSubmitted?.();
+      }
     } catch (error) {
       console.error('Error submitting feedback:', error);
       toast.error('Failed to submit feedback. Please try again.');

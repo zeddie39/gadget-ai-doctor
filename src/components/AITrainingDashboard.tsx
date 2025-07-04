@@ -31,19 +31,24 @@ const AITrainingDashboard = () => {
 
   const loadMetrics = async () => {
     try {
-      // Get feedback data
-      const { data: feedbackData } = await supabase
+      // Get feedback data using direct query
+      const { data: feedbackData, error } = await supabase
         .from('ai_feedback')
         .select('*');
 
+      if (error) {
+        console.error('Error loading feedback data:', error);
+        return;
+      }
+
       if (feedbackData) {
         const totalFeedback = feedbackData.length;
-        const positiveCount = feedbackData.filter(f => f.helpful).length;
+        const positiveCount = feedbackData.filter((f: any) => f.helpful).length;
         const positiveRate = totalFeedback > 0 ? (positiveCount / totalFeedback) * 100 : 0;
 
         // Calculate accuracy by feature
         const featureMetrics: { [key: string]: { total: number; positive: number } } = {};
-        feedbackData.forEach(feedback => {
+        feedbackData.forEach((feedback: any) => {
           const feature = feedback.feature_used;
           if (!featureMetrics[feature]) {
             featureMetrics[feature] = { total: 0, positive: 0 };
@@ -62,8 +67,8 @@ const AITrainingDashboard = () => {
 
         // Extract common issues from negative feedback
         const negativeComments = feedbackData
-          .filter(f => !f.helpful && f.user_comments)
-          .map(f => f.user_comments);
+          .filter((f: any) => !f.helpful && f.user_comments)
+          .map((f: any) => f.user_comments);
 
         setMetrics({
           totalFeedback,

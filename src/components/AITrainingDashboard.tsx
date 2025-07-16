@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import AIModelTraining from './AIModelTraining';
+import CustomModelTraining from './CustomModelTraining';
 
 interface TrainingMetrics {
   totalFeedback: number;
@@ -134,10 +135,11 @@ const AITrainingDashboard = () => {
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
           <TabsTrigger value="training">Training</TabsTrigger>
+          <TabsTrigger value="tensorflow">TensorFlow</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">{/* ... keep existing code */}
@@ -244,6 +246,10 @@ const AITrainingDashboard = () => {
 
         <TabsContent value="training">
           <AIModelTraining />
+        </TabsContent>
+
+        <TabsContent value="tensorflow">
+          <CustomModelTraining />
         </TabsContent>
       </Tabs>
     </div>

@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -15,6 +16,7 @@ import {
   AlertCircle 
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import AIModelTraining from './AIModelTraining';
 
 interface TrainingMetrics {
   totalFeedback: number;
@@ -131,102 +133,119 @@ const AITrainingDashboard = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 text-blue-600" />
-              Total Feedback
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
-              {metrics?.totalFeedback || 0}
-            </div>
-            <p className="text-xs text-gray-500 mt-1">Training data points collected</p>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="training">Training</TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Target className="h-4 w-4 text-green-600" />
-              Success Rate
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {metrics?.positiveRate.toFixed(1) || 0}%
-            </div>
-            <Progress value={metrics?.positiveRate || 0} className="mt-2" />
-          </CardContent>
-        </Card>
+        <TabsContent value="overview">{/* ... keep existing code */}
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-orange-600" />
-              Needs Improvement
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
-              {metrics?.improvementAreas.length || 0}
-            </div>
-            <p className="text-xs text-gray-500 mt-1">Features below 70% accuracy</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-blue-600" />
-              Feature Performance
-            </CardTitle>
-            <CardDescription>AI accuracy by diagnostic feature</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {metrics?.accuracyByFeature && Object.entries(metrics.accuracyByFeature).map(([feature, accuracy]) => (
-              <div key={feature} className="space-y-1">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">{feature}</span>
-                  <Badge variant={accuracy >= 80 ? 'default' : accuracy >= 60 ? 'secondary' : 'destructive'}>
-                    {accuracy.toFixed(1)}%
-                  </Badge>
-                </div>
-                <Progress value={accuracy} className="h-2" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-blue-600" />
+                Total Feedback
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">
+                {metrics?.totalFeedback || 0}
               </div>
-            ))}
-          </CardContent>
-        </Card>
+              <p className="text-xs text-gray-500 mt-1">Training data points collected</p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-orange-600" />
-              Common Issues
-            </CardTitle>
-            <CardDescription>Areas needing AI improvement</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {metrics?.commonIssues.map((issue, index) => (
-                <div key={index} className="p-2 bg-orange-50 rounded border-l-4 border-orange-400">
-                  <p className="text-sm text-orange-800">{issue}</p>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Target className="h-4 w-4 text-green-600" />
+                Success Rate
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">
+                {metrics?.positiveRate.toFixed(1) || 0}%
+              </div>
+              <Progress value={metrics?.positiveRate || 0} className="mt-2" />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-orange-600" />
+                Needs Improvement
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-600">
+                {metrics?.improvementAreas.length || 0}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Features below 70% accuracy</p>
+            </CardContent>
+          </Card>
+        </div>
+        </TabsContent>
+
+        <TabsContent value="performance">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-blue-600" />
+                  Feature Performance
+                </CardTitle>
+                <CardDescription>AI accuracy by diagnostic feature</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {metrics?.accuracyByFeature && Object.entries(metrics.accuracyByFeature).map(([feature, accuracy]) => (
+                  <div key={feature} className="space-y-1">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">{feature}</span>
+                      <Badge variant={accuracy >= 80 ? 'default' : accuracy >= 60 ? 'secondary' : 'destructive'}>
+                        {accuracy.toFixed(1)}%
+                      </Badge>
+                    </div>
+                    <Progress value={accuracy} className="h-2" />
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-orange-600" />
+                  Common Issues
+                </CardTitle>
+                <CardDescription>Areas needing AI improvement</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {metrics?.commonIssues.map((issue, index) => (
+                    <div key={index} className="p-2 bg-orange-50 rounded border-l-4 border-orange-400">
+                      <p className="text-sm text-orange-800">{issue}</p>
+                    </div>
+                  ))}
+                  {(!metrics?.commonIssues || metrics.commonIssues.length === 0) && (
+                    <div className="flex items-center gap-2 text-green-600">
+                      <CheckCircle className="h-4 w-4" />
+                      <span className="text-sm">No major issues reported!</span>
+                    </div>
+                  )}
                 </div>
-              ))}
-              {(!metrics?.commonIssues || metrics.commonIssues.length === 0) && (
-                <div className="flex items-center gap-2 text-green-600">
-                  <CheckCircle className="h-4 w-4" />
-                  <span className="text-sm">No major issues reported!</span>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="training">
+          <AIModelTraining />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

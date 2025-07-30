@@ -27,7 +27,6 @@ const AIChat = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
-  const [openrouterApiKey, setOpenrouterApiKey] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -65,56 +64,32 @@ const AIChat = () => {
   };
 
   const generateAIResponse = async (userInput: string): Promise<string> => {
-    // Check if we have OpenRouter API key for real AI responses
-    if (openrouterApiKey) {
-      try {
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openrouterApiKey}`,
-            'Content-Type': 'application/json',
-            'HTTP-Referer': window.location.origin,
-            'X-Title': 'AI Gadget Doctor'
-          },
-          body: JSON.stringify({
-            model: 'openai/gpt-4o-mini',
-            messages: [
-              {
-                role: 'system',
-                content: `You are an expert AI gadget doctor specializing in diagnosing and fixing electronic devices. 
-                You have extensive knowledge about Samsung, iPhone, Infinix, and other popular device brands.
-                
-                Your expertise includes:
-                - Hardware diagnostics and repair
-                - Software troubleshooting 
-                - Battery optimization
-                - Performance tuning
-                - Safety protocols for device repair
-                - Brand-specific issues and solutions
-                
-                Always provide practical, safe, and actionable advice. If something is dangerous (like swollen batteries or water damage), emphasize safety first. Be concise but thorough.`
-              },
-              {
-                role: 'user',
-                content: userInput
-              }
-            ],
-            max_tokens: 500,
-            temperature: 0.7
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error(`OpenRouter API error: ${response.statusText}`);
+    try {
+      // Use centralized OpenRouter edge function
+      const { data, error } = await supabase.functions.invoke('openrouter-ai', {
+        body: {
+          prompt: userInput,
+          model: 'openai/gpt-4o-mini',
+          systemPrompt: `You are an expert AI gadget doctor specializing in diagnosing and fixing electronic devices. 
+          You have extensive knowledge about Samsung, iPhone, Infinix, and other popular device brands.
+          
+          Your expertise includes:
+          - Hardware diagnostics and repair
+          - Software troubleshooting 
+          - Battery optimization
+          - Performance tuning
+          - Safety protocols for device repair
+          - Brand-specific issues and solutions
+          
+          Always provide practical, safe, and actionable advice. If something is dangerous (like swollen batteries or water damage), emphasize safety first. Be concise but thorough.`
         }
+      });
 
-        const data = await response.json();
-        return data.choices[0].message.content;
-      } catch (error) {
-        console.error('AI response failed:', error);
-        toast.error('AI response failed, using fallback mode');
-        // Fall back to hardcoded responses
+      if (!error && data?.response) {
+        return data.response;
       }
+    } catch (error) {
+      console.error('OpenRouter AI error:', error);
     }
 
     // Fallback to hardcoded responses when no API key
@@ -317,15 +292,6 @@ const AIChat = () => {
         <div ref={messagesEndRef} />
       </div>
       
-      <div className="flex gap-2 mb-4">
-        <Input
-          type="password"
-          placeholder="Enter OpenRouter API key for enhanced AI responses"
-          value={openrouterApiKey}
-          onChange={(e) => setOpenrouterApiKey(e.target.value)}
-          className="flex-1"
-        />
-      </div>
       
       <div className="flex gap-2">
         <Input

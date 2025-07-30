@@ -27,7 +27,7 @@ import {
   BarChart3
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+
 
 interface ModelMetrics {
   accuracy: number;
@@ -145,33 +145,53 @@ const GeminiAIIntegration: React.FC = () => {
 
   const testConnection = async () => {
     if (!apiKey) {
-      toast.error('Please enter your Gemini API key');
+      toast.error('Please enter your OpenRouter API key');
       return;
     }
 
     setIsProcessing(true);
     try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': window.location.origin,
+          'X-Title': 'AI PCB Analyzer'
+        },
+        body: JSON.stringify({
+          model: 'openai/gpt-4o-mini',
+          messages: [
+            {
+              role: 'user',
+              content: 'Hello, this is a connection test.'
+            }
+          ],
+          max_tokens: 50
+        })
+      });
 
-      const result = await model.generateContent("Hello, this is a connection test.");
-      const response = await result.response;
+      if (!response.ok) {
+        throw new Error(`API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
       
-      if (response.text()) {
+      if (data.choices[0].message.content) {
         setIsConnected(true);
-        toast.success('Successfully connected to Gemini AI!');
+        toast.success('Successfully connected to OpenRouter AI!');
       }
     } catch (error) {
       console.error('Connection failed:', error);
-      toast.error('Failed to connect to Gemini AI. Check your API key.');
+      toast.error('Failed to connect to OpenRouter AI. Check your API key.');
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const analyzeWithGemini = async (prompt: string, image?: string) => {
+  const analyzeWithOpenRouter = async (prompt: string, image?: string) => {
     if (!isConnected) {
-      toast.error('Please connect to Gemini AI first');
+      toast.error('Please connect to OpenRouter AI first');
       return;
     }
 
@@ -180,12 +200,10 @@ const GeminiAIIntegration: React.FC = () => {
     setCurrentTask('Initializing analysis...');
 
     try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      
       // Progress simulation
       const progressSteps = [
         'Preprocessing input...',
-        'Analyzing with Gemini AI...',
+        'Analyzing with OpenRouter AI...',
         'Generating insights...',
         'Formatting results...'
       ];
@@ -196,36 +214,54 @@ const GeminiAIIntegration: React.FC = () => {
         await new Promise(resolve => setTimeout(resolve, 800));
       }
 
-      const model = genAI.getGenerativeModel({ 
-        model: image ? "gemini-pro-vision" : "gemini-pro",
-        generationConfig: {
-          temperature: modelConfig.temperature,
-          topP: modelConfig.topP,
-          topK: modelConfig.topK,
-          maxOutputTokens: modelConfig.maxTokens,
-        }
-      });
-
-      let result;
+      const messages = [];
+      
       if (image) {
-        // Handle image analysis
-        const base64Data = image.split(',')[1];
-        result = await model.generateContent([
-          prompt,
-          {
-            inlineData: {
-              data: base64Data,
-              mimeType: "image/jpeg"
+        messages.push({
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: prompt
+            },
+            {
+              type: 'image_url',
+              image_url: {
+                url: image
+              }
             }
-          }
-        ]);
+          ]
+        });
       } else {
-        // Handle text analysis
-        result = await model.generateContent(prompt);
+        messages.push({
+          role: 'user',
+          content: prompt
+        });
       }
 
-      const response = await result.response;
-      const text = response.text();
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': window.location.origin,
+          'X-Title': 'AI PCB Analyzer'
+        },
+        body: JSON.stringify({
+          model: image ? 'openai/gpt-4o' : 'openai/gpt-4o-mini',
+          messages: messages,
+          max_tokens: modelConfig.maxTokens,
+          temperature: modelConfig.temperature,
+          top_p: modelConfig.topP
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`OpenRouter API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const text = data.choices[0].message.content;
       
       setAnalysisResult(text);
       setProgress(100);
@@ -327,7 +363,7 @@ const GeminiAIIntegration: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="h-6 w-6" />
-            Gemini AI Integration & Model Training
+            OpenRouter AI Integration & Model Training
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -343,17 +379,17 @@ const GeminiAIIntegration: React.FC = () => {
             <TabsContent value="connection" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Gemini AI Connection</CardTitle>
+                  <CardTitle>OpenRouter AI Connection</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
                     <label className="text-sm font-medium mb-2 block">
-                      Gemini API Key
+                      OpenRouter API Key
                     </label>
                     <div className="flex gap-2">
                       <Input
                         type="password"
-                        placeholder="Enter your Gemini API key"
+                        placeholder="Enter your OpenRouter API key"
                         value={apiKey}
                         onChange={(e) => setApiKey(e.target.value)}
                         className="flex-1"
@@ -371,7 +407,7 @@ const GeminiAIIntegration: React.FC = () => {
                     {isConnected ? (
                       <>
                         <CheckCircle className="h-5 w-5 text-green-600" />
-                        <span className="text-green-600 font-medium">Connected to Gemini AI</span>
+                        <span className="text-green-600 font-medium">Connected to OpenRouter AI</span>
                       </>
                     ) : (
                       <>
@@ -384,7 +420,7 @@ const GeminiAIIntegration: React.FC = () => {
                   <Alert>
                     <Brain className="h-4 w-4" />
                     <AlertDescription>
-                      Get your Gemini API key from Google AI Studio. The API provides advanced 
+                      Get your OpenRouter API key from OpenRouter. The API provides access to multiple AI models including 
                       multimodal AI capabilities for analyzing PCBs, components, and electronic systems.
                     </AlertDescription>
                   </Alert>
@@ -450,7 +486,7 @@ const GeminiAIIntegration: React.FC = () => {
 
                   <div className="flex gap-2">
                     <Button 
-                      onClick={() => analyzeWithGemini(currentTask)}
+                      onClick={() => analyzeWithOpenRouter(currentTask)}
                       disabled={!isConnected || isProcessing || !currentTask}
                     >
                       <Brain className="h-4 w-4 mr-2" />
@@ -461,7 +497,7 @@ const GeminiAIIntegration: React.FC = () => {
                       variant="outline"
                       onClick={() => {
                         setCurrentTask('Analyze this electronic device for component identification, health assessment, and potential failure points. Provide detailed technical insights and repair recommendations.');
-                        analyzeWithGemini('Analyze this electronic device for component identification, health assessment, and potential failure points. Provide detailed technical insights and repair recommendations.');
+                        analyzeWithOpenRouter('Analyze this electronic device for component identification, health assessment, and potential failure points. Provide detailed technical insights and repair recommendations.');
                       }}
                       disabled={!isConnected || isProcessing}
                     >

@@ -25,7 +25,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface TrainingConfig {
-  method: 'openai-finetuning' | 'huggingface' | 'tensorflow' | 'custom-api';
+  method: 'openrouter-training' | 'huggingface' | 'tensorflow' | 'custom-api';
   model: string;
   dataset: string;
   epochs: number;
@@ -49,7 +49,7 @@ const AdvancedAITraining = () => {
   const [activeJobs, setActiveJobs] = useState<TrainingJob[]>([]);
   const [trainingHistory, setTrainingHistory] = useState<TrainingJob[]>([]);
   const [config, setConfig] = useState<TrainingConfig>({
-    method: 'openai-finetuning',
+    method: 'openrouter-training',
     model: 'gpt-3.5-turbo',
     dataset: 'user-feedback',
     epochs: 3,
@@ -167,8 +167,8 @@ const AdvancedAITraining = () => {
   };
 
   const startTraining = async () => {
-    if (!apiKey && config.method === 'openai-finetuning') {
-      toast.error('API key required for OpenAI fine-tuning');
+    if (!apiKey && config.method === 'openrouter-training') {
+      toast.error('API key required for OpenRouter training');
       return;
     }
 
@@ -403,9 +403,9 @@ const AdvancedAITraining = () => {
                 </div>
               </div>
 
-              {config.method === 'openai-finetuning' && (
+              {config.method === 'openrouter-training' && (
                 <div>
-                  <Label htmlFor="apiKey">OpenAI API Key</Label>
+                  <Label htmlFor="apiKey">OpenRouter API Key</Label>
                   <Input 
                     id="apiKey"
                     type="password"

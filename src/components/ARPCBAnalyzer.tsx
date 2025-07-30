@@ -26,7 +26,7 @@ import {
   Share2
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+
 
 interface PCBComponent {
   id: string;
@@ -68,7 +68,7 @@ const ARPCBAnalyzer: React.FC = () => {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [arOverlays, setArOverlays] = useState<AROverlay[]>([]);
-  const [geminiApiKey, setGeminiApiKey] = useState('');
+  const [openrouterApiKey, setOpenrouterApiKey] = useState('');
   const [selectedComponent, setSelectedComponent] = useState<PCBComponent | null>(null);
   const [cameraSupported, setCameraSupported] = useState(false);
   const [isTrainingMode, setIsTrainingMode] = useState(false);
@@ -190,43 +190,60 @@ const ARPCBAnalyzer: React.FC = () => {
     ];
   };
 
-  const analyzeWithGemini = async (imageData: string): Promise<string> => {
-    if (!geminiApiKey) {
-      throw new Error('Gemini API key not provided');
+  const analyzeWithOpenRouter = async (imageData: string): Promise<string> => {
+    if (!openrouterApiKey) {
+      throw new Error('OpenRouter API key not provided');
     }
 
     try {
-      const genAI = new GoogleGenerativeAI(geminiApiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openrouterApiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': window.location.origin,
+          'X-Title': 'PCB AR Analyzer'
+        },
+        body: JSON.stringify({
+          model: 'openai/gpt-4o',
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: `Analyze this PCB/motherboard image for electronic component health and potential issues. 
+                    Provide detailed insights about:
+                    1. Component identification and health assessment
+                    2. Visible defects (burns, corrosion, physical damage)
+                    3. Potential electrical issues
+                    4. Troubleshooting recommendations
+                    5. Circuit topology analysis
+                    
+                    Format the response as structured analysis with component details, health scores, and actionable recommendations.`
+                },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: imageData
+                  }
+                }
+              ]
+            }
+          ],
+          max_tokens: 2000,
+          temperature: 0.1
+        })
+      });
 
-      const prompt = `
-        Analyze this PCB/motherboard image for electronic component health and potential issues. 
-        Provide detailed insights about:
-        1. Component identification and health assessment
-        2. Visible defects (burns, corrosion, physical damage)
-        3. Potential electrical issues
-        4. Troubleshooting recommendations
-        5. Circuit topology analysis
-        
-        Format the response as structured analysis with component details, health scores, and actionable recommendations.
-      `;
+      if (!response.ok) {
+        throw new Error(`OpenRouter API error: ${response.statusText}`);
+      }
 
-      // Convert base64 to proper format for Gemini
-      const base64Data = imageData.split(',')[1];
-      const result = await model.generateContent([
-        prompt,
-        {
-          inlineData: {
-            data: base64Data,
-            mimeType: "image/jpeg"
-          }
-        }
-      ]);
-
-      const response = await result.response;
-      return response.text();
+      const data = await response.json();
+      return data.choices[0].message.content;
     } catch (error) {
-      console.error('Gemini analysis failed:', error);
+      console.error('OpenRouter analysis failed:', error);
       throw error;
     }
   };
@@ -263,8 +280,8 @@ const ARPCBAnalyzer: React.FC = () => {
       // Get AI insights if API key is provided
       let aiInsights = '';
       try {
-        if (geminiApiKey) {
-          aiInsights = await analyzeWithGemini(capturedImage);
+        if (openrouterApiKey) {
+          aiInsights = await analyzeWithOpenRouter(capturedImage);
         }
       } catch (error) {
         console.error('AI analysis failed:', error);
@@ -890,13 +907,13 @@ const ARPCBAnalyzer: React.FC = () => {
                 <CardContent className="space-y-4">
                   <div>
                     <label className="text-sm font-medium mb-2 block">
-                      Gemini API Key
+                      OpenRouter API Key
                     </label>
                     <Input
                       type="password"
-                      placeholder="Enter your Gemini API key for enhanced AI analysis"
-                      value={geminiApiKey}
-                      onChange={(e) => setGeminiApiKey(e.target.value)}
+                      placeholder="Enter your OpenRouter API key for enhanced AI analysis"
+                      value={openrouterApiKey}
+                      onChange={(e) => setOpenrouterApiKey(e.target.value)}
                     />
                     <p className="text-xs text-muted-foreground mt-1">
                       Required for advanced AI insights and component analysis

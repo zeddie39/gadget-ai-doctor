@@ -19,6 +19,7 @@ const PhotoUpload = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [diagnosisResult, setDiagnosisResult] = useState<DiagnosisResult | null>(null);
   const [diagnosisId, setDiagnosisId] = useState<string | null>(null);
+  const [openrouterApiKey, setOpenrouterApiKey] = useState('');
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -40,8 +41,93 @@ const PhotoUpload = () => {
     }
   }, []);
 
-  const analyzeImage = async (imageData: string) => {
-    // Simulate AI analysis with realistic results
+  const analyzeImage = async (imageData: string): Promise<DiagnosisResult> => {
+    // Try OpenRouter AI analysis first
+    if (openrouterApiKey) {
+      try {
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openrouterApiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': window.location.origin,
+            'X-Title': 'AI Device Diagnostics'
+          },
+          body: JSON.stringify({
+            model: 'openai/gpt-4o',
+            messages: [
+              {
+                role: 'system',
+                content: `You are an expert electronics diagnostician. Analyze device images for:
+                - Physical damage (cracks, dents, scratches)
+                - Water damage indicators
+                - Battery swelling
+                - Port/connector issues
+                - Display problems
+                - Component wear
+                
+                Respond ONLY with a JSON object in this exact format:
+                {
+                  "issue": "Brief issue name",
+                  "severity": "minor|medium|critical", 
+                  "description": "Detailed description of the issue",
+                  "recommendations": ["recommendation1", "recommendation2", "recommendation3"],
+                  "confidence": 0.85
+                }`
+              },
+              {
+                role: 'user',
+                content: [
+                  {
+                    type: 'text',
+                    text: 'Analyze this device image for any damage, issues, or potential problems. Look carefully at the screen, body, ports, and overall condition.'
+                  },
+                  {
+                    type: 'image_url',
+                    image_url: {
+                      url: imageData
+                    }
+                  }
+                ]
+              }
+            ],
+            max_tokens: 800,
+            temperature: 0.1
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`OpenRouter API error: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const aiResult = JSON.parse(data.choices[0].message.content);
+        
+        // Store AI result in database
+        try {
+          const { data: dbData, error } = await supabase.from('image_diagnostics').insert({
+            image_url: imageData,
+            diagnosis_result: aiResult,
+            severity_level: aiResult.severity,
+            ai_analysis: true
+          }).select().single();
+
+          if (dbData) {
+            setDiagnosisId(dbData.id);
+          }
+        } catch (error) {
+          console.error('Error storing diagnosis:', error);
+        }
+
+        return aiResult;
+      } catch (error) {
+        console.error('AI analysis failed:', error);
+        toast.error('AI analysis failed, using fallback detection');
+        // Fall through to simulated analysis
+      }
+    }
+
+    // Fallback to simulated analysis
     const possibleIssues = [
       {
         issue: "Cracked Screen",
@@ -99,7 +185,8 @@ const PhotoUpload = () => {
       const { data, error } = await supabase.from('image_diagnostics').insert({
         image_url: imageData,
         diagnosis_result: randomResult,
-        severity_level: randomResult.severity
+        severity_level: randomResult.severity,
+        ai_analysis: false
       }).select().single();
 
       if (data) {
@@ -179,6 +266,19 @@ const PhotoUpload = () => {
 
   return (
     <div className="w-full max-w-4xl mx-auto">
+      <div className="mb-4">
+        <input
+          type="password"
+          placeholder="Enter OpenRouter API key for AI-powered analysis"
+          value={openrouterApiKey}
+          onChange={(e) => setOpenrouterApiKey(e.target.value)}
+          className="w-full p-2 border border-gray-300 rounded-lg"
+        />
+        <p className="text-sm text-gray-500 mt-1">
+          {openrouterApiKey ? '✅ AI analysis enabled' : '⚠️ Using fallback analysis - add API key for real AI'}
+        </p>
+      </div>
+      
       {!uploadedImage ? (
         <div
           className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-colors duration-200 ${

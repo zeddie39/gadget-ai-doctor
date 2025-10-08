@@ -1,12 +1,31 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera, MessageCircle, Zap, Shield, Trash, Battery, FileText, BookOpen, AlertTriangle, Brain } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Session } from '@supabase/supabase-js';
 
 const Hero = () => {
   const navigate = useNavigate();
+  const [session, setSession] = useState<Session | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleFeatureClick = (tab: string) => {
+    if (!session) {
+      navigate('/auth');
+      return;
+    }
     navigate(`/diagnose?tab=${tab}`);
   };
 

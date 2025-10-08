@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Session } from '@supabase/supabase-js';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Camera, MessageCircle, Settings, Battery, Wrench, Trash, Shield, BookOpen, FileText, AlertTriangle, Brain } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Camera, MessageCircle, Settings, Battery, Wrench, Trash, Shield, BookOpen, FileText, AlertTriangle, Brain, LogOut, Lock } from 'lucide-react';
 import PhotoUpload from '../components/PhotoUpload';
 import AIChat from '../components/AIChat';
 import TroubleshootingWizard from '../components/TroubleshootingWizard';
@@ -15,8 +18,31 @@ import SecurityAlerts from '../components/SecurityAlerts';
 import AITrainingDashboard from '../components/AITrainingDashboard';
 
 const Diagnose = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('photo');
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Check authentication
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+      if (!session) {
+        navigate('/auth');
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (!session) {
+        navigate('/auth');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -26,18 +52,44 @@ const Diagnose = () => {
     }
   }, [searchParams]);
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate('/auth');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50 flex items-center justify-center">
+        <div className="text-center">
+          <Lock className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
+          <p className="text-lg text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            <span className="bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
-              ZediFix Diagnostic Center
-            </span>
-          </h1>
-          <p className="text-lg text-gray-600">
-            Complete AI-powered gadget diagnosis, optimization, and repair tracking
-          </p>
+        <div className="flex justify-between items-start mb-8">
+          <div className="text-center flex-1">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              <span className="bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+                ZediFix Diagnostic Center
+              </span>
+            </h1>
+            <p className="text-lg text-gray-600">
+              Complete AI-powered gadget diagnosis, optimization, and repair tracking
+            </p>
+          </div>
+          <Button onClick={handleSignOut} variant="outline" size="sm">
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </Button>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

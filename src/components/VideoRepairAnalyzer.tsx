@@ -5,9 +5,14 @@ import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
-import { Video, Upload, Camera, StopCircle, Play, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Video, Upload, Camera, StopCircle, Play, AlertCircle, CheckCircle2, Scan } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import * as cocoSsd from '@tensorflow/tfjs-core';
+import '@tensorflow/tfjs-backend-webgl';
+import * as objectDetection from '@tensorflow-models/coco-ssd';
 
 interface RepairStep {
   step: number;
@@ -33,18 +38,46 @@ export default function VideoRepairAnalyzer() {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [uploadedVideo, setUploadedVideo] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('live');
+  const [realtimeDetection, setRealtimeDetection] = useState(false);
+  const [detectedObjects, setDetectedObjects] = useState<any[]>([]);
+  const [model, setModel] = useState<any>(null);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const detectionIntervalRef = useRef<number | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
+    // Load TensorFlow.js object detection model
+    const loadModel = async () => {
+      try {
+        const loadedModel = await objectDetection.load();
+        setModel(loadedModel);
+        console.log('Object detection model loaded');
+      } catch (error) {
+        console.error('Error loading model:', error);
+      }
+    };
+    loadModel();
+
     return () => {
       stopCamera();
+      if (detectionIntervalRef.current) {
+        cancelAnimationFrame(detectionIntervalRef.current);
+      }
     };
   }, []);
+
+  useEffect(() => {
+    if (realtimeDetection && isScanning && model && videoRef.current) {
+      detectObjects();
+    } else if (!realtimeDetection && detectionIntervalRef.current) {
+      cancelAnimationFrame(detectionIntervalRef.current);
+    }
+  }, [realtimeDetection, isScanning, model]);
 
   const startCamera = async () => {
     try {
@@ -75,7 +108,121 @@ export default function VideoRepairAnalyzer() {
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
+    if (detectionIntervalRef.current) {
+      cancelAnimationFrame(detectionIntervalRef.current);
+      detectionIntervalRef.current = null;
+    }
     setIsScanning(false);
+    setRealtimeDetection(false);
+    setDetectedObjects([]);
+  };
+
+  const detectObjects = async () => {
+    if (!model || !videoRef.current || !overlayCanvasRef.current || !realtimeDetection) {
+      return;
+    }
+
+    const video = videoRef.current;
+    const canvas = overlayCanvasRef.current;
+    
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      // Match canvas size to video
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      try {
+        const predictions = await model.detect(video);
+        setDetectedObjects(predictions);
+        drawBoundingBoxes(predictions, canvas);
+      } catch (error) {
+        console.error('Error detecting objects:', error);
+      }
+    }
+
+    detectionIntervalRef.current = requestAnimationFrame(detectObjects);
+  };
+
+  const drawBoundingBoxes = (predictions: any[], canvas: HTMLCanvasElement) => {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Clear previous drawings
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    predictions.forEach((prediction) => {
+      const [x, y, width, height] = prediction.bbox;
+      const score = (prediction.score * 100).toFixed(1);
+      
+      // Determine color based on confidence
+      const confidence = prediction.score;
+      let boxColor = 'rgba(0, 255, 0, 0.8)'; // Green for high confidence
+      if (confidence < 0.5) boxColor = 'rgba(255, 165, 0, 0.8)'; // Orange for medium
+      if (confidence < 0.3) boxColor = 'rgba(255, 0, 0, 0.8)'; // Red for low
+
+      // Draw bounding box with glow effect
+      ctx.strokeStyle = boxColor;
+      ctx.lineWidth = 3;
+      ctx.shadowColor = boxColor;
+      ctx.shadowBlur = 10;
+      ctx.strokeRect(x, y, width, height);
+
+      // Draw label background
+      const label = `${prediction.class} ${score}%`;
+      ctx.font = 'bold 16px Arial';
+      const textWidth = ctx.measureText(label).width;
+      const textHeight = 20;
+      
+      ctx.fillStyle = boxColor;
+      ctx.shadowBlur = 0;
+      ctx.fillRect(x, y - textHeight - 4, textWidth + 10, textHeight + 4);
+
+      // Draw label text
+      ctx.fillStyle = '#000';
+      ctx.fillText(label, x + 5, y - 8);
+
+      // Draw corner markers for AR effect
+      const cornerLength = 20;
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = boxColor;
+      ctx.shadowBlur = 15;
+      
+      // Top-left corner
+      ctx.beginPath();
+      ctx.moveTo(x, y + cornerLength);
+      ctx.lineTo(x, y);
+      ctx.lineTo(x + cornerLength, y);
+      ctx.stroke();
+      
+      // Top-right corner
+      ctx.beginPath();
+      ctx.moveTo(x + width - cornerLength, y);
+      ctx.lineTo(x + width, y);
+      ctx.lineTo(x + width, y + cornerLength);
+      ctx.stroke();
+      
+      // Bottom-left corner
+      ctx.beginPath();
+      ctx.moveTo(x, y + height - cornerLength);
+      ctx.lineTo(x, y + height);
+      ctx.lineTo(x + cornerLength, y + height);
+      ctx.stroke();
+      
+      // Bottom-right corner
+      ctx.beginPath();
+      ctx.moveTo(x + width - cornerLength, y + height);
+      ctx.lineTo(x + width, y + height);
+      ctx.lineTo(x + width, y + height - cornerLength);
+      ctx.stroke();
+
+      // Add scanning line animation effect
+      ctx.strokeStyle = 'rgba(0, 255, 255, 0.6)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      const scanY = y + (Date.now() % 1000) / 1000 * height;
+      ctx.moveTo(x, scanY);
+      ctx.lineTo(x + width, scanY);
+      ctx.stroke();
+    });
   };
 
   const captureFrame = (): string | null => {
@@ -296,6 +443,27 @@ Your response MUST be a valid JSON object with this exact structure:
             </TabsList>
 
             <TabsContent value="live" className="space-y-4">
+              {isScanning && model && (
+                <div className="flex items-center justify-between p-4 bg-card rounded-lg border">
+                  <div className="flex items-center gap-3">
+                    <Scan className="w-5 h-5 text-primary" />
+                    <div>
+                      <Label htmlFor="realtime-detection" className="text-sm font-medium">
+                        Real-time Object Detection
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        AI-powered component identification with AR overlay
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    id="realtime-detection"
+                    checked={realtimeDetection}
+                    onCheckedChange={setRealtimeDetection}
+                  />
+                </div>
+              )}
+
               <div className="relative bg-black rounded-lg overflow-hidden aspect-video">
                 <video
                   ref={videoRef}
@@ -303,12 +471,25 @@ Your response MUST be a valid JSON object with this exact structure:
                   playsInline
                   className="w-full h-full object-contain"
                 />
+                <canvas
+                  ref={overlayCanvasRef}
+                  className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                  style={{ mixBlendMode: 'screen' }}
+                />
                 {!isScanning && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <Button onClick={startCamera} size="lg">
                       <Camera className="w-4 h-4 mr-2" />
                       Start Camera
                     </Button>
+                  </div>
+                )}
+                {realtimeDetection && detectedObjects.length > 0 && (
+                  <div className="absolute top-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 border border-primary/50">
+                    <p className="text-xs font-semibold text-primary flex items-center gap-2">
+                      <Scan className="w-3 h-3 animate-pulse" />
+                      Detected: {detectedObjects.length} objects
+                    </p>
                   </div>
                 )}
               </div>

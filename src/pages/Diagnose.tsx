@@ -5,7 +5,7 @@ import { Session } from '@supabase/supabase-js';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, MessageCircle, Settings, Battery, Wrench, Trash, Shield, BookOpen, FileText, AlertTriangle, Brain, LogOut, Lock } from 'lucide-react';
+import { Camera, MessageCircle, Settings, Battery, Wrench, Trash, Shield, BookOpen, FileText, AlertTriangle, Brain, LogOut, Lock, Video } from 'lucide-react';
 import PhotoUpload from '../components/PhotoUpload';
 import AIChat from '../components/AIChat';
 import TroubleshootingWizard from '../components/TroubleshootingWizard';
@@ -16,6 +16,7 @@ import IssueHistory from '../components/IssueHistory';
 import KnowledgeHub from '../components/KnowledgeHub';
 import SecurityAlerts from '../components/SecurityAlerts';
 import AITrainingDashboard from '../components/AITrainingDashboard';
+import VideoRepairAnalyzer from '../components/VideoRepairAnalyzer';
 
 const Diagnose = () => {
   const navigate = useNavigate();
@@ -46,7 +47,7 @@ const Diagnose = () => {
 
   useEffect(() => {
     const tab = searchParams.get('tab');
-    const validTabs = ['photo', 'chat', 'troubleshoot', 'battery', 'storage', 'health', 'history', 'knowledge', 'security', 'training'];
+    const validTabs = ['photo', 'video', 'chat', 'troubleshoot', 'battery', 'storage', 'health', 'history', 'knowledge', 'security', 'training'];
     if (tab && validTabs.includes(tab)) {
       setActiveTab(tab);
     }
@@ -93,10 +94,14 @@ const Diagnose = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 mb-8 h-auto">
+          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-11 mb-8 h-auto">
             <TabsTrigger value="photo" className="flex flex-col items-center gap-1 py-3">
               <Camera className="h-4 w-4" />
               <span className="text-xs">Photo</span>
+            </TabsTrigger>
+            <TabsTrigger value="video" className="flex flex-col items-center gap-1 py-3">
+              <Video className="h-4 w-4" />
+              <span className="text-xs">Video</span>
             </TabsTrigger>
             <TabsTrigger value="chat" className="flex flex-col items-center gap-1 py-3">
               <MessageCircle className="h-4 w-4" />
@@ -151,6 +156,10 @@ const Diagnose = () => {
                 <PhotoUpload />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="video">
+            <VideoRepairAnalyzer />
           </TabsContent>
 
           <TabsContent value="chat">

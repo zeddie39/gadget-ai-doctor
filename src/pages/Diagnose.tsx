@@ -5,7 +5,7 @@ import { Session } from '@supabase/supabase-js';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, MessageCircle, Settings, Battery, Wrench, Trash, Shield, BookOpen, FileText, AlertTriangle, Brain, LogOut, Lock, Video } from 'lucide-react';
+import { Camera, MessageCircle, Settings, Battery, Wrench, Trash, Shield, BookOpen, FileText, AlertTriangle, Brain, LogOut, Lock, Video, Package } from 'lucide-react';
 import PhotoUpload from '../components/PhotoUpload';
 import AIChat from '../components/AIChat';
 import TroubleshootingWizard from '../components/TroubleshootingWizard';
@@ -17,6 +17,7 @@ import KnowledgeHub from '../components/KnowledgeHub';
 import SecurityAlerts from '../components/SecurityAlerts';
 import AITrainingDashboard from '../components/AITrainingDashboard';
 import VideoRepairAnalyzer from '../components/VideoRepairAnalyzer';
+import SparePartsInventoryManager from '../components/SparePartsInventoryManager';
 
 const Diagnose = () => {
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ const Diagnose = () => {
 
   useEffect(() => {
     const tab = searchParams.get('tab');
-    const validTabs = ['photo', 'video', 'chat', 'troubleshoot', 'battery', 'storage', 'health', 'history', 'knowledge', 'security', 'training'];
+    const validTabs = ['photo', 'video', 'chat', 'troubleshoot', 'battery', 'storage', 'health', 'history', 'knowledge', 'security', 'training', 'inventory'];
     if (tab && validTabs.includes(tab)) {
       setActiveTab(tab);
     }
@@ -94,7 +95,7 @@ const Diagnose = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-11 mb-8 h-auto">
+          <TabsList className="grid w-full grid-cols-6 lg:grid-cols-12 mb-8 h-auto">
             <TabsTrigger value="photo" className="flex flex-col items-center gap-1 py-3">
               <Camera className="h-4 w-4" />
               <span className="text-xs">Photo</span>
@@ -138,6 +139,10 @@ const Diagnose = () => {
             <TabsTrigger value="training" className="flex flex-col items-center gap-1 py-3">
               <Brain className="h-4 w-4" />
               <span className="text-xs">AI Training</span>
+            </TabsTrigger>
+            <TabsTrigger value="inventory" className="flex flex-col items-center gap-1 py-3">
+              <Package className="h-4 w-4" />
+              <span className="text-xs">Inventory</span>
             </TabsTrigger>
           </TabsList>
 
@@ -287,6 +292,10 @@ const Diagnose = () => {
                 <AITrainingDashboard />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="inventory">
+            <SparePartsInventoryManager />
           </TabsContent>
         </Tabs>
       </div>

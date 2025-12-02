@@ -310,6 +310,54 @@ export type Database = {
         }
         Relationships: []
       }
+      spare_parts_inventory: {
+        Row: {
+          compatible_devices: string[]
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_available: boolean
+          part_category: string
+          part_name: string
+          price: number
+          sku: string | null
+          stock_quantity: number
+          supplier: string | null
+          updated_at: string
+        }
+        Insert: {
+          compatible_devices?: string[]
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          part_category: string
+          part_name: string
+          price: number
+          sku?: string | null
+          stock_quantity?: number
+          supplier?: string | null
+          updated_at?: string
+        }
+        Update: {
+          compatible_devices?: string[]
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          part_category?: string
+          part_name?: string
+          price?: number
+          sku?: string | null
+          stock_quantity?: number
+          supplier?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       storage_analysis: {
         Row: {
           cache_files: Json | null

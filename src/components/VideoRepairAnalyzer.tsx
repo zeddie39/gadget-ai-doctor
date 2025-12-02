@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
-import { Video, Upload, Camera, StopCircle, Play, AlertCircle, CheckCircle2, Scan, Save, History, TrendingUp } from 'lucide-react';
+import { Video, Upload, Camera, StopCircle, Play, AlertCircle, CheckCircle2, Scan, Save, History, TrendingUp, Package, ShoppingCart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import * as cocoSsd from '@tensorflow/tfjs-core';
 import '@tensorflow/tfjs-backend-webgl';
@@ -43,6 +43,20 @@ interface DamageHistory {
   notes: string | null;
 }
 
+interface SparePart {
+  id: string;
+  part_name: string;
+  part_category: string;
+  compatible_devices: string[];
+  price: number;
+  stock_quantity: number;
+  supplier: string | null;
+  sku: string | null;
+  description: string | null;
+  image_url: string | null;
+  is_available: boolean;
+}
+
 export default function VideoRepairAnalyzer() {
   const [isScanning, setIsScanning] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -69,6 +83,8 @@ export default function VideoRepairAnalyzer() {
     componentAnalysis: Array<{ component: string; severity: string; urgency: string; cost: string }>;
   } | null>(null);
   const [isAssessing, setIsAssessing] = useState(false);
+  const [availableParts, setAvailableParts] = useState<SparePart[]>([]);
+  const [isLoadingParts, setIsLoadingParts] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -899,6 +915,9 @@ Provide:
       const assessment = JSON.parse(result.trim());
       setAiAssessment(assessment);
       
+      // Fetch relevant spare parts based on assessment
+      await fetchRelevantParts(assessment);
+      
       toast({
         title: 'Assessment Complete',
         description: 'AI-powered damage severity analysis completed',
@@ -913,6 +932,67 @@ Provide:
       });
     } finally {
       setIsAssessing(false);
+    }
+  };
+
+  const fetchRelevantParts = async (assessment: any) => {
+    setIsLoadingParts(true);
+    try {
+      // Extract component categories from assessment
+      const categories = new Set<string>();
+      assessment.componentAnalysis.forEach((comp: any) => {
+        const componentLower = comp.component.toLowerCase();
+        if (componentLower.includes('battery')) categories.add('battery');
+        if (componentLower.includes('screen') || componentLower.includes('display')) categories.add('screen');
+        if (componentLower.includes('motherboard') || componentLower.includes('board')) categories.add('motherboard');
+        if (componentLower.includes('chip') || componentLower.includes('ic')) categories.add('ic_chip');
+        if (componentLower.includes('capacitor')) categories.add('capacitor');
+        if (componentLower.includes('camera')) categories.add('camera');
+        if (componentLower.includes('speaker')) categories.add('speaker');
+        if (componentLower.includes('charging') || componentLower.includes('port')) categories.add('connector');
+      });
+
+      // Fetch parts matching categories or device type
+      let query = supabase
+        .from('spare_parts_inventory')
+        .select('*')
+        .eq('is_available', true)
+        .gt('stock_quantity', 0);
+
+      // Filter by device type if available
+      if (deviceType) {
+        query = query.contains('compatible_devices', [deviceType]);
+      }
+
+      const { data, error } = await query.order('price', { ascending: true });
+
+      if (error) throw error;
+
+      // Filter results by categories if any were identified
+      let filteredData = data || [];
+      if (categories.size > 0) {
+        filteredData = filteredData.filter(part => 
+          categories.has(part.part_category)
+        );
+      }
+
+      setAvailableParts(filteredData as SparePart[]);
+      
+      if (filteredData.length > 0) {
+        toast({
+          title: 'Parts Found',
+          description: `Found ${filteredData.length} compatible spare parts`,
+        });
+      }
+    } catch (error) {
+      console.error('Parts fetch error:', error);
+      toast({
+        title: 'Parts Fetch Failed',
+        description: 'Unable to load spare parts inventory',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoadingParts(false);
     }
   };
 
@@ -1242,6 +1322,101 @@ Provide:
                             <span className="text-muted-foreground">Cost: </span>
                             <span className="font-medium">{component.cost}</span>
                           </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {availableParts.length > 0 && (
+            <Card className="mt-4 border-2 border-primary/30">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Package className="w-5 h-5 text-primary" />
+                  Available Spare Parts
+                </CardTitle>
+                <CardDescription>
+                  Compatible parts in stock for detected damage
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingParts ? (
+                  <div className="flex items-center justify-center p-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {availableParts.map((part) => (
+                      <div key={part.id} className="p-4 rounded-lg bg-card border hover:border-primary/50 transition-colors">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 space-y-2">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-semibold text-sm">{part.part_name}</h4>
+                              <Badge variant="outline" className="text-xs">
+                                {part.part_category}
+                              </Badge>
+                              {part.stock_quantity <= 5 && (
+                                <Badge variant="destructive" className="text-xs">
+                                  Low Stock
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            {part.description && (
+                              <p className="text-xs text-muted-foreground line-clamp-2">
+                                {part.description}
+                              </p>
+                            )}
+                            
+                            <div className="flex items-center gap-4 text-xs">
+                              <div>
+                                <span className="text-muted-foreground">Price: </span>
+                                <span className="font-bold text-primary text-base">
+                                  ${part.price.toFixed(2)}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Stock: </span>
+                                <span className={part.stock_quantity > 10 ? "text-green-600 font-medium" : "text-orange-600 font-medium"}>
+                                  {part.stock_quantity} units
+                                </span>
+                              </div>
+                              {part.supplier && (
+                                <div>
+                                  <span className="text-muted-foreground">Supplier: </span>
+                                  <span className="font-medium">{part.supplier}</span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {part.compatible_devices.length > 0 && (
+                              <div className="text-xs">
+                                <span className="text-muted-foreground">Compatible: </span>
+                                <span className="font-medium">
+                                  {part.compatible_devices.slice(0, 3).join(', ')}
+                                  {part.compatible_devices.length > 3 && ` +${part.compatible_devices.length - 3} more`}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <Button 
+                            size="sm" 
+                            className="shrink-0"
+                            onClick={() => {
+                              window.open('https://ztechelectronics.com/api/store', '_blank');
+                              toast({
+                                title: 'Redirecting to Store',
+                                description: 'Opening main platform to place order',
+                              });
+                            }}
+                          >
+                            <ShoppingCart className="w-3 h-3 mr-2" />
+                            Order Part
+                          </Button>
                         </div>
                       </div>
                     ))}

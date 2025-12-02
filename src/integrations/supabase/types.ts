@@ -127,6 +127,48 @@ export type Database = {
         }
         Relationships: []
       }
+      damage_detection_history: {
+        Row: {
+          created_at: string
+          damaged_areas: Json
+          device_id: string
+          device_type: string | null
+          id: string
+          image_data_url: string | null
+          notes: string | null
+          scan_timestamp: string
+          severity_summary: Json | null
+          total_damage_count: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          damaged_areas?: Json
+          device_id: string
+          device_type?: string | null
+          id?: string
+          image_data_url?: string | null
+          notes?: string | null
+          scan_timestamp?: string
+          severity_summary?: Json | null
+          total_damage_count?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          damaged_areas?: Json
+          device_id?: string
+          device_type?: string | null
+          id?: string
+          image_data_url?: string | null
+          notes?: string | null
+          scan_timestamp?: string
+          severity_summary?: Json | null
+          total_damage_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       health_scores: {
         Row: {
           battery_score: number | null

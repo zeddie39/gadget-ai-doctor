@@ -5,7 +5,7 @@ import { Session } from '@supabase/supabase-js';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, MessageCircle, Settings, Battery, Wrench, Trash, Shield, BookOpen, FileText, AlertTriangle, Brain, LogOut, Lock, Video, Package } from 'lucide-react';
+import { Camera, MessageCircle, Settings, Battery, Wrench, Trash, Shield, BookOpen, FileText, AlertTriangle, Brain, LogOut, Lock, Video, Package, ShieldCheck } from 'lucide-react';
 import PhotoUpload from '../components/PhotoUpload';
 import AIChat from '../components/AIChat';
 import TroubleshootingWizard from '../components/TroubleshootingWizard';
@@ -25,6 +25,7 @@ const Diagnose = () => {
   const [activeTab, setActiveTab] = useState('photo');
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     // Check authentication
@@ -33,6 +34,8 @@ const Diagnose = () => {
       setLoading(false);
       if (!session) {
         navigate('/auth');
+      } else {
+        checkAdminStatus(session.user.id);
       }
     });
 
@@ -40,11 +43,28 @@ const Diagnose = () => {
       setSession(session);
       if (!session) {
         navigate('/auth');
+      } else {
+        checkAdminStatus(session.user.id);
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const checkAdminStatus = async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .single();
+
+      setIsAdmin(!!data);
+    } catch (error) {
+      setIsAdmin(false);
+    }
+  };
 
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -88,10 +108,18 @@ const Diagnose = () => {
               Complete AI-powered gadget diagnosis, optimization, and repair tracking
             </p>
           </div>
-          <Button onClick={handleSignOut} variant="outline" size="sm">
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign Out
-          </Button>
+          <div className="flex gap-2">
+            {isAdmin && (
+              <Button onClick={() => navigate('/admin')} variant="outline" size="sm">
+                <ShieldCheck className="h-4 w-4 mr-2" />
+                Admin Panel
+              </Button>
+            )}
+            <Button onClick={handleSignOut} variant="outline" size="sm">
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

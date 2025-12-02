@@ -41,6 +41,7 @@ export default function VideoRepairAnalyzer() {
   const [realtimeDetection, setRealtimeDetection] = useState(false);
   const [detectedObjects, setDetectedObjects] = useState<any[]>([]);
   const [model, setModel] = useState<any>(null);
+  const [annotatedScreenshots, setAnnotatedScreenshots] = useState<string[]>([]);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -408,6 +409,97 @@ Your response MUST be a valid JSON object with this exact structure:
     await analyzeFrames(frames);
   };
 
+  const captureAnnotatedScreenshot = () => {
+    if (!videoRef.current || !overlayCanvasRef.current || !canvasRef.current) return;
+
+    const video = videoRef.current;
+    const overlayCanvas = overlayCanvasRef.current;
+    const captureCanvas = canvasRef.current;
+
+    // Set canvas dimensions to match video
+    captureCanvas.width = video.videoWidth;
+    captureCanvas.height = video.videoHeight;
+
+    const ctx = captureCanvas.getContext('2d');
+    if (!ctx) return;
+
+    // Draw video frame
+    ctx.drawImage(video, 0, 0, captureCanvas.width, captureCanvas.height);
+
+    // Draw overlay annotations on top
+    ctx.drawImage(overlayCanvas, 0, 0, captureCanvas.width, captureCanvas.height);
+
+    // Add timestamp
+    const timestamp = new Date().toLocaleString();
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(10, captureCanvas.height - 40, 250, 30);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 14px Arial';
+    ctx.fillText(timestamp, 20, captureCanvas.height - 20);
+
+    // Convert to data URL
+    const screenshot = captureCanvas.toDataURL('image/png');
+    setAnnotatedScreenshots(prev => [screenshot, ...prev]);
+
+    toast({
+      title: 'Screenshot Captured',
+      description: `Captured with ${detectedObjects.length} detected objects`,
+    });
+  };
+
+  const downloadScreenshot = (screenshot: string, index: number) => {
+    const link = document.createElement('a');
+    link.download = `repair-analysis-${Date.now()}-${index}.png`;
+    link.href = screenshot;
+    link.click();
+
+    toast({
+      title: 'Download Started',
+      description: 'Annotated screenshot saved to your device',
+    });
+  };
+
+  const shareScreenshot = async (screenshot: string) => {
+    try {
+      // Convert base64 to blob
+      const response = await fetch(screenshot);
+      const blob = await response.blob();
+      const file = new File([blob], `repair-analysis-${Date.now()}.png`, { type: 'image/png' });
+
+      if (navigator.share && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'Device Repair Analysis',
+          text: `Detected ${detectedObjects.length} components for analysis`,
+          files: [file],
+        });
+
+        toast({
+          title: 'Shared Successfully',
+          description: 'Screenshot shared',
+        });
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            'image/png': blob,
+          }),
+        ]);
+
+        toast({
+          title: 'Copied to Clipboard',
+          description: 'Screenshot copied, paste it where you need',
+        });
+      }
+    } catch (error) {
+      console.error('Share error:', error);
+      toast({
+        title: 'Share Failed',
+        description: 'Unable to share screenshot',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'Easy': return 'bg-green-500';
@@ -495,11 +587,17 @@ Your response MUST be a valid JSON object with this exact structure:
               </div>
               
               {isScanning && (
-                <div className="flex gap-2 justify-center">
+                <div className="flex gap-2 justify-center flex-wrap">
                   <Button onClick={handleLiveScan} disabled={isAnalyzing}>
                     <Play className="w-4 h-4 mr-2" />
                     Analyze Device
                   </Button>
+                  {realtimeDetection && detectedObjects.length > 0 && (
+                    <Button onClick={captureAnnotatedScreenshot} variant="secondary">
+                      <Camera className="w-4 h-4 mr-2" />
+                      Capture Screenshot
+                    </Button>
+                  )}
                   <Button onClick={stopCamera} variant="destructive">
                     <StopCircle className="w-4 h-4 mr-2" />
                     Stop Camera
@@ -557,6 +655,43 @@ Your response MUST be a valid JSON object with this exact structure:
                     alt={`Frame ${idx + 1}`}
                     className="rounded-lg border"
                   />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {annotatedScreenshots.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-sm font-medium mb-2">Annotated Screenshots</h4>
+              <div className="grid grid-cols-2 gap-4">
+                {annotatedScreenshots.map((screenshot, idx) => (
+                  <Card key={idx} className="overflow-hidden">
+                    <img
+                      src={screenshot}
+                      alt={`Annotated ${idx + 1}`}
+                      className="w-full h-auto"
+                    />
+                    <CardContent className="p-3 flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => downloadScreenshot(screenshot, idx)}
+                      >
+                        <Upload className="w-3 h-3 mr-1" />
+                        Download
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => shareScreenshot(screenshot)}
+                      >
+                        <Video className="w-3 h-3 mr-1" />
+                        Share
+                      </Button>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             </div>

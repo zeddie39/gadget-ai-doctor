@@ -61,6 +61,14 @@ export default function VideoRepairAnalyzer() {
   const [deviceType, setDeviceType] = useState<string>('');
   const [damageHistory, setDamageHistory] = useState<DamageHistory[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [aiAssessment, setAiAssessment] = useState<{
+    overallSeverity: string;
+    urgencyLevel: string;
+    estimatedCost: { min: number; max: number };
+    repairRecommendation: string;
+    componentAnalysis: Array<{ component: string; severity: string; urgency: string; cost: string }>;
+  } | null>(null);
+  const [isAssessing, setIsAssessing] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -787,6 +795,127 @@ Your response MUST be a valid JSON object with this exact structure:
     };
   };
 
+  const assessDamageSeverity = async () => {
+    if (damagedAreas.length === 0) {
+      toast({
+        title: 'No Damage Detected',
+        description: 'Please enable damage detection and scan the device first',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsAssessing(true);
+
+    try {
+      // Capture current frame for AI analysis
+      const screenshot = captureFrame();
+      
+      // Prepare damage data summary
+      const damageData = {
+        totalAreas: damagedAreas.length,
+        burnt: damagedAreas.filter(a => a.type === 'burnt').length,
+        discolored: damagedAreas.filter(a => a.type === 'discolored').length,
+        corrosion: damagedAreas.filter(a => a.type === 'corrosion').length,
+        severityBreakdown: {
+          critical: damagedAreas.filter(a => a.severity > 0.8).length,
+          high: damagedAreas.filter(a => a.severity > 0.6 && a.severity <= 0.8).length,
+          medium: damagedAreas.filter(a => a.severity > 0.4 && a.severity <= 0.6).length,
+          low: damagedAreas.filter(a => a.severity <= 0.4).length,
+        }
+      };
+
+      const systemPrompt = `You are an expert electronics repair technician specializing in damage assessment and cost estimation. Analyze the detected damage and provide detailed repair urgency and cost analysis.
+
+Your response MUST be a valid JSON object with this exact structure:
+{
+  "overallSeverity": "Critical/High/Medium/Low",
+  "urgencyLevel": "Immediate (24-48 hours)/Urgent (1 week)/Moderate (2-4 weeks)/Low (Can wait)",
+  "estimatedCost": {
+    "min": number,
+    "max": number
+  },
+  "repairRecommendation": "detailed recommendation text",
+  "componentAnalysis": [
+    {
+      "component": "component name",
+      "severity": "Critical/High/Medium/Low",
+      "urgency": "Immediate/Urgent/Moderate/Low",
+      "cost": "$XX - $YY"
+    }
+  ]
+}`;
+
+      const prompt = `Analyze this electronic device image with the following detected damage:
+
+Damage Summary:
+- Total damaged areas: ${damageData.totalAreas}
+- Burnt components: ${damageData.burnt}
+- Discolored areas: ${damageData.discolored}
+- Corrosion spots: ${damageData.corrosion}
+
+Severity Distribution:
+- Critical: ${damageData.severityBreakdown.critical}
+- High: ${damageData.severityBreakdown.high}
+- Medium: ${damageData.severityBreakdown.medium}
+- Low: ${damageData.severityBreakdown.low}
+
+Device Type: ${deviceType || 'Electronic device'}
+
+Provide:
+1. Overall severity assessment
+2. Repair urgency level with timeframe
+3. Estimated repair cost range in USD
+4. Detailed recommendation for the user
+5. Analysis of each major damaged component with individual severity, urgency, and cost estimates`;
+
+      const { data, error } = await supabase.functions.invoke('openrouter-ai', {
+        body: {
+          prompt,
+          systemPrompt,
+          image: screenshot,
+          model: 'google/gemini-2.5-flash'
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        toast({
+          title: 'AI Assessment Error',
+          description: data.error,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      let result = data.response;
+      
+      // Clean up markdown code blocks if present
+      if (result.includes('```json')) {
+        result = result.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      }
+      
+      const assessment = JSON.parse(result.trim());
+      setAiAssessment(assessment);
+      
+      toast({
+        title: 'Assessment Complete',
+        description: 'AI-powered damage severity analysis completed',
+      });
+
+    } catch (error) {
+      console.error('Assessment error:', error);
+      toast({
+        title: 'Assessment Failed',
+        description: error instanceof Error ? error.message : 'Failed to assess damage',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsAssessing(false);
+    }
+  };
+
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'Easy': return 'bg-green-500';
@@ -984,11 +1113,21 @@ Your response MUST be a valid JSON object with this exact structure:
                   />
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
+                <Button 
+                  onClick={assessDamageSeverity} 
+                  size="sm"
+                  disabled={isAssessing}
+                  variant="default"
+                >
+                  <AlertCircle className="w-3 h-3 mr-2" />
+                  {isAssessing ? 'Assessing...' : 'AI Severity Assessment'}
+                </Button>
                 <Button 
                   onClick={saveDamageHistory} 
                   size="sm"
                   disabled={!deviceId}
+                  variant="secondary"
                 >
                   <Save className="w-3 h-3 mr-2" />
                   Save Current Scan
@@ -1030,6 +1169,86 @@ Your response MUST be a valid JSON object with this exact structure:
                 ))}
               </div>
             </div>
+          )}
+
+          {aiAssessment && (
+            <Card className="mt-4 border-2 border-primary/50">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-primary" />
+                  AI-Powered Damage Assessment
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 rounded-lg bg-card border">
+                    <p className="text-xs text-muted-foreground mb-1">Overall Severity</p>
+                    <Badge variant={
+                      aiAssessment.overallSeverity === 'Critical' ? 'destructive' :
+                      aiAssessment.overallSeverity === 'High' ? 'default' :
+                      'secondary'
+                    } className="text-sm">
+                      {aiAssessment.overallSeverity}
+                    </Badge>
+                  </div>
+                  <div className="p-4 rounded-lg bg-card border">
+                    <p className="text-xs text-muted-foreground mb-1">Repair Urgency</p>
+                    <Badge variant={
+                      aiAssessment.urgencyLevel.includes('Immediate') ? 'destructive' :
+                      aiAssessment.urgencyLevel.includes('Urgent') ? 'default' :
+                      'secondary'
+                    } className="text-sm">
+                      {aiAssessment.urgencyLevel.split('(')[0].trim()}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-lg bg-card border">
+                  <p className="text-xs text-muted-foreground mb-2">Estimated Repair Cost</p>
+                  <p className="text-2xl font-bold text-primary">
+                    ${aiAssessment.estimatedCost.min} - ${aiAssessment.estimatedCost.max}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">USD</p>
+                </div>
+
+                <div className="p-4 rounded-lg bg-card border">
+                  <p className="text-sm font-semibold mb-2">Repair Recommendation</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {aiAssessment.repairRecommendation}
+                  </p>
+                </div>
+
+                {aiAssessment.componentAnalysis.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold">Component Analysis</p>
+                    {aiAssessment.componentAnalysis.map((component, idx) => (
+                      <div key={idx} className="p-3 rounded-lg bg-card border space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-sm">{component.component}</span>
+                          <Badge variant={
+                            component.severity === 'Critical' ? 'destructive' :
+                            component.severity === 'High' ? 'default' :
+                            'secondary'
+                          } className="text-xs">
+                            {component.severity}
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div>
+                            <span className="text-muted-foreground">Urgency: </span>
+                            <span className="font-medium">{component.urgency}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Cost: </span>
+                            <span className="font-medium">{component.cost}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           )}
 
           {annotatedScreenshots.length > 0 && (

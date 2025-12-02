@@ -8,11 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
-import { Video, Upload, Camera, StopCircle, Play, AlertCircle, CheckCircle2, Scan } from 'lucide-react';
+import { Video, Upload, Camera, StopCircle, Play, AlertCircle, CheckCircle2, Scan, Save, History, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import * as cocoSsd from '@tensorflow/tfjs-core';
 import '@tensorflow/tfjs-backend-webgl';
 import * as objectDetection from '@tensorflow-models/coco-ssd';
+import { Input } from '@/components/ui/input';
 
 interface RepairStep {
   step: number;
@@ -30,6 +31,18 @@ interface AnalysisResult {
   steps: RepairStep[];
 }
 
+interface DamageHistory {
+  id: string;
+  device_id: string;
+  device_type: string | null;
+  scan_timestamp: string;
+  damaged_areas: any;
+  total_damage_count: number;
+  severity_summary: any;
+  image_data_url: string | null;
+  notes: string | null;
+}
+
 export default function VideoRepairAnalyzer() {
   const [isScanning, setIsScanning] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -44,6 +57,10 @@ export default function VideoRepairAnalyzer() {
   const [damagedAreas, setDamagedAreas] = useState<any[]>([]);
   const [model, setModel] = useState<any>(null);
   const [annotatedScreenshots, setAnnotatedScreenshots] = useState<string[]>([]);
+  const [deviceId, setDeviceId] = useState<string>('');
+  const [deviceType, setDeviceType] = useState<string>('');
+  const [damageHistory, setDamageHistory] = useState<DamageHistory[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -677,6 +694,99 @@ Your response MUST be a valid JSON object with this exact structure:
     }
   };
 
+  const saveDamageHistory = async () => {
+    if (!deviceId || damagedAreas.length === 0) {
+      toast({
+        title: 'Cannot Save',
+        description: 'Please enter a device ID and ensure damage is detected',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      // Capture current frame with damage overlay
+      const screenshot = captureFrame();
+
+      // Calculate severity summary
+      const severitySummary = {
+        critical: damagedAreas.filter(a => a.severity > 0.8).length,
+        high: damagedAreas.filter(a => a.severity > 0.6 && a.severity <= 0.8).length,
+        medium: damagedAreas.filter(a => a.severity > 0.4 && a.severity <= 0.6).length,
+        low: damagedAreas.filter(a => a.severity <= 0.4).length,
+      };
+
+      const { error } = await supabase
+        .from('damage_detection_history')
+        .insert({
+          device_id: deviceId,
+          device_type: deviceType || null,
+          damaged_areas: damagedAreas,
+          total_damage_count: damagedAreas.length,
+          severity_summary: severitySummary,
+          image_data_url: screenshot,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Damage History Saved',
+        description: `Saved scan with ${damagedAreas.length} damaged areas`,
+      });
+
+      // Refresh history
+      await fetchDamageHistory();
+    } catch (error) {
+      console.error('Save error:', error);
+      toast({
+        title: 'Save Failed',
+        description: 'Unable to save damage history',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const fetchDamageHistory = async () => {
+    if (!deviceId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('damage_detection_history')
+        .select('*')
+        .eq('device_id', deviceId)
+        .order('scan_timestamp', { ascending: false });
+
+      if (error) throw error;
+
+      setDamageHistory((data || []) as DamageHistory[]);
+      setShowHistory(true);
+    } catch (error) {
+      console.error('Fetch error:', error);
+      toast({
+        title: 'Fetch Failed',
+        description: 'Unable to load damage history',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const calculateProgression = () => {
+    if (damageHistory.length < 2) return null;
+
+    const latest = damageHistory[0];
+    const previous = damageHistory[1];
+    
+    const damageChange = latest.total_damage_count - previous.total_damage_count;
+    const percentChange = ((damageChange / previous.total_damage_count) * 100).toFixed(1);
+    
+    return {
+      damageChange,
+      percentChange: parseFloat(percentChange),
+      isImproving: damageChange < 0,
+      isWorsening: damageChange > 0,
+    };
+  };
+
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'Easy': return 'bg-green-500';
@@ -846,6 +956,56 @@ Your response MUST be a valid JSON object with this exact structure:
             </TabsContent>
           </Tabs>
 
+          {damageDetection && damagedAreas.length > 0 && (
+            <div className="mt-4 p-4 bg-card rounded-lg border space-y-3">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <Save className="w-4 h-4" />
+                Save Damage History
+              </h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="device-id" className="text-xs">Device ID *</Label>
+                  <Input
+                    id="device-id"
+                    placeholder="e.g., iPhone-123"
+                    value={deviceId}
+                    onChange={(e) => setDeviceId(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="device-type" className="text-xs">Device Type</Label>
+                  <Input
+                    id="device-type"
+                    placeholder="e.g., iPhone 12"
+                    value={deviceType}
+                    onChange={(e) => setDeviceType(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={saveDamageHistory} 
+                  size="sm"
+                  disabled={!deviceId}
+                >
+                  <Save className="w-3 h-3 mr-2" />
+                  Save Current Scan
+                </Button>
+                <Button 
+                  onClick={fetchDamageHistory} 
+                  variant="outline"
+                  size="sm"
+                  disabled={!deviceId}
+                >
+                  <History className="w-3 h-3 mr-2" />
+                  View History
+                </Button>
+              </div>
+            </div>
+          )}
+
           {isAnalyzing && (
             <div className="mt-4 space-y-2">
               <div className="flex items-center justify-between text-sm">
@@ -910,6 +1070,126 @@ Your response MUST be a valid JSON object with this exact structure:
           )}
         </CardContent>
       </Card>
+
+      {showHistory && damageHistory.length > 0 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <History className="w-5 h-5" />
+                  Damage History - {deviceId}
+                </CardTitle>
+                <CardDescription>
+                  Track component deterioration over {damageHistory.length} scans
+                </CardDescription>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setShowHistory(false)}>
+                Close
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {calculateProgression() && (
+              <Alert className={calculateProgression()!.isImproving ? 'border-green-500' : 'border-red-500'}>
+                <TrendingUp className={`h-4 w-4 ${calculateProgression()!.isImproving ? 'text-green-500' : 'text-red-500 rotate-180'}`} />
+                <AlertDescription>
+                  <strong>Progression:</strong> {calculateProgression()!.isImproving ? 'Improving' : 'Worsening'}
+                  {' - '}{Math.abs(calculateProgression()!.damageChange)} damaged areas {calculateProgression()!.isImproving ? 'less' : 'more'} than previous scan
+                  {' '}({calculateProgression()!.isImproving ? '' : '+'}{calculateProgression()!.percentChange}%)
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-4">
+              {damageHistory.map((scan, idx) => {
+                const isLatest = idx === 0;
+                return (
+                  <Card key={scan.id} className={isLatest ? 'border-primary' : ''}>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <CardTitle className="text-base flex items-center gap-2">
+                            {isLatest && <Badge variant="default">Latest</Badge>}
+                            Scan {damageHistory.length - idx}
+                          </CardTitle>
+                          <CardDescription className="text-xs mt-1">
+                            {new Date(scan.scan_timestamp).toLocaleString()}
+                            {scan.device_type && ` • ${scan.device_type}`}
+                          </CardDescription>
+                        </div>
+                        <Badge variant="destructive">
+                          {scan.total_damage_count} areas
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="grid grid-cols-4 gap-2 text-center">
+                        <div className="bg-red-500/10 rounded p-2">
+                          <div className="text-2xl font-bold text-red-500">
+                            {scan.severity_summary.critical}
+                          </div>
+                          <div className="text-xs text-muted-foreground">Critical</div>
+                        </div>
+                        <div className="bg-orange-500/10 rounded p-2">
+                          <div className="text-2xl font-bold text-orange-500">
+                            {scan.severity_summary.high}
+                          </div>
+                          <div className="text-xs text-muted-foreground">High</div>
+                        </div>
+                        <div className="bg-yellow-500/10 rounded p-2">
+                          <div className="text-2xl font-bold text-yellow-500">
+                            {scan.severity_summary.medium}
+                          </div>
+                          <div className="text-xs text-muted-foreground">Medium</div>
+                        </div>
+                        <div className="bg-blue-500/10 rounded p-2">
+                          <div className="text-2xl font-bold text-blue-500">
+                            {scan.severity_summary.low}
+                          </div>
+                          <div className="text-xs text-muted-foreground">Low</div>
+                        </div>
+                      </div>
+
+                      {scan.image_data_url && (
+                        <div className="relative">
+                          <img
+                            src={scan.image_data_url}
+                            alt={`Scan ${damageHistory.length - idx}`}
+                            className="w-full h-auto rounded border"
+                          />
+                        </div>
+                      )}
+
+                      {scan.notes && (
+                        <p className="text-sm text-muted-foreground italic">
+                          Note: {scan.notes}
+                        </p>
+                      )}
+
+                      {idx < damageHistory.length - 1 && (
+                        <div className="pt-2 border-t">
+                          <p className="text-xs text-muted-foreground">
+                            {(() => {
+                              const prev = damageHistory[idx + 1];
+                              const change = scan.total_damage_count - prev.total_damage_count;
+                              const days = Math.floor(
+                                (new Date(scan.scan_timestamp).getTime() - new Date(prev.scan_timestamp).getTime()) / 
+                                (1000 * 60 * 60 * 24)
+                              );
+                              return `${change > 0 ? '+' : ''}${change} areas since previous scan (${days} days ago)`;
+                            })()}
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {analysisResult && (
         <Card>

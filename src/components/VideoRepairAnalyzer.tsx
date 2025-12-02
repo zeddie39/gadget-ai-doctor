@@ -39,7 +39,9 @@ export default function VideoRepairAnalyzer() {
   const [uploadedVideo, setUploadedVideo] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('live');
   const [realtimeDetection, setRealtimeDetection] = useState(false);
+  const [damageDetection, setDamageDetection] = useState(false);
   const [detectedObjects, setDetectedObjects] = useState<any[]>([]);
+  const [damagedAreas, setDamagedAreas] = useState<any[]>([]);
   const [model, setModel] = useState<any>(null);
   const [annotatedScreenshots, setAnnotatedScreenshots] = useState<string[]>([]);
   
@@ -73,12 +75,16 @@ export default function VideoRepairAnalyzer() {
   }, []);
 
   useEffect(() => {
-    if (realtimeDetection && isScanning && model && videoRef.current) {
-      detectObjects();
-    } else if (!realtimeDetection && detectionIntervalRef.current) {
+    if ((realtimeDetection || damageDetection) && isScanning && videoRef.current) {
+      if (realtimeDetection && model) {
+        detectObjects();
+      } else if (damageDetection) {
+        detectDamage();
+      }
+    } else if (!realtimeDetection && !damageDetection && detectionIntervalRef.current) {
       cancelAnimationFrame(detectionIntervalRef.current);
     }
-  }, [realtimeDetection, isScanning, model]);
+  }, [realtimeDetection, damageDetection, isScanning, model]);
 
   const startCamera = async () => {
     try {
@@ -115,7 +121,9 @@ export default function VideoRepairAnalyzer() {
     }
     setIsScanning(false);
     setRealtimeDetection(false);
+    setDamageDetection(false);
     setDetectedObjects([]);
+    setDamagedAreas([]);
   };
 
   const detectObjects = async () => {
@@ -127,14 +135,21 @@ export default function VideoRepairAnalyzer() {
     const canvas = overlayCanvasRef.current;
     
     if (video.readyState === video.HAVE_ENOUGH_DATA) {
-      // Match canvas size to video
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
 
       try {
         const predictions = await model.detect(video);
         setDetectedObjects(predictions);
-        drawBoundingBoxes(predictions, canvas);
+        
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          drawBoundingBoxes(predictions, ctx);
+          if (damageDetection) {
+            drawDamageOverlays(ctx);
+          }
+        }
       } catch (error) {
         console.error('Error detecting objects:', error);
       }
@@ -143,12 +158,174 @@ export default function VideoRepairAnalyzer() {
     detectionIntervalRef.current = requestAnimationFrame(detectObjects);
   };
 
-  const drawBoundingBoxes = (predictions: any[], canvas: HTMLCanvasElement) => {
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+  const detectDamage = () => {
+    if (!videoRef.current || !overlayCanvasRef.current || !damageDetection) {
+      return;
+    }
 
-    // Clear previous drawings
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const video = videoRef.current;
+    const canvas = overlayCanvasRef.current;
+
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+      const tempCtx = tempCanvas.getContext('2d');
+      
+      if (!tempCtx) return;
+
+      tempCtx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = tempCtx.getImageData(0, 0, canvas.width, canvas.height);
+      const damaged = analyzeDamage(imageData);
+      setDamagedAreas(damaged);
+
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawDamageOverlays(ctx, damaged);
+        if (realtimeDetection && detectedObjects.length > 0) {
+          drawBoundingBoxes(detectedObjects, ctx);
+        }
+      }
+    }
+
+    detectionIntervalRef.current = requestAnimationFrame(detectDamage);
+  };
+
+  const analyzeDamage = (imageData: ImageData): any[] => {
+    const data = imageData.data;
+    const width = imageData.width;
+    const height = imageData.height;
+    const damaged: any[] = [];
+    const blockSize = 20; // Analyze in 20x20 pixel blocks
+
+    for (let y = 0; y < height; y += blockSize) {
+      for (let x = 0; x < width; x += blockSize) {
+        let darkPixels = 0;
+        let brownPixels = 0;
+        let greenPixels = 0;
+        let totalPixels = 0;
+
+        // Analyze block
+        for (let by = 0; by < blockSize && y + by < height; by++) {
+          for (let bx = 0; bx < blockSize && x + bx < width; bx++) {
+            const idx = ((y + by) * width + (x + bx)) * 4;
+            const r = data[idx];
+            const g = data[idx + 1];
+            const b = data[idx + 2];
+
+            totalPixels++;
+
+            // Detect burnt areas (very dark or black)
+            if (r < 60 && g < 60 && b < 60) {
+              darkPixels++;
+            }
+
+            // Detect brown discoloration (burnt components)
+            if (r > 80 && r < 150 && g > 40 && g < 100 && b < 80) {
+              brownPixels++;
+            }
+
+            // Detect green corrosion (oxidation on copper)
+            if (g > r * 1.2 && g > b * 1.2 && g > 100) {
+              greenPixels++;
+            }
+          }
+        }
+
+        const darkRatio = darkPixels / totalPixels;
+        const brownRatio = brownPixels / totalPixels;
+        const greenRatio = greenPixels / totalPixels;
+
+        // Flag damaged areas
+        if (darkRatio > 0.3) {
+          damaged.push({
+            x,
+            y,
+            width: blockSize,
+            height: blockSize,
+            type: 'burnt',
+            severity: Math.min(darkRatio * 2, 1),
+          });
+        } else if (brownRatio > 0.4) {
+          damaged.push({
+            x,
+            y,
+            width: blockSize,
+            height: blockSize,
+            type: 'discolored',
+            severity: Math.min(brownRatio * 1.5, 1),
+          });
+        } else if (greenRatio > 0.4) {
+          damaged.push({
+            x,
+            y,
+            width: blockSize,
+            height: blockSize,
+            type: 'corrosion',
+            severity: Math.min(greenRatio * 1.5, 1),
+          });
+        }
+      }
+    }
+
+    return damaged;
+  };
+
+  const drawDamageOverlays = (ctx: CanvasRenderingContext2D, areas: any[] = damagedAreas) => {
+    areas.forEach((area) => {
+      let color;
+      let label;
+
+      switch (area.type) {
+        case 'burnt':
+          color = `rgba(255, 0, 0, ${0.3 + area.severity * 0.4})`;
+          label = '⚠ BURNT';
+          break;
+        case 'discolored':
+          color = `rgba(255, 165, 0, ${0.3 + area.severity * 0.4})`;
+          label = '⚠ DAMAGED';
+          break;
+        case 'corrosion':
+          color = `rgba(0, 255, 0, ${0.3 + area.severity * 0.4})`;
+          label = '⚠ CORROSION';
+          break;
+        default:
+          return;
+      }
+
+      // Draw semi-transparent overlay
+      ctx.fillStyle = color;
+      ctx.fillRect(area.x, area.y, area.width, area.height);
+
+      // Draw border
+      ctx.strokeStyle = color.replace(/[\d.]+\)$/, '0.9)');
+      ctx.lineWidth = 2;
+      ctx.strokeRect(area.x, area.y, area.width, area.height);
+
+      // Draw warning icon and label
+      ctx.fillStyle = 'rgba(255, 0, 0, 0.9)';
+      ctx.font = 'bold 12px Arial';
+      const textWidth = ctx.measureText(label).width;
+      ctx.fillRect(area.x, area.y - 18, textWidth + 8, 16);
+      ctx.fillStyle = '#fff';
+      ctx.fillText(label, area.x + 4, area.y - 6);
+
+      // Draw pulsing effect for high severity
+      if (area.severity > 0.7) {
+        const pulse = Math.sin(Date.now() / 200) * 0.3 + 0.7;
+        ctx.strokeStyle = `rgba(255, 0, 0, ${pulse})`;
+        ctx.lineWidth = 4;
+        ctx.strokeRect(area.x - 2, area.y - 2, area.width + 4, area.height + 4);
+      }
+    });
+  };
+
+  const drawBoundingBoxes = (predictions: any[], ctx: CanvasRenderingContext2D) => {
+    if (!ctx) return;
 
     predictions.forEach((prediction) => {
       const [x, y, width, height] = prediction.bbox;
@@ -535,24 +712,47 @@ Your response MUST be a valid JSON object with this exact structure:
             </TabsList>
 
             <TabsContent value="live" className="space-y-4">
-              {isScanning && model && (
-                <div className="flex items-center justify-between p-4 bg-card rounded-lg border">
-                  <div className="flex items-center gap-3">
-                    <Scan className="w-5 h-5 text-primary" />
-                    <div>
-                      <Label htmlFor="realtime-detection" className="text-sm font-medium">
-                        Real-time Object Detection
-                      </Label>
-                      <p className="text-xs text-muted-foreground">
-                        AI-powered component identification with AR overlay
-                      </p>
+              {isScanning && (
+                <div className="space-y-3">
+                  {model && (
+                    <div className="flex items-center justify-between p-4 bg-card rounded-lg border">
+                      <div className="flex items-center gap-3">
+                        <Scan className="w-5 h-5 text-primary" />
+                        <div>
+                          <Label htmlFor="realtime-detection" className="text-sm font-medium">
+                            Real-time Object Detection
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            AI-powered component identification with AR overlay
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        id="realtime-detection"
+                        checked={realtimeDetection}
+                        onCheckedChange={setRealtimeDetection}
+                      />
                     </div>
+                  )}
+                  
+                  <div className="flex items-center justify-between p-4 bg-card rounded-lg border border-destructive/50">
+                    <div className="flex items-center gap-3">
+                      <AlertCircle className="w-5 h-5 text-destructive" />
+                      <div>
+                        <Label htmlFor="damage-detection" className="text-sm font-medium">
+                          Automatic Damage Detection
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          Detects burnt components, corrosion, and physical damage
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      id="damage-detection"
+                      checked={damageDetection}
+                      onCheckedChange={setDamageDetection}
+                    />
                   </div>
-                  <Switch
-                    id="realtime-detection"
-                    checked={realtimeDetection}
-                    onCheckedChange={setRealtimeDetection}
-                  />
                 </div>
               )}
 
@@ -576,12 +776,24 @@ Your response MUST be a valid JSON object with this exact structure:
                     </Button>
                   </div>
                 )}
-                {realtimeDetection && detectedObjects.length > 0 && (
-                  <div className="absolute top-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 border border-primary/50">
-                    <p className="text-xs font-semibold text-primary flex items-center gap-2">
-                      <Scan className="w-3 h-3 animate-pulse" />
-                      Detected: {detectedObjects.length} objects
-                    </p>
+                {(realtimeDetection || damageDetection) && (
+                  <div className="absolute top-4 left-4 space-y-2">
+                    {realtimeDetection && detectedObjects.length > 0 && (
+                      <div className="bg-background/90 backdrop-blur-sm rounded-lg p-3 border border-primary/50">
+                        <p className="text-xs font-semibold text-primary flex items-center gap-2">
+                          <Scan className="w-3 h-3 animate-pulse" />
+                          Detected: {detectedObjects.length} objects
+                        </p>
+                      </div>
+                    )}
+                    {damageDetection && damagedAreas.length > 0 && (
+                      <div className="bg-background/90 backdrop-blur-sm rounded-lg p-3 border border-destructive/50">
+                        <p className="text-xs font-semibold text-destructive flex items-center gap-2">
+                          <AlertCircle className="w-3 h-3 animate-pulse" />
+                          Damage: {damagedAreas.length} areas
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -592,7 +804,7 @@ Your response MUST be a valid JSON object with this exact structure:
                     <Play className="w-4 h-4 mr-2" />
                     Analyze Device
                   </Button>
-                  {realtimeDetection && detectedObjects.length > 0 && (
+                  {(realtimeDetection || damageDetection) && (detectedObjects.length > 0 || damagedAreas.length > 0) && (
                     <Button onClick={captureAnnotatedScreenshot} variant="secondary">
                       <Camera className="w-4 h-4 mr-2" />
                       Capture Screenshot

@@ -52,6 +52,9 @@ const Hero = () => {
       <div className="mx-auto max-w-7xl text-center">
         <div className="mx-auto max-w-4xl">
           {/* ... keep existing code (title and description) */}
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <img src="/favicon.ico" alt="ElectroDoctor Logo" className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24" />
+          </div>
           <h1 className="text-5xl font-bold tracking-tight text-gray-900 sm:text-7xl lg:text-8xl">
             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent">
               ElectroDoctor

@@ -31,6 +31,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen glass p-6">
+      {/* Header with Logo */}
+      <header className="fixed top-4 left-4 z-50">
+        <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
+          <img src="/favicon.ico" alt="ElectroDoctor" className="w-8 h-8" />
+          <span className="font-bold text-gray-800 hidden sm:block">ElectroDoctor</span>
+        </div>
+      </header>
+      
       {session && (
         <div className="fixed top-4 right-4 z-50">
           <Button onClick={handleSignOut} variant="outline" size="sm" className="nav-pill">

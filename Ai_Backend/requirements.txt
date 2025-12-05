@@ -1,0 +1,7 @@
+flask==3.0.0
+flask-cors
+torch
+torchvision
+numpy
+werkzeug==3.0.0
+psutil

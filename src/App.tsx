@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Diagnose from "./pages/Diagnose";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
+import AdminSetupPage from "./pages/AdminSetupPage";
 import NotFound from "./pages/NotFound";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/diagnose" element={<Diagnose />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/admin-setup" element={<AdminSetupPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

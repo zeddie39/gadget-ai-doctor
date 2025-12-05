@@ -1,6 +1,6 @@
 {
-  "name": "Gadget AI Doctor",
-  "short_name": "AI Doctor",
+  "name": "ElectroDoctor - AI Gadget Doctor",
+  "short_name": "ElectroDoctor",
   "description": "AI-powered device diagnostics and troubleshooting",
   "start_url": "/",
   "display": "standalone",

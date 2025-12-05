@@ -30,10 +30,10 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50">
+    <div className="min-h-screen glass p-6">
       {session && (
         <div className="fixed top-4 right-4 z-50">
-          <Button onClick={handleSignOut} variant="outline" size="sm">
+          <Button onClick={handleSignOut} variant="outline" size="sm" className="nav-pill">
             <LogOut className="h-4 w-4 mr-2" />
             Sign Out
           </Button>

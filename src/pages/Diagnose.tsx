@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
@@ -95,27 +95,23 @@ const Diagnose = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50 py-8 px-4">
+    <div className="min-h-screen glass p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-start mb-8">
           <div className="text-center flex-1">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              <span className="bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
-                ZediFix Diagnostic Center
-              </span>
-            </h1>
-            <p className="text-lg text-gray-600">
+            <h1 className="hero-title">ElectroDoctor Diagnostic Center</h1>
+            <p className="subtle-muted mt-1">
               Complete AI-powered gadget diagnosis, optimization, and repair tracking
             </p>
           </div>
           <div className="flex gap-2">
             {isAdmin && (
-              <Button onClick={() => navigate('/admin')} variant="outline" size="sm">
+              <Button onClick={() => navigate('/admin')} variant="outline" size="sm" className="nav-pill">
                 <ShieldCheck className="h-4 w-4 mr-2" />
                 Admin Panel
               </Button>
             )}
-            <Button onClick={handleSignOut} variant="outline" size="sm">
+            <Button onClick={handleSignOut} variant="outline" size="sm" className="nav-pill">
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out
             </Button>
@@ -123,52 +119,52 @@ const Diagnose = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 lg:grid-cols-12 mb-8 h-auto">
-            <TabsTrigger value="photo" className="flex flex-col items-center gap-1 py-3">
+          <TabsList className="grid w-full grid-cols-6 lg:grid-cols-12 gap-3 p-1">
+            <TabsTrigger value="photo" className="nav-pill">
               <Camera className="h-4 w-4" />
               <span className="text-xs">Photo</span>
             </TabsTrigger>
-            <TabsTrigger value="video" className="flex flex-col items-center gap-1 py-3">
+            <TabsTrigger value="video" className="nav-pill">
               <Video className="h-4 w-4" />
               <span className="text-xs">Video</span>
             </TabsTrigger>
-            <TabsTrigger value="chat" className="flex flex-col items-center gap-1 py-3">
+            <TabsTrigger value="chat" className="nav-pill">
               <MessageCircle className="h-4 w-4" />
               <span className="text-xs">AI Chat</span>
             </TabsTrigger>
-            <TabsTrigger value="troubleshoot" className="flex flex-col items-center gap-1 py-3">
+            <TabsTrigger value="troubleshoot" className="nav-pill">
               <Wrench className="h-4 w-4" />
               <span className="text-xs">Wizard</span>
             </TabsTrigger>
-            <TabsTrigger value="battery" className="flex flex-col items-center gap-1 py-3">
+            <TabsTrigger value="battery" className="nav-pill">
               <Battery className="h-4 w-4" />
               <span className="text-xs">Battery</span>
             </TabsTrigger>
-            <TabsTrigger value="storage" className="flex flex-col items-center gap-1 py-3">
+            <TabsTrigger value="storage" className="nav-pill">
               <Trash className="h-4 w-4" />
               <span className="text-xs">Cleaner</span>
             </TabsTrigger>
-            <TabsTrigger value="health" className="flex flex-col items-center gap-1 py-3">
+            <TabsTrigger value="health" className="nav-pill">
               <Shield className="h-4 w-4" />
               <span className="text-xs">Health</span>
             </TabsTrigger>
-            <TabsTrigger value="history" className="flex flex-col items-center gap-1 py-3">
+            <TabsTrigger value="history" className="nav-pill">
               <FileText className="h-4 w-4" />
               <span className="text-xs">History</span>
             </TabsTrigger>
-            <TabsTrigger value="knowledge" className="flex flex-col items-center gap-1 py-3">
+            <TabsTrigger value="knowledge" className="nav-pill">
               <BookOpen className="h-4 w-4" />
               <span className="text-xs">Knowledge</span>
             </TabsTrigger>
-            <TabsTrigger value="security" className="flex flex-col items-center gap-1 py-3">
+            <TabsTrigger value="security" className="nav-pill">
               <AlertTriangle className="h-4 w-4" />
               <span className="text-xs">Security</span>
             </TabsTrigger>
-            <TabsTrigger value="training" className="flex flex-col items-center gap-1 py-3">
+            <TabsTrigger value="training" className="nav-pill">
               <Brain className="h-4 w-4" />
               <span className="text-xs">AI Training</span>
             </TabsTrigger>
-            <TabsTrigger value="inventory" className="flex flex-col items-center gap-1 py-3">
+            <TabsTrigger value="inventory" className="nav-pill">
               <Package className="h-4 w-4" />
               <span className="text-xs">Inventory</span>
             </TabsTrigger>

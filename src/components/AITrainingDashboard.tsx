@@ -121,13 +121,16 @@ const AITrainingDashboard = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 glass p-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">AI Training Dashboard</h2>
+        <div>
+          <h2 className="hero-title">AI Training Dashboard</h2>
+          <p className="subtle-muted mt-1">Continuous model improvement, feedback analytics, and retraining tools</p>
+        </div>
         <Button 
           onClick={triggerRetraining}
           disabled={retraining}
-          className="bg-purple-600 hover:bg-purple-700"
+          className="bg-gradient-to-r from-indigo-600 to-cyan-400 text-white shadow-lg"
         >
           <Brain className="h-4 w-4 mr-2" />
           {retraining ? 'Retraining...' : 'Retrain AI Model'}
@@ -135,11 +138,11 @@ const AITrainingDashboard = () => {
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="training">Training</TabsTrigger>
-          <TabsTrigger value="tensorflow">TensorFlow</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 gap-3 p-1">
+          <TabsTrigger className="nav-pill" value="overview">Overview</TabsTrigger>
+          <TabsTrigger className="nav-pill" value="performance">Performance</TabsTrigger>
+          <TabsTrigger className="nav-pill" value="training">Training</TabsTrigger>
+          <TabsTrigger className="nav-pill" value="tensorflow">TensorFlow</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">{/* ... keep existing code */}

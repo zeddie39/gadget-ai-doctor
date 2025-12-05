@@ -33,7 +33,7 @@ const HowItWorks = () => {
       <div className="mx-auto max-w-7xl">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 sm:text-5xl mb-4">
-            How ZediFix Works
+            How ElectroDoctor Works
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Get expert device diagnostics in three simple steps

@@ -74,14 +74,25 @@ export default function SparePartsInventoryManager() {
       return;
     }
 
-    const { data: roleData } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .single();
+    try {
+      const { data: roleData, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
 
-    setIsAdmin(!!roleData);
+      if (error) {
+        console.warn('Admin check failed:', error.message);
+        setIsAdmin(false);
+        return;
+      }
+
+      setIsAdmin(!!roleData);
+    } catch (error) {
+      console.warn('Admin check error:', error);
+      setIsAdmin(false);
+    }
   };
 
   const fetchParts = async () => {

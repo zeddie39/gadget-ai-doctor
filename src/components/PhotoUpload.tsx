@@ -1,6 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, Camera, X, CheckCircle, AlertTriangle, AlertCircle } from 'lucide-react';
+import { Upload, Camera, X, CheckCircle, AlertTriangle, AlertCircle, Scan } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import AIFeedback from './AIFeedback';
@@ -19,6 +21,12 @@ const PhotoUpload = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [diagnosisResult, setDiagnosisResult] = useState<DiagnosisResult | null>(null);
   const [diagnosisId, setDiagnosisId] = useState<string | null>(null);
+  const [syntheticStimuli, setSyntheticStimuli] = useState(false);
+  const [stimuliType, setStimuliType] = useState<'grid' | 'crosshair' | 'measurement' | 'thermal'>('grid');
+  const [stimuliIntensity, setStimuliIntensity] = useState(0.5);
+  
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -42,19 +50,46 @@ const PhotoUpload = () => {
 
   const analyzeImage = async (imageData: string): Promise<DiagnosisResult> => {
     try {
-      // Use centralized OpenRouter edge function
+      // Use centralized OpenRouter edge function with enhanced visual analysis
       const { data, error } = await supabase.functions.invoke('openrouter-ai', {
         body: {
-          prompt: 'Analyze this device image for any damage, issues, or potential problems. Look carefully at the screen, body, ports, and overall condition. Respond ONLY with a JSON object in this exact format: {"issue": "Brief issue name", "severity": "minor|medium|critical", "description": "Detailed description of the issue", "recommendations": ["recommendation1", "recommendation2", "recommendation3"], "confidence": 0.85}',
-          model: 'openai/gpt-4o',
+          prompt: `STEP 1: VISUAL ANALYSIS - First, carefully examine this image and describe EXACTLY what you see:
+          - What type of device/equipment is this? (motherboard, gaming controller, printer, network switch, etc.)
+          - What components are visible?
+          - What is the current state? (opened for repair, assembled, disassembled, etc.)
+          - Are there any visible issues, damage, or problems?
+          - What repair work appears to be in progress?
+          
+          STEP 2: TECHNICAL DIAGNOSIS - Based on what you observed, provide diagnosis:
+          
+          Respond ONLY with a JSON object in this exact format:
+          {
+            "device_identified": "exact device type you see",
+            "visual_observation": "detailed description of what you actually see in the image",
+            "issue": "specific problem identified from visual analysis",
+            "severity": "minor|medium|critical",
+            "description": "detailed technical analysis based on visual evidence",
+            "recommendations": ["specific repair steps based on what you see"],
+            "confidence": 0.85
+          }`,
+          model: 'google/gemini-2.5-flash',
           image: imageData,
-          systemPrompt: `You are an expert electronics diagnostician. Analyze device images for:
-          - Physical damage (cracks, dents, scratches)
-          - Water damage indicators
-          - Battery swelling
-          - Port/connector issues
-          - Display problems
-          - Component wear`
+          systemPrompt: `You are an expert electronics repair technician with advanced visual analysis skills.
+          
+          CRITICAL INSTRUCTIONS:
+          1. LOOK FIRST - Analyze the actual image content before making any diagnosis
+          2. IDENTIFY the exact device type (gaming pad, motherboard, printer, network equipment, etc.)
+          3. OBSERVE the current state and any visible issues
+          4. BASE your diagnosis on visual evidence, not assumptions
+          5. Use your knowledge base only to explain what you see, not to guess what might be there
+          
+          You must analyze:
+          - Device identification and type
+          - Physical condition and damage
+          - Component status and wear
+          - Repair work in progress
+          - Environmental factors
+          - Connection and port conditions`
         }
       });
 
@@ -62,12 +97,23 @@ const PhotoUpload = () => {
         try {
           const aiResult = JSON.parse(data.response);
           
-          // Store AI result in database
+          // Enhanced result with visual analysis
+          const enhancedResult = {
+            device_type: aiResult.device_identified || 'Unknown Device',
+            visual_analysis: aiResult.visual_observation || 'No visual analysis provided',
+            issue: aiResult.issue || 'No issues detected',
+            severity: aiResult.severity || 'minor',
+            description: aiResult.description || 'Analysis completed',
+            recommendations: aiResult.recommendations || ['No specific recommendations'],
+            confidence: aiResult.confidence || 0.5
+          };
+          
+          // Store enhanced AI result in database
           try {
             const { data: dbData, error } = await supabase.from('image_diagnostics').insert({
               image_url: imageData,
-              diagnosis_result: aiResult,
-              severity_level: aiResult.severity
+              diagnosis_result: enhancedResult,
+              severity_level: enhancedResult.severity
             }).select().single();
 
             if (dbData) {
@@ -77,7 +123,7 @@ const PhotoUpload = () => {
             console.error('Error storing diagnosis:', error);
           }
 
-          return aiResult;
+          return enhancedResult;
         } catch (parseError) {
           console.error('Failed to parse AI response:', parseError);
           // Fall through to simulated analysis
@@ -190,11 +236,113 @@ const PhotoUpload = () => {
     }
   };
 
+  const drawSyntheticStimuli = () => {
+    if (!syntheticStimuli || !canvasRef.current || !imageRef.current) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const img = imageRef.current;
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const alpha = stimuliIntensity;
+    const time = Date.now() / 1000;
+
+    switch (stimuliType) {
+      case 'grid':
+        ctx.strokeStyle = `rgba(0, 255, 255, ${alpha})`;
+        ctx.lineWidth = 2;
+        const gridSize = Math.min(canvas.width, canvas.height) / 20;
+        for (let x = 0; x < canvas.width; x += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, canvas.height);
+          ctx.stroke();
+        }
+        for (let y = 0; y < canvas.height; y += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(canvas.width, y);
+          ctx.stroke();
+        }
+        break;
+
+      case 'crosshair':
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const size = Math.min(canvas.width, canvas.height) / 10;
+        ctx.strokeStyle = `rgba(255, 0, 0, ${alpha})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(centerX - size, centerY);
+        ctx.lineTo(centerX + size, centerY);
+        ctx.moveTo(centerX, centerY - size);
+        ctx.lineTo(centerX, centerY + size);
+        ctx.stroke();
+        
+        for (let i = 1; i <= 3; i++) {
+          const radius = size / 2 + i * size / 3;
+          ctx.strokeStyle = `rgba(255, 0, 0, ${alpha / i})`;
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        break;
+
+      case 'measurement':
+        ctx.strokeStyle = `rgba(255, 255, 0, ${alpha})`;
+        ctx.lineWidth = 2;
+        ctx.font = `${Math.max(12, canvas.width / 50)}px Arial`;
+        ctx.fillStyle = `rgba(255, 255, 0, ${alpha})`;
+        
+        const rulerHeight = canvas.height / 20;
+        for (let i = 0; i <= 10; i++) {
+          const x = (canvas.width / 10) * i;
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, rulerHeight);
+          ctx.stroke();
+          ctx.fillText(`${i}cm`, x + 5, rulerHeight - 5);
+        }
+        break;
+
+      case 'thermal':
+        const gradient = ctx.createRadialGradient(
+          canvas.width / 2, canvas.height / 2, 0,
+          canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) / 2
+        );
+        gradient.addColorStop(0, `rgba(255, 0, 0, ${alpha * 0.3})`);
+        gradient.addColorStop(0.5, `rgba(255, 255, 0, ${alpha * 0.2})`);
+        gradient.addColorStop(1, `rgba(0, 0, 255, ${alpha * 0.1})`);
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+        ctx.font = `bold ${Math.max(14, canvas.width / 40)}px Arial`;
+        ctx.fillText('25°C', 20, 40);
+        ctx.fillText('32°C', canvas.width - 80, 40);
+        break;
+    }
+  };
+
+  useEffect(() => {
+    if (uploadedImage && syntheticStimuli) {
+      const timer = setInterval(drawSyntheticStimuli, 100);
+      return () => clearInterval(timer);
+    }
+  }, [syntheticStimuli, stimuliType, stimuliIntensity, uploadedImage]);
+
   const clearImage = () => {
     setUploadedImage(null);
     setAnalyzing(false);
     setDiagnosisResult(null);
     setDiagnosisId(null);
+    setSyntheticStimuli(false);
   };
 
   const getSeverityIcon = (severity: string) => {
@@ -261,20 +409,90 @@ const PhotoUpload = () => {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="relative">
-            <img
-              src={uploadedImage}
-              alt="Uploaded device"
-              className="w-full h-64 object-cover rounded-lg"
-            />
-            <Button
-              onClick={clearImage}
-              size="sm"
-              variant="destructive"
-              className="absolute top-2 right-2"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-card rounded-lg border border-primary/50">
+              <div className="flex items-center gap-3">
+                <Scan className="w-5 h-5 text-primary" />
+                <div>
+                  <Label htmlFor="synthetic-stimuli-photo" className="text-sm font-medium">
+                    Synthetic Stimuli Overlay
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    AR measurement guides and analysis overlays
+                  </p>
+                </div>
+              </div>
+              <Switch
+                id="synthetic-stimuli-photo"
+                checked={syntheticStimuli}
+                onCheckedChange={setSyntheticStimuli}
+              />
+            </div>
+            
+            {syntheticStimuli && (
+              <div className="p-4 bg-card rounded-lg border space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs">Stimuli Type</Label>
+                    <select 
+                      value={stimuliType} 
+                      onChange={(e) => setStimuliType(e.target.value as any)}
+                      className="w-full mt-1 p-2 border rounded text-sm"
+                    >
+                      <option value="grid">Measurement Grid</option>
+                      <option value="crosshair">Targeting Crosshair</option>
+                      <option value="measurement">Scale Ruler</option>
+                      <option value="thermal">Thermal Overlay</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label className="text-xs">Intensity: {Math.round(stimuliIntensity * 100)}%</Label>
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="1"
+                      step="0.1"
+                      value={stimuliIntensity}
+                      onChange={(e) => setStimuliIntensity(parseFloat(e.target.value))}
+                      className="w-full mt-1"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <div className="relative">
+              <img
+                ref={imageRef}
+                src={uploadedImage}
+                alt="Uploaded device"
+                className="w-full h-64 object-cover rounded-lg"
+                onLoad={drawSyntheticStimuli}
+              />
+              <canvas
+                ref={canvasRef}
+                className="absolute top-0 left-0 w-full h-full pointer-events-none rounded-lg"
+                style={{ mixBlendMode: 'screen' }}
+              />
+              <Button
+                onClick={clearImage}
+                size="sm"
+                variant="destructive"
+                className="absolute top-2 right-2"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              {syntheticStimuli && (
+                <div className="absolute top-2 left-2">
+                  <div className="bg-background/90 backdrop-blur-sm rounded-lg p-2 border border-cyan-500/50">
+                    <p className="text-xs font-semibold text-cyan-400 flex items-center gap-2">
+                      <Scan className="w-3 h-3" />
+                      AR: {stimuliType} overlay
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           
           {analyzing ? (
@@ -294,11 +512,28 @@ const PhotoUpload = () => {
                   {getSeverityIcon(diagnosisResult.severity)}
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                      {diagnosisResult.issue} Detected
+                      {(diagnosisResult as any).device_type || diagnosisResult.issue} Analysis
                     </h3>
                     <p className="text-sm text-gray-600 mb-2">
                       Confidence: {Math.round(diagnosisResult.confidence * 100)}%
                     </p>
+                    
+                    {(diagnosisResult as any).visual_analysis && (
+                      <div className="mb-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+                        <h4 className="font-medium text-blue-900 mb-1">Visual Analysis:</h4>
+                        <p className="text-sm text-blue-800">
+                          {(diagnosisResult as any).visual_analysis}
+                        </p>
+                      </div>
+                    )}
+                    
+                    <div className="mb-4">
+                      <h4 className="font-medium text-gray-900 mb-1">Issue Identified:</h4>
+                      <p className="text-gray-700">
+                        {diagnosisResult.issue}
+                      </p>
+                    </div>
+                    
                     <p className="text-gray-700 mb-4">
                       {diagnosisResult.description}
                     </p>

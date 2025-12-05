@@ -54,7 +54,7 @@ const Hero = () => {
           {/* ... keep existing code (title and description) */}
           <h1 className="text-5xl font-bold tracking-tight text-gray-900 sm:text-7xl lg:text-8xl">
             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent">
-              ZediFix
+              ElectroDoctor
             </span>
           </h1>
           <p className="text-xl text-gray-600 mt-4 font-medium">Smart Gadget Doctor</p>

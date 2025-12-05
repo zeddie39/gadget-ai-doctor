@@ -51,6 +51,17 @@
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --spacing-small: 0.5rem;
+    --spacing-medium: 1rem;
+    --spacing-large: 2rem;
+    --font-primary: "Inter", sans-serif;
+    --font-secondary: "Roboto", sans-serif;
+    --font-weight-regular: 400;
+    --font-weight-bold: 700;
+    --radius-small: 0.25rem;
+    --radius-medium: 0.5rem;
+    --radius-large: 1rem;
   }
 
   .dark {
@@ -99,5 +110,55 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Adjust global spacing and font variables */
+@layer base {
+  :root {
+    --spacing-small: 0.5rem;
+    --spacing-medium: 1rem;
+    --spacing-large: 2rem;
+    --font-primary: "Inter", sans-serif;
+    --font-secondary: "Roboto", sans-serif;
+    --font-weight-regular: 400;
+    --font-weight-bold: 700;
+    --radius-small: 0.25rem;
+    --radius-medium: 0.5rem;
+    --radius-large: 1rem;
+  }
+
+  body {
+    font-family: var(--font-primary);
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-secondary);
+    font-weight: var(--font-weight-bold);
+  }
+
+  p, span, a, li {
+    font-weight: var(--font-weight-regular);
+  }
+}
+
+/* Import Alfa Slab One font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Alfa+Slab+One&display=swap');
+
+/* Add font to global styles */
+@layer base {
+  :root {
+    --font-heading: 'Inter', sans-serif;
+    --font-inter: 'Inter', sans-serif;
+  }
+
+  .font-inter {
+    font-family: var(--font-inter);
+  }
+
+  body {
+    font-family: var(--font-inter);
   }
 }

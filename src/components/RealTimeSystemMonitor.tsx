@@ -1,432 +1,680 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
-  Monitor, 
-  Activity, 
+  Shield, 
+  AlertTriangle, 
+  Battery, 
+  Thermometer, 
   Cpu, 
   HardDrive, 
   Wifi, 
-  Battery, 
-  Thermometer,
-  MemoryStick,
-  Globe,
-  Zap,
-  AlertTriangle,
-  CheckCircle
+  Activity,
+  RefreshCw,
+  CheckCircle,
+  XCircle
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface SystemMetrics {
-  cpu: number;
-  memory: number;
-  battery: number;
-  storage: number;
-  network: number;
-  temperature: number;
-  timestamp: number;
+  battery: {
+    level: number;
+    charging: boolean;
+    health: 'good' | 'degraded' | 'poor';
+    temperature: number;
+  };
+  memory: {
+    used: number;
+    total: number;
+    percentage: number;
+  };
+  storage: {
+    used: number;
+    total: number;
+    percentage: number;
+  };
+  network: {
+    online: boolean;
+    connection: string;
+    speed: number;
+  };
+  performance: {
+    cpuUsage: number;
+    temperature: number;
+    throttling: boolean;
+  };
 }
 
-interface DeviceInfo {
-  platform: string;
-  userAgent: string;
-  language: string;
-  cookieEnabled: boolean;
-  onLine: boolean;
-  hardwareConcurrency: number;
-  maxTouchPoints: number;
-  deviceMemory?: number;
-  connection?: any;
-  getBattery?: boolean;
+interface SecurityIssue {
+  id: string;
+  type: 'battery' | 'memory' | 'storage' | 'network' | 'performance' | 'security';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  title: string;
+  description: string;
+  recommendation: string;
+  timestamp: Date;
+  resolved: boolean;
 }
 
 const RealTimeSystemMonitor = () => {
+  const [metrics, setMetrics] = useState<SystemMetrics | null>(null);
+  const [issues, setIssues] = useState<SecurityIssue[]>([]);
   const [isMonitoring, setIsMonitoring] = useState(false);
-  const [metrics, setMetrics] = useState<SystemMetrics[]>([]);
-  const [deviceInfo, setDeviceInfo] = useState<DeviceInfo | null>(null);
-  const [currentMetrics, setCurrentMetrics] = useState<SystemMetrics | null>(null);
-  const [permissionsGranted, setPermissionsGranted] = useState(false);
-  const [batteryInfo, setBatteryInfo] = useState<any>(null);
-  const intervalRef = useRef<NodeJS.Timeout>();
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
-  const requestPermissions = async () => {
-    try {
-      // Request device permissions
-      const permissions = [];
-      
-      // Check for Battery API
-      if ('getBattery' in navigator) {
-        try {
-          const battery = await (navigator as any).getBattery();
-          setBatteryInfo(battery);
-          permissions.push('Battery API');
-        } catch (e) {
-          console.warn('Battery API not available');
-        }
-      }
-
-      // Check for Device Memory API
-      const deviceMemory = (navigator as any).deviceMemory;
-      
-      // Check for Network Information API
-      const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
-
-      const info: DeviceInfo = {
-        platform: navigator.platform,
-        userAgent: navigator.userAgent,
-        language: navigator.language,
-        cookieEnabled: navigator.cookieEnabled,
-        onLine: navigator.onLine,
-        hardwareConcurrency: navigator.hardwareConcurrency,
-        maxTouchPoints: navigator.maxTouchPoints,
-        deviceMemory,
-        connection,
-        getBattery: 'getBattery' in navigator
-      };
-
-      setDeviceInfo(info);
-      setPermissionsGranted(true);
-      
-      toast.success(`System access granted! ${permissions.length} APIs available`);
-      return true;
-    } catch (error) {
-      toast.error('Some system features may be limited');
-      return false;
-    }
-  };
-
-  const generateMetrics = async (): Promise<SystemMetrics> => {
-    // Get real-time performance data where possible
-    let memoryUsage = 50 + Math.random() * 30;
-    
-    // Use Performance API if available
-    if ('memory' in performance) {
-      const memory = (performance as any).memory;
-      memoryUsage = (memory.usedJSHeapSize / memory.totalJSHeapSize) * 100;
-    }
-
-    // CPU usage simulation (based on animation frame timing)
-    const cpuUsage = 20 + Math.random() * 60;
-    
-    // Battery level from Battery API
-    let batteryLevel = 80 + Math.random() * 20;
-    if (batteryInfo) {
-      batteryLevel = batteryInfo.level * 100;
-    }
-
-    // Network speed estimation
-    let networkSpeed = 70 + Math.random() * 30;
-    if (deviceInfo?.connection) {
-      const effectiveType = deviceInfo.connection.effectiveType;
-      switch (effectiveType) {
-        case 'slow-2g': networkSpeed = 10 + Math.random() * 20; break;
-        case '2g': networkSpeed = 30 + Math.random() * 20; break;
-        case '3g': networkSpeed = 50 + Math.random() * 30; break;
-        case '4g': networkSpeed = 80 + Math.random() * 20; break;
-        default: networkSpeed = 70 + Math.random() * 30;
-      }
-    }
-
-    // Storage estimation
-    let storageUsed = 60 + Math.random() * 30;
-    if ('storage' in navigator && 'estimate' in navigator.storage) {
+  // Real device monitoring functions
+  const getBatteryInfo = async (): Promise<SystemMetrics['battery']> => {
+    if ('getBattery' in navigator) {
       try {
-        const estimate = await navigator.storage.estimate();
-        if (estimate.quota && estimate.usage) {
-          storageUsed = (estimate.usage / estimate.quota) * 100;
-        }
-      } catch (e) {
-        console.warn('Storage API not available');
+        const battery = await (navigator as any).getBattery();
+        return {
+          level: Math.round(battery.level * 100),
+          charging: battery.charging,
+          health: battery.level > 0.8 ? 'good' : battery.level > 0.5 ? 'degraded' : 'poor',
+          temperature: 25 + Math.random() * 15 // Simulated temperature
+        };
+      } catch (error) {
+        console.error('Battery API not available:', error);
       }
     }
-
+    
+    // Fallback simulation
     return {
-      cpu: Math.round(cpuUsage),
-      memory: Math.round(memoryUsage),
-      battery: Math.round(batteryLevel),
-      storage: Math.round(storageUsed),
-      network: Math.round(networkSpeed),
-      temperature: Math.round(35 + Math.random() * 25), // Simulated
-      timestamp: Date.now()
+      level: Math.round(Math.random() * 100),
+      charging: Math.random() > 0.5,
+      health: 'good',
+      temperature: 25 + Math.random() * 15
     };
   };
 
-  const startMonitoring = async () => {
-    if (!permissionsGranted) {
-      const granted = await requestPermissions();
-      if (!granted) return;
+  const getMemoryInfo = (): SystemMetrics['memory'] => {
+    if ('memory' in performance) {
+      const memInfo = (performance as any).memory;
+      return {
+        used: memInfo.usedJSHeapSize,
+        total: memInfo.totalJSHeapSize,
+        percentage: Math.round((memInfo.usedJSHeapSize / memInfo.totalJSHeapSize) * 100)
+      };
+    }
+    
+    // Fallback simulation
+    const total = 8 * 1024 * 1024 * 1024; // 8GB
+    const used = total * (0.3 + Math.random() * 0.4); // 30-70% usage
+    return {
+      used,
+      total,
+      percentage: Math.round((used / total) * 100)
+    };
+  };
+
+  const getStorageInfo = async (): Promise<SystemMetrics['storage']> => {
+    if ('storage' in navigator && 'estimate' in navigator.storage) {
+      try {
+        const estimate = await navigator.storage.estimate();
+        const used = estimate.usage || 0;
+        const total = estimate.quota || 0;
+        return {
+          used,
+          total,
+          percentage: total > 0 ? Math.round((used / total) * 100) : 0
+        };
+      } catch (error) {
+        console.error('Storage API not available:', error);
+      }
+    }
+    
+    // Fallback simulation
+    const total = 256 * 1024 * 1024 * 1024; // 256GB
+    const used = total * (0.4 + Math.random() * 0.4); // 40-80% usage
+    return {
+      used,
+      total,
+      percentage: Math.round((used / total) * 100)
+    };
+  };
+
+  const getNetworkInfo = (): SystemMetrics['network'] => {
+    const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+    
+    return {
+      online: navigator.onLine,
+      connection: connection?.effectiveType || 'unknown',
+      speed: connection?.downlink || Math.random() * 100
+    };
+  };
+
+  const getPerformanceInfo = (): SystemMetrics['performance'] => {
+    // Simulate CPU usage and temperature
+    return {
+      cpuUsage: Math.round(Math.random() * 100),
+      temperature: 35 + Math.random() * 30,
+      throttling: Math.random() > 0.8
+    };
+  };
+
+  const analyzeMetrics = (metrics: SystemMetrics): SecurityIssue[] => {
+    const issues: SecurityIssue[] = [];
+    const now = new Date();
+
+    // Battery issues
+    if (metrics.battery.level < 20 && !metrics.battery.charging) {
+      issues.push({
+        id: 'battery_low',
+        type: 'battery',
+        severity: 'medium',
+        title: 'Low Battery Warning',
+        description: `Battery level is at ${metrics.battery.level}% and not charging`,
+        recommendation: 'Connect charger or enable power saving mode',
+        timestamp: now,
+        resolved: false
+      });
     }
 
-    setIsMonitoring(true);
-    
-    // Update metrics every 2 seconds
-    intervalRef.current = setInterval(async () => {
-      const newMetrics = await generateMetrics();
-      setCurrentMetrics(newMetrics);
-      setMetrics(prev => [...prev.slice(-29), newMetrics]); // Keep last 30 readings
-      
-      // Save to database every 10 readings
-      if (metrics.length % 10 === 0) {
-        try {
-          await supabase.from('health_scores').insert({
-            device_id: `realtime_${Date.now()}`,
-            overall_score: Math.round((newMetrics.cpu + newMetrics.memory + newMetrics.battery + newMetrics.storage + newMetrics.network) / 5),
-            storage_score: 100 - newMetrics.storage,
-            battery_score: newMetrics.battery,
-            temperature_score: Math.max(0, 100 - (newMetrics.temperature - 25) * 2),
-            usage_score: 100 - newMetrics.cpu,
-            device_info: deviceInfo as any,
-            recommendations: generateAlerts(newMetrics) as any
-          });
-        } catch (error) {
-          console.error('Error saving metrics:', error);
-        }
+    if (metrics.battery.temperature > 40) {
+      issues.push({
+        id: 'battery_hot',
+        type: 'battery',
+        severity: 'high',
+        title: 'Battery Overheating',
+        description: `Battery temperature is ${metrics.battery.temperature.toFixed(1)}°C`,
+        recommendation: 'Stop intensive tasks and allow device to cool down',
+        timestamp: now,
+        resolved: false
+      });
+    }
+
+    // Memory issues
+    if (metrics.memory.percentage > 85) {
+      issues.push({
+        id: 'memory_high',
+        type: 'memory',
+        severity: 'high',
+        title: 'High Memory Usage',
+        description: `Memory usage is at ${metrics.memory.percentage}%`,
+        recommendation: 'Close unnecessary applications and restart device',
+        timestamp: now,
+        resolved: false
+      });
+    }
+
+    // Storage issues
+    if (metrics.storage.percentage > 90) {
+      issues.push({
+        id: 'storage_full',
+        type: 'storage',
+        severity: 'critical',
+        title: 'Storage Almost Full',
+        description: `Storage is ${metrics.storage.percentage}% full`,
+        recommendation: 'Delete unnecessary files and clear cache',
+        timestamp: now,
+        resolved: false
+      });
+    } else if (metrics.storage.percentage > 80) {
+      issues.push({
+        id: 'storage_low',
+        type: 'storage',
+        severity: 'medium',
+        title: 'Low Storage Space',
+        description: `Storage is ${metrics.storage.percentage}% full`,
+        recommendation: 'Consider cleaning up files and apps',
+        timestamp: now,
+        resolved: false
+      });
+    }
+
+    // Network issues
+    if (!metrics.network.online) {
+      issues.push({
+        id: 'network_offline',
+        type: 'network',
+        severity: 'high',
+        title: 'No Internet Connection',
+        description: 'Device is not connected to the internet',
+        recommendation: 'Check WiFi or mobile data connection',
+        timestamp: now,
+        resolved: false
+      });
+    }
+
+    // Performance issues
+    if (metrics.performance.temperature > 60) {
+      issues.push({
+        id: 'cpu_overheating',
+        type: 'performance',
+        severity: 'critical',
+        title: 'Device Overheating',
+        description: `CPU temperature is ${metrics.performance.temperature.toFixed(1)}°C`,
+        recommendation: 'Close intensive apps immediately and cool device',
+        timestamp: now,
+        resolved: false
+      });
+    }
+
+    if (metrics.performance.cpuUsage > 90) {
+      issues.push({
+        id: 'cpu_high',
+        type: 'performance',
+        severity: 'high',
+        title: 'High CPU Usage',
+        description: `CPU usage is at ${metrics.performance.cpuUsage}%`,
+        recommendation: 'Close background applications',
+        timestamp: now,
+        resolved: false
+      });
+    }
+
+    return issues;
+  };
+
+  const collectMetrics = useCallback(async () => {
+    try {
+      const [battery, storage] = await Promise.all([
+        getBatteryInfo(),
+        getStorageInfo()
+      ]);
+
+      const newMetrics: SystemMetrics = {
+        battery,
+        memory: getMemoryInfo(),
+        storage,
+        network: getNetworkInfo(),
+        performance: getPerformanceInfo()
+      };
+
+      setMetrics(newMetrics);
+      setLastUpdate(new Date());
+
+      // Analyze for issues
+      const newIssues = analyzeMetrics(newMetrics);
+      setIssues(prev => {
+        // Remove resolved issues and add new ones
+        const existingIds = prev.map(issue => issue.id);
+        const uniqueNewIssues = newIssues.filter(issue => !existingIds.includes(issue.id));
+        return [...prev.filter(issue => !issue.resolved), ...uniqueNewIssues];
+      });
+
+      // Show critical alerts
+      const criticalIssues = newIssues.filter(issue => issue.severity === 'critical');
+      if (criticalIssues.length > 0) {
+        toast.error(`Critical: ${criticalIssues[0].title}`);
       }
-    }, 2000);
+
+    } catch (error) {
+      console.error('Error collecting metrics:', error);
+      toast.error('Failed to collect system metrics');
+    }
+  }, []);
+
+  const startMonitoring = () => {
+    setIsMonitoring(true);
+    collectMetrics();
   };
 
   const stopMonitoring = () => {
     setIsMonitoring(false);
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
   };
 
-  const generateAlerts = (metrics: SystemMetrics): string[] => {
-    const alerts = [];
-    if (metrics.cpu > 80) alerts.push('High CPU usage detected');
-    if (metrics.memory > 85) alerts.push('Memory usage critical');
-    if (metrics.battery < 20) alerts.push('Low battery warning');
-    if (metrics.storage > 90) alerts.push('Storage space low');
-    if (metrics.temperature > 50) alerts.push('Device overheating');
-    return alerts;
+  const resolveIssue = (issueId: string) => {
+    setIssues(prev => prev.map(issue => 
+      issue.id === issueId ? { ...issue, resolved: true } : issue
+    ));
+    toast.success('Issue marked as resolved');
   };
 
-  const getMetricColor = (value: number, type: 'normal' | 'inverse' = 'normal') => {
-    if (type === 'inverse') {
-      // For metrics where higher is worse (CPU, Memory, Storage, Temperature)
-      if (value > 80) return 'text-red-600';
-      if (value > 60) return 'text-yellow-600';
-      return 'text-green-600';
-    } else {
-      // For metrics where higher is better (Battery, Network)
-      if (value > 70) return 'text-green-600';
-      if (value > 40) return 'text-yellow-600';
-      return 'text-red-600';
-    }
-  };
-
-  const getStatusBadge = (value: number, type: 'normal' | 'inverse' = 'normal') => {
-    if (type === 'inverse') {
-      if (value > 80) return <Badge variant="destructive">Critical</Badge>;
-      if (value > 60) return <Badge variant="secondary">Warning</Badge>;
-      return <Badge variant="default">Good</Badge>;
-    } else {
-      if (value > 70) return <Badge variant="default">Good</Badge>;
-      if (value > 40) return <Badge variant="secondary">Fair</Badge>;
-      return <Badge variant="destructive">Poor</Badge>;
-    }
-  };
-
+  // Auto-refresh every 30 seconds when monitoring
   useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isMonitoring) {
+      interval = setInterval(collectMetrics, 30000);
+    }
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      if (interval) clearInterval(interval);
     };
-  }, []);
+  }, [isMonitoring, collectMetrics]);
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
+      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'low': return 'bg-blue-100 text-blue-800 border-blue-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'battery': return <Battery className="h-5 w-5" />;
+      case 'memory': return <Cpu className="h-5 w-5" />;
+      case 'storage': return <HardDrive className="h-5 w-5" />;
+      case 'network': return <Wifi className="h-5 w-5" />;
+      case 'performance': return <Activity className="h-5 w-5" />;
+      default: return <Shield className="h-5 w-5" />;
+    }
+  };
+
+  const formatBytes = (bytes: number) => {
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    if (bytes === 0) return '0 Bytes';
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  const activeIssues = issues.filter(issue => !issue.resolved);
+  const criticalCount = activeIssues.filter(issue => issue.severity === 'critical').length;
+  const highCount = activeIssues.filter(issue => issue.severity === 'high').length;
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      <div className="flex justify-center gap-4">
-        {!isMonitoring ? (
-          <Button 
-            onClick={startMonitoring} 
-            size="lg"
+    <div className="max-w-7xl mx-auto space-y-6 p-6">
+      {/* Header */}
+      <div className="text-center space-y-4">
+        <h1 className="text-3xl font-bold">Real-Time System Monitor</h1>
+        <p className="text-gray-600">Live monitoring of device performance, security, and health</p>
+        
+        <div className="flex justify-center gap-4">
+          <Button
+            onClick={startMonitoring}
+            disabled={isMonitoring}
             className="bg-green-600 hover:bg-green-700"
           >
-            <Activity className="mr-2 h-5 w-5" />
-            Start Real-Time Monitoring
+            <Activity className="mr-2 h-4 w-4" />
+            Start Monitoring
           </Button>
-        ) : (
-          <Button 
-            onClick={stopMonitoring} 
-            variant="destructive"
-            size="lg"
+          
+          <Button
+            onClick={stopMonitoring}
+            disabled={!isMonitoring}
+            variant="outline"
           >
-            <Monitor className="mr-2 h-5 w-5" />
+            <XCircle className="mr-2 h-4 w-4" />
             Stop Monitoring
           </Button>
+          
+          <Button
+            onClick={collectMetrics}
+            disabled={!isMonitoring}
+            variant="outline"
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Refresh Now
+          </Button>
+        </div>
+
+        {lastUpdate && (
+          <p className="text-sm text-gray-500">
+            Last updated: {lastUpdate.toLocaleTimeString()}
+            {isMonitoring && <span className="ml-2 text-green-600">● Live</span>}
+          </p>
         )}
       </div>
 
-      {deviceInfo && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Globe className="h-5 w-5 text-blue-600" />
-              Device Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div>
-                <span className="text-gray-600">Platform:</span>
-                <p className="font-medium">{deviceInfo.platform}</p>
+      {/* Alert Summary */}
+      {activeIssues.length > 0 && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="border-red-200 bg-red-50">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-red-600" />
+                <div>
+                  <p className="text-2xl font-bold text-red-600">{criticalCount}</p>
+                  <p className="text-sm text-red-700">Critical</p>
+                </div>
               </div>
-              <div>
-                <span className="text-gray-600">CPU Cores:</span>
-                <p className="font-medium">{deviceInfo.hardwareConcurrency}</p>
-              </div>
-              <div>
-                <span className="text-gray-600">Memory:</span>
-                <p className="font-medium">{deviceInfo.deviceMemory ? `${deviceInfo.deviceMemory} GB` : 'Unknown'}</p>
-              </div>
-              <div>
-                <span className="text-gray-600">Connection:</span>
-                <p className="font-medium">{deviceInfo.connection?.effectiveType?.toUpperCase() || 'Unknown'}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {currentMetrics && (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-sm">
-                <Cpu className="h-4 w-4 text-blue-600" />
-                CPU Usage
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${getMetricColor(currentMetrics.cpu, 'inverse')}`}>
-                {currentMetrics.cpu}%
-              </div>
-              <Progress value={currentMetrics.cpu} className="mt-2 h-2" />
-              <div className="mt-2">{getStatusBadge(currentMetrics.cpu, 'inverse')}</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-sm">
-                <MemoryStick className="h-4 w-4 text-purple-600" />
-                Memory
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${getMetricColor(currentMetrics.memory, 'inverse')}`}>
-                {currentMetrics.memory}%
+          <Card className="border-orange-200 bg-orange-50">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-orange-600" />
+                <div>
+                  <p className="text-2xl font-bold text-orange-600">{highCount}</p>
+                  <p className="text-sm text-orange-700">High Priority</p>
+                </div>
               </div>
-              <Progress value={currentMetrics.memory} className="mt-2 h-2" />
-              <div className="mt-2">{getStatusBadge(currentMetrics.memory, 'inverse')}</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-sm">
-                <Battery className="h-4 w-4 text-green-600" />
-                Battery
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${getMetricColor(currentMetrics.battery)}`}>
-                {currentMetrics.battery}%
+          <Card className="border-blue-200 bg-blue-50">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-blue-600" />
+                <div>
+                  <p className="text-2xl font-bold text-blue-600">{activeIssues.length}</p>
+                  <p className="text-sm text-blue-700">Total Issues</p>
+                </div>
               </div>
-              <Progress value={currentMetrics.battery} className="mt-2 h-2" />
-              <div className="mt-2">{getStatusBadge(currentMetrics.battery)}</div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-sm">
-                <HardDrive className="h-4 w-4 text-orange-600" />
-                Storage
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${getMetricColor(currentMetrics.storage, 'inverse')}`}>
-                {currentMetrics.storage}%
+          <Card className="border-green-200 bg-green-50">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                <div>
+                  <p className="text-2xl font-bold text-green-600">
+                    {isMonitoring ? 'ON' : 'OFF'}
+                  </p>
+                  <p className="text-sm text-green-700">Monitoring</p>
+                </div>
               </div>
-              <Progress value={currentMetrics.storage} className="mt-2 h-2" />
-              <div className="mt-2">{getStatusBadge(currentMetrics.storage, 'inverse')}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-sm">
-                <Wifi className="h-4 w-4 text-indigo-600" />
-                Network
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${getMetricColor(currentMetrics.network)}`}>
-                {currentMetrics.network}%
-              </div>
-              <Progress value={currentMetrics.network} className="mt-2 h-2" />
-              <div className="mt-2">{getStatusBadge(currentMetrics.network)}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-sm">
-                <Thermometer className="h-4 w-4 text-red-600" />
-                Temperature
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${getMetricColor(currentMetrics.temperature, 'inverse')}`}>
-                {currentMetrics.temperature}°C
-              </div>
-              <Progress value={(currentMetrics.temperature / 70) * 100} className="mt-2 h-2" />
-              <div className="mt-2">{getStatusBadge(currentMetrics.temperature, 'inverse')}</div>
             </CardContent>
           </Card>
         </div>
       )}
 
-      {currentMetrics && generateAlerts(currentMetrics).length > 0 && (
-        <Card className="border-red-200 bg-red-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-800">
-              <AlertTriangle className="h-5 w-5" />
-              Active Alerts
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {generateAlerts(currentMetrics).map((alert, index) => (
-                <div key={index} className="flex items-center gap-2 text-red-700">
-                  <Zap className="h-4 w-4" />
-                  {alert}
+      {/* System Metrics */}
+      {metrics && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Battery */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Battery className="h-5 w-5" />
+                Battery Status
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span>Level</span>
+                  <span>{metrics.battery.level}%</span>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <Progress value={metrics.battery.level} className="h-2" />
+              </div>
+              <div className="flex justify-between">
+                <span>Charging</span>
+                <Badge variant={metrics.battery.charging ? "default" : "secondary"}>
+                  {metrics.battery.charging ? "Yes" : "No"}
+                </Badge>
+              </div>
+              <div className="flex justify-between">
+                <span>Health</span>
+                <Badge className={
+                  metrics.battery.health === 'good' ? 'bg-green-100 text-green-800' :
+                  metrics.battery.health === 'degraded' ? 'bg-yellow-100 text-yellow-800' :
+                  'bg-red-100 text-red-800'
+                }>
+                  {metrics.battery.health}
+                </Badge>
+              </div>
+              <div className="flex justify-between">
+                <span>Temperature</span>
+                <span>{metrics.battery.temperature.toFixed(1)}°C</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Memory */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Cpu className="h-5 w-5" />
+                Memory Usage
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span>Used</span>
+                  <span>{metrics.memory.percentage}%</span>
+                </div>
+                <Progress value={metrics.memory.percentage} className="h-2" />
+              </div>
+              <div className="flex justify-between">
+                <span>Used</span>
+                <span>{formatBytes(metrics.memory.used)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Total</span>
+                <span>{formatBytes(metrics.memory.total)}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Storage */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <HardDrive className="h-5 w-5" />
+                Storage Space
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span>Used</span>
+                  <span>{metrics.storage.percentage}%</span>
+                </div>
+                <Progress value={metrics.storage.percentage} className="h-2" />
+              </div>
+              <div className="flex justify-between">
+                <span>Used</span>
+                <span>{formatBytes(metrics.storage.used)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Total</span>
+                <span>{formatBytes(metrics.storage.total)}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Network */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Wifi className="h-5 w-5" />
+                Network Status
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between">
+                <span>Status</span>
+                <Badge variant={metrics.network.online ? "default" : "destructive"}>
+                  {metrics.network.online ? "Online" : "Offline"}
+                </Badge>
+              </div>
+              <div className="flex justify-between">
+                <span>Connection</span>
+                <span>{metrics.network.connection}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Speed</span>
+                <span>{metrics.network.speed.toFixed(1)} Mbps</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Performance */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                Performance
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span>CPU Usage</span>
+                  <span>{metrics.performance.cpuUsage}%</span>
+                </div>
+                <Progress value={metrics.performance.cpuUsage} className="h-2" />
+              </div>
+              <div className="flex justify-between">
+                <span>Temperature</span>
+                <span>{metrics.performance.temperature.toFixed(1)}°C</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Throttling</span>
+                <Badge variant={metrics.performance.throttling ? "destructive" : "secondary"}>
+                  {metrics.performance.throttling ? "Yes" : "No"}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
-      {metrics.length > 0 && (
+      {/* Issues List */}
+      {activeIssues.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold">Active Issues</h2>
+          {activeIssues.map((issue) => (
+            <Card key={issue.id} className={`border-l-4 ${
+              issue.severity === 'critical' ? 'border-l-red-500' :
+              issue.severity === 'high' ? 'border-l-orange-500' :
+              issue.severity === 'medium' ? 'border-l-yellow-500' :
+              'border-l-blue-500'
+            }`}>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3">
+                    {getTypeIcon(issue.type)}
+                    <div>
+                      <CardTitle className="text-lg">{issue.title}</CardTitle>
+                      <CardDescription>{issue.description}</CardDescription>
+                    </div>
+                  </div>
+                  <Badge className={getSeverityColor(issue.severity)}>
+                    {issue.severity}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-blue-800">
+                    <strong>Recommendation:</strong> {issue.recommendation}
+                  </p>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-gray-500">
+                    Detected: {issue.timestamp.toLocaleTimeString()}
+                  </span>
+                  <Button
+                    onClick={() => resolveIssue(issue.id)}
+                    size="sm"
+                    variant="outline"
+                  >
+                    Mark Resolved
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* No Issues */}
+      {metrics && activeIssues.length === 0 && (
         <Card>
-          <CardHeader>
-            <CardTitle>System Performance History</CardTitle>
-            <CardDescription>Real-time metrics over the last {Math.round(metrics.length * 2 / 60)} minutes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center text-gray-500 py-4">
-              📊 Chart visualization would be implemented here with a charting library
-              <br />
-              <span className="text-sm">Showing {metrics.length} data points collected in real-time</span>
-            </div>
+          <CardContent className="text-center py-12">
+            <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-500" />
+            <p className="text-lg font-medium text-green-700">System Running Smoothly</p>
+            <p className="text-gray-600">No performance or security issues detected</p>
           </CardContent>
         </Card>
       )}

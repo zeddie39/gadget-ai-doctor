@@ -16,6 +16,7 @@ interface UserProfile {
   avatar_url: string | null;
   created_at: string;
   roles: string[];
+  isSuperAdmin?: boolean;
 }
 
 export default function UserManagement() {
@@ -44,15 +45,19 @@ export default function UserManagement() {
       // Fetch all user roles
       const { data: roles, error: rolesError } = await supabase
         .from('user_roles')
-        .select('user_id, role');
+        .select('user_id, role, super_admin');
 
       if (rolesError) throw rolesError;
 
       // Combine profiles with roles
-      const usersWithRoles = (profiles || []).map(profile => ({
-        ...profile,
-        roles: roles?.filter(r => r.user_id === profile.id).map(r => r.role) || []
-      }));
+      const usersWithRoles = (profiles || []).map(profile => {
+        const userRoles = roles?.filter(r => r.user_id === profile.id) || [];
+        return {
+          ...profile,
+          roles: userRoles.map(r => r.role),
+          isSuperAdmin: userRoles.some(r => r.super_admin === true)
+        };
+      });
 
       setUsers(usersWithRoles);
     } catch (error) {
@@ -250,7 +255,11 @@ export default function UserManagement() {
                     </div>
 
                     <div className="flex gap-2">
-                      {user.roles.includes('admin') ? (
+                      {user.isSuperAdmin ? (
+                        <Badge variant="default" className="bg-gradient-to-r from-purple-600 to-blue-600">
+                          Super Admin
+                        </Badge>
+                      ) : user.roles.includes('admin') ? (
                         <Button
                           size="sm"
                           variant="destructive"

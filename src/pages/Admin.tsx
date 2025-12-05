@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import UserManagement from '@/components/admin/UserManagement';
 import PlatformAnalytics from '@/components/admin/PlatformAnalytics';
 import ContentModeration from '@/components/admin/ContentModeration';
+import SparePartsInventoryManager from '@/components/SparePartsInventoryManager';
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -48,17 +49,18 @@ const Admin = () => {
         .select('role')
         .eq('user_id', userId)
         .eq('role', 'admin')
-        .single();
+        .maybeSingle();
 
-      if (error || !data) {
+      if (error) {
+        console.warn('Admin check failed - table may not exist:', error.message);
         setIsAdmin(false);
         setLoading(false);
         return;
       }
 
-      setIsAdmin(true);
+      setIsAdmin(!!data);
     } catch (error) {
-      console.error('Admin check error:', error);
+      console.warn('Admin check error:', error);
       setIsAdmin(false);
     } finally {
       setLoading(false);
@@ -124,7 +126,7 @@ const Admin = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
+          <TabsList className="grid w-full grid-cols-4 mb-8">
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               User Management
@@ -136,6 +138,10 @@ const Admin = () => {
             <TabsTrigger value="moderation" className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4" />
               Content Moderation
+            </TabsTrigger>
+            <TabsTrigger value="inventory" className="flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              Inventory
             </TabsTrigger>
           </TabsList>
 
@@ -149,6 +155,10 @@ const Admin = () => {
 
           <TabsContent value="moderation">
             <ContentModeration />
+          </TabsContent>
+
+          <TabsContent value="inventory">
+            <SparePartsInventoryManager />
           </TabsContent>
         </Tabs>
       </div>

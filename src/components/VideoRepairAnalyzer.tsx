@@ -85,6 +85,9 @@ export default function VideoRepairAnalyzer() {
   const [isAssessing, setIsAssessing] = useState(false);
   const [availableParts, setAvailableParts] = useState<SparePart[]>([]);
   const [isLoadingParts, setIsLoadingParts] = useState(false);
+  const [syntheticStimuli, setSyntheticStimuli] = useState(false);
+  const [stimuliType, setStimuliType] = useState<'grid' | 'crosshair' | 'measurement' | 'thermal'>('grid');
+  const [stimuliIntensity, setStimuliIntensity] = useState(0.5);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -107,6 +110,9 @@ export default function VideoRepairAnalyzer() {
     };
     loadModel();
 
+    // Check camera permissions on component mount
+    checkCameraPermissions();
+
     return () => {
       stopCamera();
       if (detectionIntervalRef.current) {
@@ -114,6 +120,23 @@ export default function VideoRepairAnalyzer() {
       }
     };
   }, []);
+
+  const checkCameraPermissions = async () => {
+    try {
+      if (navigator.permissions) {
+        const permission = await navigator.permissions.query({ name: 'camera' as PermissionName });
+        if (permission.state === 'denied') {
+          toast({
+            title: 'Camera Permission Required',
+            description: 'Please enable camera access in your browser settings to use live scanning.',
+            variant: 'destructive',
+          });
+        }
+      }
+    } catch (error) {
+      // Permissions API not supported, ignore
+    }
+  };
 
   useEffect(() => {
     if ((realtimeDetection || damageDetection) && isScanning && videoRef.current) {
@@ -129,20 +152,57 @@ export default function VideoRepairAnalyzer() {
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { width: 1280, height: 720 } 
-      });
+      // Check if mediaDevices is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera not supported in this browser');
+      }
+
+      // Request camera permission with fallback constraints
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            width: { ideal: 1280, max: 1920 }, 
+            height: { ideal: 720, max: 1080 },
+            facingMode: 'environment' // Use back camera on mobile
+          } 
+        });
+      } catch (err) {
+        // Fallback to basic video constraints
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: true 
+        });
+      }
       
-      if (videoRef.current) {
+      if (videoRef.current && stream) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
         setIsScanning(true);
+        
+        toast({
+          title: 'Camera Started',
+          description: 'Camera is now active and ready for scanning',
+        });
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
+      let errorMessage = 'Unable to access camera.';
+      
+      if (error instanceof Error) {
+        if (error.name === 'NotAllowedError') {
+          errorMessage = 'Camera permission denied. Please allow camera access and try again.';
+        } else if (error.name === 'NotFoundError') {
+          errorMessage = 'No camera found. Please connect a camera and try again.';
+        } else if (error.name === 'NotSupportedError') {
+          errorMessage = 'Camera not supported in this browser. Try Chrome or Firefox.';
+        } else if (error.name === 'NotReadableError') {
+          errorMessage = 'Camera is being used by another application. Please close other apps and try again.';
+        }
+      }
+      
       toast({
         title: 'Camera Error',
-        description: 'Unable to access camera. Please check permissions.',
+        description: errorMessage,
         variant: 'destructive',
       });
     }
@@ -186,7 +246,14 @@ export default function VideoRepairAnalyzer() {
         const ctx = canvas.getContext('2d');
         if (ctx) {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          // Draw synthetic stimuli first (background layer)
+          drawSyntheticStimuli(ctx);
+          
+          // Draw object detection boxes
           drawBoundingBoxes(predictions, ctx);
+          
+          // Draw damage overlays on top
           if (damageDetection) {
             drawDamageOverlays(ctx);
           }
@@ -226,7 +293,14 @@ export default function VideoRepairAnalyzer() {
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw synthetic stimuli first (background layer)
+        drawSyntheticStimuli(ctx);
+        
+        // Draw damage overlays
         drawDamageOverlays(ctx, damaged);
+        
+        // Draw object detection boxes on top
         if (realtimeDetection && detectedObjects.length > 0) {
           drawBoundingBoxes(detectedObjects, ctx);
         }
@@ -314,6 +388,93 @@ export default function VideoRepairAnalyzer() {
     }
 
     return damaged;
+  };
+
+  const drawSyntheticStimuli = (ctx: CanvasRenderingContext2D) => {
+    if (!syntheticStimuli || !ctx) return;
+
+    const canvas = ctx.canvas;
+    const alpha = stimuliIntensity;
+    const time = Date.now() / 1000;
+
+    switch (stimuliType) {
+      case 'grid':
+        ctx.strokeStyle = `rgba(0, 255, 255, ${alpha})`;
+        ctx.lineWidth = 1;
+        const gridSize = 50;
+        for (let x = 0; x < canvas.width; x += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, canvas.height);
+          ctx.stroke();
+        }
+        for (let y = 0; y < canvas.height; y += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(canvas.width, y);
+          ctx.stroke();
+        }
+        break;
+
+      case 'crosshair':
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        ctx.strokeStyle = `rgba(255, 0, 0, ${alpha})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(centerX - 50, centerY);
+        ctx.lineTo(centerX + 50, centerY);
+        ctx.moveTo(centerX, centerY - 50);
+        ctx.lineTo(centerX, centerY + 50);
+        ctx.stroke();
+        
+        // Animated circles
+        for (let i = 1; i <= 3; i++) {
+          const radius = 30 + i * 20 + Math.sin(time * 2) * 5;
+          ctx.strokeStyle = `rgba(255, 0, 0, ${alpha / i})`;
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        break;
+
+      case 'measurement':
+        ctx.strokeStyle = `rgba(255, 255, 0, ${alpha})`;
+        ctx.lineWidth = 1;
+        ctx.font = '12px Arial';
+        ctx.fillStyle = `rgba(255, 255, 0, ${alpha})`;
+        
+        // Measurement lines with scale
+        for (let i = 0; i < 10; i++) {
+          const x = (canvas.width / 10) * i;
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, 20);
+          ctx.stroke();
+          ctx.fillText(`${i}cm`, x + 2, 15);
+        }
+        break;
+
+      case 'thermal':
+        // Thermal overlay effect
+        const gradient = ctx.createRadialGradient(
+          canvas.width / 2, canvas.height / 2, 0,
+          canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) / 2
+        );
+        gradient.addColorStop(0, `rgba(255, 0, 0, ${alpha * 0.3})`);
+        gradient.addColorStop(0.5, `rgba(255, 255, 0, ${alpha * 0.2})`);
+        gradient.addColorStop(1, `rgba(0, 0, 255, ${alpha * 0.1})`);
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Temperature readings
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+        ctx.font = 'bold 14px Arial';
+        ctx.fillText('25°C', 20, 30);
+        ctx.fillText('32°C', canvas.width - 60, 30);
+        break;
+    }
   };
 
   const drawDamageOverlays = (ctx: CanvasRenderingContext2D, areas: any[] = damagedAreas) => {
@@ -1088,14 +1249,21 @@ Provide:
                   style={{ mixBlendMode: 'screen' }}
                 />
                 {!isScanning && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Button onClick={startCamera} size="lg">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/50 backdrop-blur-sm">
+                    <div className="text-center text-white">
+                      <Camera className="w-12 h-12 mx-auto mb-2 opacity-60" />
+                      <p className="text-sm opacity-80 mb-4">Click to start camera for live device scanning</p>
+                    </div>
+                    <Button onClick={startCamera} size="lg" className="bg-primary hover:bg-primary/90">
                       <Camera className="w-4 h-4 mr-2" />
                       Start Camera
                     </Button>
+                    <p className="text-xs text-white/60 text-center max-w-xs">
+                      Make sure to allow camera permissions when prompted
+                    </p>
                   </div>
                 )}
-                {(realtimeDetection || damageDetection) && (
+                {(realtimeDetection || damageDetection || syntheticStimuli) && (
                   <div className="absolute top-4 left-4 space-y-2">
                     {realtimeDetection && detectedObjects.length > 0 && (
                       <div className="bg-background/90 backdrop-blur-sm rounded-lg p-3 border border-primary/50">
@@ -1110,6 +1278,14 @@ Provide:
                         <p className="text-xs font-semibold text-destructive flex items-center gap-2">
                           <AlertCircle className="w-3 h-3 animate-pulse" />
                           Damage: {damagedAreas.length} areas
+                        </p>
+                      </div>
+                    )}
+                    {syntheticStimuli && (
+                      <div className="bg-background/90 backdrop-blur-sm rounded-lg p-3 border border-cyan-500/50">
+                        <p className="text-xs font-semibold text-cyan-400 flex items-center gap-2">
+                          <Scan className="w-3 h-3 animate-pulse" />
+                          AR: {stimuliType} overlay
                         </p>
                       </div>
                     )}
@@ -1138,7 +1314,7 @@ Provide:
             </TabsContent>
 
             <TabsContent value="upload" className="space-y-4">
-              <div className="border-2 border-dashed rounded-lg p-8 text-center">
+              <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary/50 transition-colors">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -1147,11 +1323,15 @@ Provide:
                   className="hidden"
                 />
                 <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <Button onClick={() => fileInputRef.current?.click()} disabled={isAnalyzing}>
+                <Button onClick={() => fileInputRef.current?.click()} disabled={isAnalyzing} size="lg">
+                  <Upload className="w-4 h-4 mr-2" />
                   Select Video File
                 </Button>
                 <p className="text-sm text-muted-foreground mt-2">
                   Upload a video showing the device from multiple angles
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Supported formats: MP4, WebM, AVI, MOV
                 </p>
               </div>
               

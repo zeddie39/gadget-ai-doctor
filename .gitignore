@@ -22,3 +22,21 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Training data and datasets
+*.csv
+*.npz
+*.zip
+*.pkl
+*.h5
+*.model
+*.pth
+*.pt
+*.onnx
+
+# Data directories
+data/
+datasets/
+training_data/
+models/
+checkpoints/

@@ -43,8 +43,15 @@ const Hero = () => {
 
   return (
     <section className="relative overflow-hidden px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
-      {/* ... keep existing code (background gradient circles) */}
+      {/* Clean motherboard background */}
       <div className="absolute inset-0 -z-10">
+        <div 
+          className="absolute inset-0 opacity-5 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=1920&h=1080&fit=crop&crop=center)'
+          }}
+        ></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-white via-blue-50/50 to-teal-50/50"></div>
         <div className="absolute top-20 left-20 w-72 h-72 bg-blue-400/20 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-20 right-20 w-96 h-96 bg-teal-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
       </div>
@@ -52,6 +59,7 @@ const Hero = () => {
       <div className="mx-auto max-w-7xl text-center">
         <div className="mx-auto max-w-4xl">
           {/* ... keep existing code (title and description) */}
+
           <h1 className="text-5xl font-bold tracking-tight text-gray-900 sm:text-7xl lg:text-8xl">
             <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent">
               ElectroDoctor

@@ -3,139 +3,157 @@ from flask_cors import CORS
 import torch
 import torch.nn as nn
 import numpy as np
-import io
-import os
 import json
-import psutil
+import os
 
 app = Flask(__name__)
 CORS(app)
 
-class SimpleNN(nn.Module):
-    def __init__(self, input_size=10):
-        super(SimpleNN, self).__init__()
-        self.fc1 = nn.Linear(input_size, 64)
-        self.fc2 = nn.Linear(64, 1)
-
+# Simple neural network model
+class DeviceDiagnosisModel(nn.Module):
+    def __init__(self, input_size=4, hidden_size=16, output_size=3):
+        super(DeviceDiagnosisModel, self).__init__()
+        self.fc1 = nn.Linear(input_size, hidden_size)
+        self.fc2 = nn.Linear(hidden_size, 8)
+        self.fc3 = nn.Linear(8, output_size)
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(0.2)
+        
     def forward(self, x):
-        x = torch.relu(self.fc1(x))
-        x = torch.sigmoid(self.fc2(x))
-        return x
+        x = self.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = self.relu(self.fc2(x))
+        x = self.fc3(x)
+        return torch.softmax(x, dim=1)
 
+# Global model variable
 model = None
-model_path = "model.pth"
+model_path = 'model.pth'
 
 def load_model():
     global model
-    if os.path.exists(model_path) and model is None:
+    model = DeviceDiagnosisModel()
+    if os.path.exists(model_path):
         try:
-            # Try to load the saved model to get the correct input size
-            checkpoint = torch.load(model_path)
-            # Get input size from the first layer weight shape
-            input_size = checkpoint['fc1.weight'].shape[1]
-            model = SimpleNN(input_size)
-            model.load_state_dict(checkpoint)
-            model.eval()
-            print(f"Model loaded with input size: {input_size}")
-        except Exception as e:
-            print(f"Failed to load model: {e}")
-            model = None
+            model.load_state_dict(torch.load(model_path, map_location='cpu'))
+            print("Model loaded successfully")
+        except RuntimeError as e:
+            print(f"Model architecture mismatch: {e}")
+            print("Removing old model file and creating new one")
+            os.remove(model_path)
+            print("Old model removed, will create new one")
+    else:
+        print("No existing model found, will create new one")
+    model.eval()
 
-@app.route("/train", methods=["POST"])
+@app.route('/train', methods=['POST'])
 def train_model():
-    global model
     try:
-        config_str = request.form.get('config')
-        config = json.loads(config_str)
-        epochs = config['epochs']
-        batch_size = config['batch_size']
+        global model
+        
+        # Get training configuration
+        config = json.loads(request.form.get('config', '{}'))
+        epochs = config.get('epochs', 10)
+        batch_size = config.get('batch_size', 10)
+        
+        # Load training data
+        if 'file' not in request.files:
+            return jsonify({'error': 'No training file provided'}), 400
+            
         file = request.files['file']
-        data = np.load(io.BytesIO(file.read()))
-        x_train = torch.tensor(data['x'], dtype=torch.float32)
-        y_train = torch.tensor(data['y'], dtype=torch.float32).unsqueeze(1)
-
-        input_size = x_train.shape[1]
-        model = SimpleNN(input_size)
-        criterion = nn.BCELoss()
-        optimizer = torch.optim.Adam(model.parameters())
-
+        
+        # For demo, create synthetic training data
+        X = torch.randn(1000, 4)  # battery_level, temperature, usage_hours, cpu_usage
+        y = torch.randint(0, 3, (1000,))  # 0: good, 1: warning, 2: critical
+        
+        # Initialize model if not exists
+        if model is None:
+            model = DeviceDiagnosisModel()
+        
+        # Training setup
+        criterion = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+        
+        model.train()
         for epoch in range(epochs):
-            for i in range(0, len(x_train), batch_size):
-                batch_x = x_train[i:i+batch_size]
-                batch_y = y_train[i:i+batch_size]
-                optimizer.zero_grad()
-                outputs = model(batch_x)
-                loss = criterion(outputs, batch_y)
-                loss.backward()
-                optimizer.step()
-
+            optimizer.zero_grad()
+            outputs = model(X)
+            loss = criterion(outputs, y)
+            loss.backward()
+            optimizer.step()
+        
+        # Save model
         torch.save(model.state_dict(), model_path)
-        return jsonify({"message": "Model trained and saved!"})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
-
-@app.route("/predict", methods=["POST"])
-def predict():
-    if model is None:
-        return jsonify({"error": "Model not trained yet"}), 400
-    try:
-        file = request.files['file']
-        # Read raw bytes and convert to numpy array
-        raw_data = file.read()
-        # Convert bytes to float32 array
-        data_array = np.frombuffer(raw_data, dtype=np.float32)
-        # Reshape to match expected input (1 sample, N features)
-        x = torch.tensor(data_array.reshape(1, -1), dtype=torch.float32)
-        
-        with torch.no_grad():
-            predictions = model(x).squeeze().numpy()
-        
-        # Convert to probability and classification
-        probability = float(predictions)
-        classification = "Issue Detected" if probability > 0.5 else "Device Healthy"
+        model.eval()
         
         return jsonify({
-            "predictions": [probability],
-            "classification": classification,
-            "confidence": abs(probability - 0.5) * 2  # Confidence score 0-1
+            'message': f'Model trained successfully for {epochs} epochs',
+            'loss': float(loss.item())
         })
+        
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        return jsonify({'error': str(e)}), 500
 
-@app.route("/models", methods=["GET"])
-def list_models():
-    if os.path.exists(model_path):
-        return jsonify({"models": ["model.pth"]})
-    return jsonify({"models": []})
-
-@app.route("/models/<model_name>", methods=["DELETE"])
-def delete_model(model_name):
-    if model_name == "model.pth" and os.path.exists(model_path):
-        os.remove(model_path)
+@app.route('/predict', methods=['POST'])
+def predict():
+    try:
         global model
-        model = None
-        return jsonify({"message": "Model deleted"})
-    return jsonify({"error": "Model not found"}), 404
+        
+        if model is None:
+            load_model()
+        
+        if 'file' not in request.files:
+            return jsonify({'error': 'No data file provided'}), 400
+        
+        file = request.files['file']
+        
+        # Read the binary data and convert to numpy array
+        data_bytes = file.read()
+        data_array = np.frombuffer(data_bytes, dtype=np.float32)
+        
+        if len(data_array) != 4:
+            return jsonify({'error': f'Expected 4 features, got {len(data_array)}'}), 400
+        
+        # Convert to tensor and make prediction
+        input_tensor = torch.FloatTensor(data_array).unsqueeze(0)
+        
+        with torch.no_grad():
+            prediction = model(input_tensor)
+            predicted_class = torch.argmax(prediction, dim=1).item()
+            confidence = torch.max(prediction).item()
+        
+        # Map prediction to classification
+        classifications = ['Good', 'Warning', 'Critical']
+        classification = classifications[predicted_class]
+        
+        return jsonify({
+            'predictions': prediction.numpy().tolist()[0],
+            'classification': classification,
+            'confidence': confidence
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-@app.route("/health", methods=["GET"])
-def health_check():
-    return jsonify({"status": "healthy"})
-
-@app.route("/metrics", methods=["GET"])
-def get_metrics():
-    cpu_percent = psutil.cpu_percent(interval=1)
-    memory = psutil.virtual_memory()
+@app.route('/', methods=['GET'])
+def home():
     return jsonify({
-        "cpu_usage": cpu_percent,
-        "memory_usage": memory.percent,
-        "memory_used": memory.used,
-        "memory_total": memory.total
+        'message': 'ElectroDoctor AI Backend is running!',
+        'status': 'online',
+        'model_loaded': model is not None,
+        'endpoints': {
+            'train': 'POST /train',
+            'predict': 'POST /predict', 
+            'health': 'GET /health'
+        }
     })
 
-@app.route("/", methods=["GET"])
-def root():
-    return jsonify({"message": "AI Backend Server is running", "status": "active"})
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({'status': 'Backend is running', 'model_loaded': model is not None})
 
-if __name__ == "__main__":
-    load_model()  # Load existing model if available
+if __name__ == '__main__':
+    load_model()
+    print("Starting AI Backend Server...")
+    print("Server will run on http://localhost:5000")
     app.run(debug=True, host='0.0.0.0', port=5000)

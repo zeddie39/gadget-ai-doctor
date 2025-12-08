@@ -134,6 +134,15 @@ const AIChat = () => {
   };
 
   const generateAIResponse = async (userInput: string): Promise<string> => {
+    // Check if offline and use cached responses
+    if (!navigator.onLine) {
+      const cachedResponse = getCachedResponse(userInput);
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      // Continue with offline knowledge base below
+    }
+    
     try {
       // Try multiple AI services for real responses
       
@@ -237,8 +246,48 @@ const AIChat = () => {
     } catch (error) {
       console.error('AI API error:', error);
     }
+    
+    // Generate response and cache it for offline use
+    const response = generateOfflineResponse(userInput);
+    cacheResponse(userInput, response);
+    return response;
+  };
+  
+  const getCachedResponse = (input: string): string | null => {
+    try {
+      const cached = localStorage.getItem('aiChatCache');
+      if (cached) {
+        const cache = JSON.parse(cached);
+        const key = input.toLowerCase().trim();
+        return cache[key] || null;
+      }
+    } catch (error) {
+      console.error('Error reading cache:', error);
+    }
+    return null;
+  };
+  
+  const cacheResponse = (input: string, response: string) => {
+    try {
+      const cached = localStorage.getItem('aiChatCache') || '{}';
+      const cache = JSON.parse(cached);
+      const key = input.toLowerCase().trim();
+      cache[key] = response;
+      
+      // Limit cache size to prevent storage issues
+      const keys = Object.keys(cache);
+      if (keys.length > 100) {
+        delete cache[keys[0]];
+      }
+      
+      localStorage.setItem('aiChatCache', JSON.stringify(cache));
+    } catch (error) {
+      console.error('Error caching response:', error);
+    }
+  };
+  
+  const generateOfflineResponse = (userInput: string): string => {
 
-    // COMPREHENSIVE KNOWLEDGE BASE - Real technical solutions
     const input = userInput.toLowerCase();
     const currentDevice = deviceInfo?.brand?.toLowerCase() || '';
     const deviceType = deviceInfo?.type?.toLowerCase() || '';
@@ -263,6 +312,61 @@ const AIChat = () => {
     
     if (input.includes('bye') || input.includes('goodbye') || input.includes('see you')) {
       return `Goodbye! 👋 Remember, I'm always here when you need tech support. Keep your devices safe and running smooth! 🛡️`;
+    }
+    
+    // Electrical fault detection and safety
+    if (input.includes('electrical') || input.includes('electric') || input.includes('power') || input.includes('voltage') || input.includes('current') || input.includes('short circuit')) {
+      if (input.includes('fault') || input.includes('problem') || input.includes('issue') || input.includes('failure')) {
+        return `⚡ **ELECTRICAL FAULT DETECTION** ⚡
+
+🚨 **Immediate Safety Signs:**
+• Device gets extremely hot during charging
+• Sparks, smoke, or burning smell
+• Charging port feels loose or damaged
+• Battery swelling or bulging
+• Electrical shocks when touching device
+
+🔍 **Common Electrical Faults:**
+• **Battery degradation** - Voltage drops, inconsistent charging
+• **Power regulation failure** - Device shuts down randomly
+• **Current leakage** - Excessive heat, fast battery drain
+• **Charging circuit failure** - Won't charge or charges very slowly
+• **Short circuits** - Device won't turn on, blown fuses
+
+🛡️ **SAFETY PROTOCOL:**
+1. **STOP using device immediately** if you notice any danger signs
+2. Unplug from power source
+3. Move to safe, ventilated area
+4. Do NOT attempt DIY repair on electrical faults
+5. Seek professional help immediately
+
+🔧 **Professional diagnosis recommended** for electrical issues. What specific symptoms are you experiencing?`;
+      } else if (input.includes('safe') || input.includes('prevent') || input.includes('avoid')) {
+        return `⚡ **ELECTRICAL SAFETY GUIDE** 🛡️
+
+🔋 **Charging Safety:**
+• Use only original or certified chargers
+• Avoid charging overnight unattended
+• Don't charge on soft surfaces (beds, couches)
+• Unplug when device gets hot
+• Replace damaged cables immediately
+
+🔍 **Early Warning Signs:**
+• Unusual heat during normal use
+• Battery drains faster than normal
+• Device restarts randomly
+• Charging takes much longer
+• Strange noises from device
+
+🧹 **Preventive Maintenance:**
+• Keep charging ports clean and dry
+• Avoid extreme temperatures
+• Don't overcharge (unplug at 100%)
+• Regular software updates
+• Professional inspection yearly
+
+⚠️ **Never ignore electrical symptoms** - they can lead to fire or injury!`;
+      }
     }
     
     // Computer safety and maintenance questions

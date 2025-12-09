@@ -40,3 +40,27 @@ datasets/
 training_data/
 models/
 checkpoints/
+
+# Environment variables (SENSITIVE)
+.env
+.env.local
+.env.*.local
+
+# Documentation (internal/sensitive)
+DOCUMENTATION.md
+docs/
+*.md.bak
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+.venv/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+vite.config.ts.timestamp-*

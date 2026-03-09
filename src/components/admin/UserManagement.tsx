@@ -45,7 +45,7 @@ export default function UserManagement() {
       // Fetch all user roles
       const { data: roles, error: rolesError } = await supabase
         .from('user_roles')
-        .select('user_id, role, super_admin');
+        .select('user_id, role');
 
       if (rolesError) throw rolesError;
 
@@ -55,7 +55,7 @@ export default function UserManagement() {
         return {
           ...profile,
           roles: userRoles.map(r => r.role),
-          isSuperAdmin: userRoles.some(r => r.super_admin === true)
+          isSuperAdmin: false
         };
       });
 

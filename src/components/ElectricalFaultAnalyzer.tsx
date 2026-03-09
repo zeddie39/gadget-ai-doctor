@@ -180,17 +180,8 @@ const ElectricalFaultAnalyzer: React.FC = () => {
     setPredictions(faultPredictions);
     setDeviceMetrics(calculateDeviceMetrics(newReadings));
 
-    // Store analysis results
-    try {
-      await supabase.from('electrical_analysis').insert({
-        device_type: selectedDevice,
-        readings: newReadings,
-        predictions: faultPredictions,
-        analysis_timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('Error storing analysis:', error);
-    }
+    // Log analysis results locally (no dedicated table yet)
+    console.log('Electrical analysis completed:', { device: selectedDevice, readings: newReadings.length, predictions: faultPredictions.length });
 
     setIsAnalyzing(false);
     toast.success('Electrical fault analysis completed!');

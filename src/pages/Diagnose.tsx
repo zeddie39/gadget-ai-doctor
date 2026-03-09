@@ -97,14 +97,17 @@ const Diagnose = () => {
   return (
     <div className="min-h-screen glass p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-start mb-8">
-          <div className="text-center flex-1">
-            <h1 className="hero-title">ElectroDoctor Diagnostic Center</h1>
-            <p className="subtle-muted mt-1">
-              Complete AI-powered gadget diagnosis, optimization, and repair tracking
-            </p>
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
+          <div className="flex items-center gap-3">
+            <img src="/ZTech electrictronics logo.png" alt="ZTech Logo" className="h-10 w-10 rounded-lg object-contain" />
+            <div>
+              <h1 className="hero-title text-xl sm:text-2xl lg:text-3xl">ElectroDoctor Diagnostic Center</h1>
+              <p className="subtle-muted text-xs sm:text-sm mt-0.5">
+                AI-powered gadget diagnosis, optimization & repair tracking
+              </p>
+            </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 shrink-0">
             {isAdmin && (
               <Button onClick={() => navigate('/admin')} variant="outline" size="sm" className="nav-pill">
                 <ShieldCheck className="h-4 w-4 mr-2" />
@@ -119,7 +122,9 @@ const Diagnose = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 lg:grid-cols-12 gap-3 p-1">
+          <TabsList className="flex flex-wrap justify-center gap-2 h-auto p-3">
+            {/* Diagnostics Group */}
+            <span className="w-full text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground text-center mb-1">Diagnostics</span>
             <TabsTrigger value="photo" className="nav-pill">
               <Camera className="h-4 w-4" />
               <span className="text-xs">Photo</span>
@@ -144,6 +149,9 @@ const Diagnose = () => {
               <Trash className="h-4 w-4" />
               <span className="text-xs">Cleaner</span>
             </TabsTrigger>
+
+            {/* Insights & Tools Group */}
+            <span className="w-full text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground text-center mt-2 mb-1">Insights & Tools</span>
             <TabsTrigger value="health" className="nav-pill">
               <Shield className="h-4 w-4" />
               <span className="text-xs">Health</span>

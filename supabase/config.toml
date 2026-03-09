@@ -1,1 +1,4 @@
 project_id = "ggsnardgkluqvpaimzup"
+
+[functions.openrouter-ai]
+verify_jwt = false

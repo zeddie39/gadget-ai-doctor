@@ -37,7 +37,7 @@ const AIChat = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+  const [sessionId] = useState(() => crypto.randomUUID());
   const [deviceInfo, setDeviceInfo] = useState<any>(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -144,87 +144,11 @@ const AIChat = () => {
     }
     
     try {
-      // Try multiple AI services for real responses
-      
-      // Method 1: OpenAI API (if available)
-      try {
-        const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.REACT_APP_OPENAI_API_KEY || 'sk-test'}`
-          },
-          body: JSON.stringify({
-            model: 'gpt-3.5-turbo',
-            messages: [
-              {
-                role: 'system',
-                content: `You are an expert electronics repair technician and device diagnostician with 15+ years of experience. You provide accurate, factual troubleshooting advice for smartphones, laptops, tablets, and other electronic devices.
-                
-                EXPERTISE AREAS:
-                - Hardware diagnostics (battery, screen, charging ports, speakers, cameras)
-                - Software troubleshooting (OS issues, app crashes, performance)
-                - Brand-specific knowledge (Samsung, Apple, Xiaomi, Huawei, OnePlus, etc.)
-                - Safety protocols (water damage, overheating, battery swelling)
-                - Repair procedures and when to seek professional help
-                
-                RESPONSE GUIDELINES:
-                - Provide step-by-step solutions
-                - Include safety warnings when necessary
-                - Mention specific settings paths and menu locations
-                - Explain why each step works
-                - Recommend professional repair when needed
-                - Use technical accuracy over generic advice
-                
-                Current user device: ${deviceInfo?.brand} ${deviceInfo?.type} (${deviceInfo?.screenResolution})`
-              },
-              {
-                role: 'user',
-                content: userInput
-              }
-            ],
-            max_tokens: 500,
-            temperature: 0.3
-          })
-        });
-        
-        if (openaiResponse.ok) {
-          const result = await openaiResponse.json();
-          return result.choices[0]?.message?.content || 'Unable to process request';
-        }
-      } catch (openaiError) {
-        console.log('OpenAI not available, trying alternatives');
-      }
-      
-      // Method 2: Google Gemini API (if available)
-      try {
-        const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.REACT_APP_GEMINI_API_KEY || 'test'}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            contents: [{
-              parts: [{
-                text: `As an expert device repair technician, answer this question about ${deviceInfo?.brand || 'electronic'} devices: ${userInput}`
-              }]
-            }]
-          })
-        });
-        
-        if (geminiResponse.ok) {
-          const result = await geminiResponse.json();
-          return result.candidates[0]?.content?.parts[0]?.text || 'Unable to process request';
-        }
-      } catch (geminiError) {
-        console.log('Gemini not available, using knowledge base');
-      }
-      
-      // Method 3: Supabase Edge Function (if configured)
+      // Use Lovable AI Gateway via edge function
       const { data, error } = await supabase.functions.invoke('openrouter-ai', {
         body: {
           prompt: userInput,
-          model: 'openai/gpt-4o-mini',
+          model: 'google/gemini-2.5-flash',
           systemPrompt: `You are an expert AI gadget doctor specializing in diagnosing and fixing electronic devices. 
           You have extensive knowledge about Samsung, iPhone, Infinix, and other popular device brands.
           
@@ -236,18 +160,27 @@ const AIChat = () => {
           - Safety protocols for device repair
           - Brand-specific issues and solutions
           
-          Always provide practical, safe, and actionable advice. If something is dangerous (like swollen batteries or water damage), emphasize safety first. Be concise but thorough.`
+          Current user device: ${deviceInfo?.brand || 'Unknown'} ${deviceInfo?.type || 'Unknown'} (${deviceInfo?.screenResolution || 'Unknown'})
+          
+          Always provide practical, safe, and actionable advice. If something is dangerous (like swollen batteries or water damage), emphasize safety first. Be concise but thorough. Use emojis sparingly for clarity.`
         }
       });
 
       if (!error && data?.response) {
+        cacheResponse(userInput, data.response);
         return data.response;
+      }
+      
+      // Handle rate limit / credit errors
+      if (data?.error) {
+        console.warn('AI Gateway error:', data.error);
+        toast.error(data.error);
       }
     } catch (error) {
       console.error('AI API error:', error);
     }
     
-    // Generate response and cache it for offline use
+    // Fallback to offline knowledge base
     const response = generateOfflineResponse(userInput);
     cacheResponse(userInput, response);
     return response;

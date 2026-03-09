@@ -186,8 +186,8 @@ export class DeviceDiagnosisModel {
       // Preprocess data
       const trainingData = await this.preprocessFeedbackData();
       
-      if (trainingData.features.length < 10) {
-        throw new Error('Insufficient training data. Need at least 10 samples.');
+      if (trainingData.features.length < 5) {
+        throw new Error('Insufficient training data.');
       }
 
       // Create model

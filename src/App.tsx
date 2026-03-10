@@ -9,21 +9,18 @@ import Diagnose from "./pages/Diagnose";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import AdminSetupPage from "./pages/AdminSetupPage";
+import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
+import CookieConsent from "./components/CookieConsent";
 
 const queryClient = new QueryClient();
 
-// Register Service Worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
-      .then((registration) => {
-        console.log('SW registered: ', registration);
-      })
-      .catch((registrationError) => {
-        console.log('SW registration failed: ', registrationError);
-      });
+      .then((registration) => console.log('SW registered: ', registration))
+      .catch((err) => console.log('SW registration failed: ', err));
   });
 }
 
@@ -33,6 +30,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <PWAInstallPrompt />
+      <CookieConsent />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
@@ -40,6 +38,7 @@ const App = () => (
           <Route path="/diagnose" element={<Diagnose />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin-setup" element={<AdminSetupPage />} />
+          <Route path="/install" element={<Install />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -358,7 +358,7 @@ const SecurityAlerts = () => {
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-muted-foreground">
                       Detected {formatTimestamp(alert.timestamp)}
                     </span>
                     

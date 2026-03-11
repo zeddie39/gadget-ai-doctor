@@ -310,9 +310,9 @@ const SecurityAlerts = () => {
         {isScanning ? (
           <Card>
             <CardContent className="text-center py-12">
-              <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
               <p className="text-lg font-medium mb-2">Scanning for Security Threats</p>
-              <p className="text-gray-600">Checking apps, permissions, network security, and performance issues...</p>
+              <p className="text-muted-foreground">Checking apps, permissions, network security, and performance issues...</p>
             </CardContent>
           </Card>
         ) : activeAlerts.length === 0 ? (

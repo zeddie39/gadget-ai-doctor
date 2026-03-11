@@ -888,7 +888,7 @@ What's going on with your device? 🤔`;
         </div>
         
         {/* Input Area */}
-        <div className="p-4 border-t bg-white">
+        <div className="p-4 border-t border-border bg-card">
           <div className="flex gap-2">
         <Input
           value={inputText}

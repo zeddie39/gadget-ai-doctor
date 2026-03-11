@@ -309,18 +309,18 @@ const StorageOptimizer = () => {
 
           {/* Cleanup Actions */}
           {selectedItems.size > 0 && (
-            <Card className="border-green-200 bg-green-50">
+            <Card className="border-emerald-500/30 bg-emerald-500/10">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-semibold text-green-800">
+                    <p className="font-semibold text-emerald-400">
                       {selectedItems.size} items selected
                     </p>
-                    <p className="text-sm text-green-700">
+                    <p className="text-sm text-emerald-400/80">
                       Will free up {formatSize(calculateSelectedSize())}
                     </p>
                   </div>
-                  <Button onClick={performCleanup} className="bg-green-600 hover:bg-green-700">
+                  <Button onClick={performCleanup} className="bg-emerald-600 hover:bg-emerald-700 text-white">
                     <Trash className="mr-2 h-4 w-4" />
                     Clean Selected Items
                   </Button>

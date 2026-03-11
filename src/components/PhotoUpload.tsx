@@ -402,7 +402,7 @@ const PhotoUpload = () => {
             onChange={handleFileInput}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
-          <Button className="bg-blue-600 hover:bg-blue-700">
+          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
             <Upload className="mr-2 h-4 w-4" />
             Choose File
           </Button>

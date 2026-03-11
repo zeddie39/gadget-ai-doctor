@@ -243,13 +243,13 @@ const SecurityAlerts = () => {
       {/* Alert Summary */}
       {activeAlerts.length > 0 && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="border-red-200 bg-red-50">
+          <Card className="border-destructive/30 bg-destructive/10">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
+                <AlertTriangle className="h-5 w-5 text-destructive" />
                 <div>
-                  <p className="text-2xl font-bold text-red-600">{criticalCount}</p>
-                  <p className="text-sm text-red-700">Critical</p>
+                  <p className="text-2xl font-bold text-destructive">{criticalCount}</p>
+                  <p className="text-sm text-destructive/80">Critical</p>
                 </div>
               </div>
             </CardContent>

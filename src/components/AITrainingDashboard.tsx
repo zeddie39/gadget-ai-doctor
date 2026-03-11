@@ -181,7 +181,7 @@ const AITrainingDashboard = () => {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-orange-600" />
+                <AlertCircle className="h-4 w-4 text-yellow-500" />
                 Needs Improvement
               </CardTitle>
             </CardHeader>

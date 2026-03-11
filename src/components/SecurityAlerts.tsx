@@ -330,7 +330,7 @@ const SecurityAlerts = () => {
               return severityOrder[b.severity] - severityOrder[a.severity];
             })
             .map((alert) => (
-              <Card key={alert.id} className={`border-l-4 ${alert.severity === 'critical' ? 'border-l-red-500' : alert.severity === 'high' ? 'border-l-orange-500' : alert.severity === 'medium' ? 'border-l-yellow-500' : 'border-l-blue-500'}`}>
+              <Card key={alert.id} className={`border-l-4 ${alert.severity === 'critical' ? 'border-l-destructive' : alert.severity === 'high' ? 'border-l-orange-500' : alert.severity === 'medium' ? 'border-l-yellow-500' : 'border-l-primary'}`}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3 flex-1">

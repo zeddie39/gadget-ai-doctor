@@ -193,7 +193,7 @@ const ModelPredictionDemo: React.FC = () => {
         </Button>
 
         {prediction && (
-          <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg">
+          <div className="p-4 bg-primary/10 border border-primary/30 rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">Prediction Result</span>
               <Badge variant={prediction.prediction === 1 ? 'default' : 'destructive'}>

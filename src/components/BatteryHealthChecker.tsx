@@ -159,12 +159,12 @@ const BatteryHealthChecker = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'excellent': return 'text-green-600';
-      case 'good': return 'text-blue-600';
-      case 'fair': return 'text-yellow-600';
-      case 'poor': return 'text-orange-600';
-      case 'critical': return 'text-red-600';
-      default: return 'text-gray-600';
+      case 'excellent': return 'text-emerald-500';
+      case 'good': return 'text-primary';
+      case 'fair': return 'text-yellow-500';
+      case 'poor': return 'text-orange-500';
+      case 'critical': return 'text-destructive';
+      default: return 'text-muted-foreground';
     }
   };
 

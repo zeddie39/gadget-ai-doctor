@@ -156,10 +156,10 @@ const StorageOptimizer = () => {
 
   const getItemIcon = (type: string) => {
     switch (type) {
-      case 'app': return <Zap className="h-4 w-4 text-blue-600" />;
-      case 'photo': return <Image className="h-4 w-4 text-purple-600" />;
-      case 'cache': return <Folder className="h-4 w-4 text-orange-600" />;
-      default: return <Folder className="h-4 w-4 text-gray-600" />;
+      case 'app': return <Zap className="h-4 w-4 text-primary" />;
+      case 'photo': return <Image className="h-4 w-4 text-accent" />;
+      case 'cache': return <Folder className="h-4 w-4 text-yellow-500" />;
+      default: return <Folder className="h-4 w-4 text-muted-foreground" />;
     }
   };
 

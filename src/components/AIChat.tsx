@@ -833,7 +833,7 @@ What's going on with your device? 🤔`;
                   onClick={() => submitFeedback(message.id, false, messages.find(m => m.id === message.id - 1)?.text)}
                   size="sm"
                   variant="ghost"
-                  className="h-6 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                  className="h-6 px-2 text-xs text-destructive hover:text-destructive/80 hover:bg-destructive/10"
                 >
                   <ThumbsDown className="h-3 w-3 mr-1" />
                   Poor

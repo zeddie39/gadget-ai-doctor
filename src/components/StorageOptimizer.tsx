@@ -271,7 +271,7 @@ const StorageOptimizer = () => {
                     {getItemIcon(photo.type)}
                     <div className="flex-1">
                       <p className="font-medium text-sm">{photo.name}</p>
-                      <p className="text-xs text-gray-600">{formatSize(photo.size)}</p>
+                      <p className="text-xs text-muted-foreground">{formatSize(photo.size)}</p>
                     </div>
                   </div>
                 ))}

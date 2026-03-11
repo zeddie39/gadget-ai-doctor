@@ -907,7 +907,7 @@ What's going on with your device? 🤔`;
             <Button 
               onClick={handleSendMessage} 
               disabled={!inputText.trim() || isTyping}
-              className="bg-green-600 hover:bg-green-700 disabled:opacity-50"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50"
             >
               <Send className="h-4 w-4" />
             </Button>

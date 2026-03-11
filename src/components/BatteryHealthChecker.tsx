@@ -231,7 +231,7 @@ const BatteryHealthChecker = () => {
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Battery Level</p>
+                <p className="text-sm text-muted-foreground mb-1">Battery Level</p>
                 <div className="flex items-center gap-2">
                   <Progress value={batteryInfo.level} className="flex-1" />
                   <span className="font-semibold">{batteryInfo.level}%</span>

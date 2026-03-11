@@ -519,8 +519,8 @@ const PhotoUpload = () => {
                     </p>
                     
                     {(diagnosisResult as any).visual_analysis && (
-                      <div className="mb-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-                        <h4 className="font-medium text-blue-900 mb-1">Visual Analysis:</h4>
+                       <div className="mb-4 p-3 bg-primary/10 rounded-lg border-l-4 border-primary">
+                         <h4 className="font-medium text-foreground mb-1">Visual Analysis:</h4>
                         <p className="text-sm text-blue-800">
                           {(diagnosisResult as any).visual_analysis}
                         </p>

@@ -877,7 +877,7 @@ const KnowledgeHub = () => {
                     if (line.startsWith('- ')) {
                       return (
                         <div key={index} className="flex items-start gap-3 mb-3 ml-6">
-                          <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full mt-2.5 flex-shrink-0 shadow-sm"></div>
+                          <div className="w-2 h-2 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full mt-2.5 flex-shrink-0 shadow-sm"></div>
                           <span className="text-slate-700 leading-relaxed">{line.substring(2)}</span>
                         </div>
                       );

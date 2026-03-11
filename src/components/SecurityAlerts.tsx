@@ -351,8 +351,8 @@ const SecurityAlerts = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                    <p className="text-sm text-blue-800">
+                  <div className="bg-primary/10 border border-primary/30 rounded-lg p-3 mb-4">
+                    <p className="text-sm text-foreground">
                       <strong>Recommendation:</strong> {alert.recommendation}
                     </p>
                   </div>

@@ -234,17 +234,17 @@ const HealthScore = () => {
   };
 
   const getScoreColor = (score: number): string => {
-    if (score >= 85) return 'text-green-600';
-    if (score >= 70) return 'text-blue-600';
-    if (score >= 50) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 85) return 'text-emerald-500';
+    if (score >= 70) return 'text-primary';
+    if (score >= 50) return 'text-yellow-500';
+    return 'text-destructive';
   };
 
   const getScoreBackground = (score: number): string => {
-    if (score >= 85) return 'bg-green-50 border-green-200';
-    if (score >= 70) return 'bg-blue-50 border-blue-200';
-    if (score >= 50) return 'bg-yellow-50 border-yellow-200';
-    return 'bg-red-50 border-red-200';
+    if (score >= 85) return 'bg-emerald-500/10 border-emerald-500/30';
+    if (score >= 70) return 'bg-primary/10 border-primary/30';
+    if (score >= 50) return 'bg-yellow-500/10 border-yellow-500/30';
+    return 'bg-destructive/10 border-destructive/30';
   };
 
   const getHealthStatus = (score: number): string => {

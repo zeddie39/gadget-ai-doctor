@@ -255,13 +255,13 @@ const SecurityAlerts = () => {
             </CardContent>
           </Card>
 
-          <Card className="border-orange-200 bg-orange-50">
+          <Card className="border-orange-500/30 bg-orange-500/10">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-orange-600" />
+                <AlertTriangle className="h-5 w-5 text-orange-500" />
                 <div>
-                  <p className="text-2xl font-bold text-orange-600">{highCount}</p>
-                  <p className="text-sm text-orange-700">High Priority</p>
+                  <p className="text-2xl font-bold text-orange-500">{highCount}</p>
+                  <p className="text-sm text-orange-400">High Priority</p>
                 </div>
               </div>
             </CardContent>

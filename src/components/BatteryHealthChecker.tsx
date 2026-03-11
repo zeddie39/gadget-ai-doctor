@@ -261,7 +261,7 @@ const BatteryHealthChecker = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                 <span className="font-medium">Overall Status</span>
                 <div className="flex items-center gap-2">
                   {getStatusIcon(batteryHealth.status)}

@@ -326,7 +326,7 @@ const IssueHistory = () => {
           </Card>
         ) : (
           issues.map((issue) => (
-            <Card key={issue.id} className="border-l-4 border-l-blue-500">
+            <Card key={issue.id} className="border-l-4 border-l-primary">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>

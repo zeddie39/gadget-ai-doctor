@@ -232,7 +232,7 @@ const AITrainingDashboard = () => {
                 <div className="space-y-2">
                   {metrics?.commonIssues.map((issue, index) => (
                     <div key={index} className="p-2 bg-yellow-500/10 rounded border-l-4 border-yellow-500">
-                      <p className="text-sm text-orange-800">{issue}</p>
+                      <p className="text-sm text-foreground">{issue}</p>
                     </div>
                   ))}
                   {(!metrics?.commonIssues || metrics.commonIssues.length === 0) && (

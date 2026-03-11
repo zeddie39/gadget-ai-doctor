@@ -753,7 +753,7 @@ What's going on with your device? 🤔`;
         <Card className="p-3 bg-primary/10 border-primary/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Smartphone className="h-5 w-5 text-blue-600" />
+              <Smartphone className="h-5 w-5 text-primary" />
               <div>
                 <p className="text-sm font-medium text-gray-900">
                   Detected: {deviceInfo.brand} {deviceInfo.type}

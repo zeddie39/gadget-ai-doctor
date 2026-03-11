@@ -170,7 +170,7 @@ const StorageOptimizer = () => {
           onClick={runStorageAnalysis}
           disabled={isScanning}
           size="lg"
-          className="bg-purple-600 hover:bg-purple-700"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           {isScanning ? (
             <>

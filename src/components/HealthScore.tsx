@@ -357,7 +357,7 @@ const HealthScore = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-green-600" />
+                  <TrendingUp className="h-5 w-5 text-emerald-500" />
                   Improvement Tips
                 </CardTitle>
                 <CardDescription>Specific actions to boost your score</CardDescription>

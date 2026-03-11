@@ -820,7 +820,7 @@ const KnowledgeHub = () => {
           <Button 
             onClick={() => setSelectedArticle(null)}
             variant="outline" 
-            className="mb-8 font-medium hover:bg-blue-50 border-blue-200 text-blue-700"
+            className="mb-8 font-medium hover:bg-primary/10 border-primary/30 text-primary"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Knowledge Hub

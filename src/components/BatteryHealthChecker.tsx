@@ -286,7 +286,7 @@ const BatteryHealthChecker = () => {
                     <p className="font-semibold">{batteryHealth.cycleCount}</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Temperature</span>
+                    <span className="text-muted-foreground">Temperature</span>
                     <p className="font-semibold">{batteryHealth.temperature}°C</p>
                   </div>
                   <div>

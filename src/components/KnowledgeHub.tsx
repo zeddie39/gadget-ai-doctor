@@ -815,7 +815,7 @@ const KnowledgeHub = () => {
 
   if (selectedArticle) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 font-inter">
+      <div className="min-h-screen bg-background font-inter">
         <div className="max-w-4xl mx-auto px-6 py-8">
           <Button 
             onClick={() => setSelectedArticle(null)}

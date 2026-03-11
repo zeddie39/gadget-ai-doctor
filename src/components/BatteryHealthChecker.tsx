@@ -172,14 +172,14 @@ const BatteryHealthChecker = () => {
     switch (status) {
       case 'excellent':
       case 'good':
-        return <CheckCircle className="h-5 w-5 text-green-600" />;
+        return <CheckCircle className="h-5 w-5 text-emerald-500" />;
       case 'fair':
-        return <TrendingDown className="h-5 w-5 text-yellow-600" />;
+        return <TrendingDown className="h-5 w-5 text-yellow-500" />;
       case 'poor':
       case 'critical':
-        return <AlertTriangle className="h-5 w-5 text-red-600" />;
+        return <AlertTriangle className="h-5 w-5 text-destructive" />;
       default:
-        return <Battery className="h-5 w-5 text-gray-600" />;
+        return <Battery className="h-5 w-5 text-muted-foreground" />;
     }
   };
 

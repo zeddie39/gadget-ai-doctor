@@ -635,7 +635,7 @@ const TroubleshootingWizard = () => {
         )}
 
         {deviceType && issueCategory && (
-          <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+          <Card className="bg-primary/10 border-primary/30">
             <CardContent className="pt-6">
               <div className="text-center space-y-4">
                 <div className="flex items-center justify-center gap-4 text-sm text-gray-600">

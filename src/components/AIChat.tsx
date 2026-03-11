@@ -861,7 +861,7 @@ What's going on with your device? 🤔`;
                     onClick={() => handleQuickAction(action)}
                     size="sm"
                     variant="outline"
-                    className="h-6 px-2 text-xs bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700"
+                    className="h-6 px-2 text-xs bg-primary/10 hover:bg-primary/20 border-primary/30 text-primary"
                   >
                     {action}
                   </Button>

@@ -638,7 +638,7 @@ const TroubleshootingWizard = () => {
           <Card className="bg-primary/10 border-primary/30">
             <CardContent className="pt-6">
               <div className="text-center space-y-4">
-                <div className="flex items-center justify-center gap-4 text-sm text-gray-600">
+                <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
                     <span>Est. {estimatedTime} min</span>

@@ -290,7 +290,7 @@ const BatteryHealthChecker = () => {
                     <p className="font-semibold">{batteryHealth.temperature}°C</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Voltage</span>
+                    <span className="text-muted-foreground">Voltage</span>
                     <p className="font-semibold">{batteryHealth.voltage}V</p>
                   </div>
                   <div>

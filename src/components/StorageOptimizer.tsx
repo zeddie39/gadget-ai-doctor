@@ -243,7 +243,7 @@ const StorageOptimizer = () => {
                     {getItemIcon(app.type)}
                     <div className="flex-1">
                       <p className="font-medium text-sm">{app.name}</p>
-                      <p className="text-xs text-gray-600">{formatSize(app.size)} • {app.lastUsed}</p>
+                      <p className="text-xs text-muted-foreground">{formatSize(app.size)} • {app.lastUsed}</p>
                     </div>
                   </div>
                 ))}

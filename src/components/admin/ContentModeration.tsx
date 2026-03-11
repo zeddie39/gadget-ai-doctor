@@ -108,7 +108,7 @@ export default function ContentModeration() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
-                <MessageSquare className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                <MessageSquare className="w-8 h-8 mx-auto mb-2 text-primary" />
                 <p className="text-2xl font-bold">{feedback.length}</p>
                 <p className="text-sm text-muted-foreground">Total Feedback</p>
               </div>

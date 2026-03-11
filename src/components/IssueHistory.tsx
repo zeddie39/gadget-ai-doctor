@@ -313,7 +313,7 @@ const IssueHistory = () => {
       <div className="space-y-4">
         {isLoading ? (
           <div className="text-center py-8">
-            <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
             <p>Loading issue history...</p>
           </div>
         ) : issues.length === 0 ? (

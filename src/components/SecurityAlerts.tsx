@@ -211,7 +211,7 @@ const SecurityAlerts = () => {
       <div className="text-center space-y-4">
         <div>
           <h1 className="text-3xl font-bold mb-2">Security & Performance Monitor</h1>
-          <p className="text-gray-600">Real-time monitoring and alerts for device security and performance</p>
+        <p className="text-muted-foreground">Real-time monitoring and alerts for device security and performance</p>
         </div>
         
         <Button

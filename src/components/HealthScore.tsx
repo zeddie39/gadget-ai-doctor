@@ -380,8 +380,8 @@ const HealthScore = () => {
               <CardDescription>Track your device health over time</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-gray-500">
-                <Shield className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+              <div className="text-center py-8 text-muted-foreground">
+                <Shield className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
                 <p>Run multiple health checks to see trends and improvements</p>
               </div>
             </CardContent>

@@ -888,7 +888,7 @@ const KnowledgeHub = () => {
                       const text = line.replace(/^\d+\. /, '');
                       return (
                         <div key={index} className="flex items-start gap-4 mb-3 ml-6">
-                          <div className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1 shadow-md font-medium">
+                          <div className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black text-sm rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1 shadow-md font-medium">
                             {number}
                           </div>
                           <span className="text-slate-700 leading-relaxed">{text}</span>

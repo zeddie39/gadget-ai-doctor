@@ -323,7 +323,7 @@ const HealthScore = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold mb-2" style={{ color: value >= 75 ? '#10b981' : value >= 50 ? '#f59e0b' : '#ef4444' }}>
+                  <div className="text-2xl font-bold mb-2" style={{ color: value >= 75 ? 'hsl(35, 92%, 45%)' : value >= 50 ? 'hsl(45, 93%, 47%)' : 'hsl(0, 84%, 60%)' }}>
                     {value}%
                   </div>
                   <Progress value={value} className="h-2" />

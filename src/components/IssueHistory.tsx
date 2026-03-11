@@ -372,7 +372,7 @@ const IssueHistory = () => {
                         </div>
                       )}
                       {issue.resolved && (
-                        <div className="flex items-center gap-1 text-green-600">
+                        <div className="flex items-center gap-1 text-emerald-500">
                           <CheckCircle className="h-4 w-4" />
                           <span className="text-sm">Resolved</span>
                         </div>

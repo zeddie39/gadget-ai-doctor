@@ -253,7 +253,7 @@ const BatteryHealthChecker = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Battery className="h-5 w-5 text-blue-600" />
+                <Battery className="h-5 w-5 text-primary" />
                 Battery Health Analysis
               </CardTitle>
               <CardDescription>

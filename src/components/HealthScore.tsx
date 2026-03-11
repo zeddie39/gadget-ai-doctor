@@ -271,7 +271,7 @@ const HealthScore = () => {
           onClick={runHealthAnalysis}
           disabled={isAnalyzing}
           size="lg"
-          className="bg-indigo-600 hover:bg-indigo-700"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           {isAnalyzing ? (
             <>

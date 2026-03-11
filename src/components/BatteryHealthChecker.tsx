@@ -238,8 +238,8 @@ const BatteryHealthChecker = () => {
                 </div>
               </div>
               <div>
-                <p className="text-sm text-gray-600 mb-1">Charging Status</p>
-                <p className={`font-semibold ${batteryInfo.charging ? 'text-green-600' : 'text-gray-800'}`}>
+                <p className="text-sm text-muted-foreground mb-1">Charging Status</p>
+                <p className={`font-semibold ${batteryInfo.charging ? 'text-emerald-500' : 'text-foreground'}`}>
                   {batteryInfo.charging ? 'Charging' : 'Not Charging'}
                 </p>
               </div>

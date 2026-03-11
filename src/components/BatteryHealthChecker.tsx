@@ -326,12 +326,12 @@ const BatteryHealthChecker = () => {
                 ))}
               </div>
               
-              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                 <div className="flex items-start gap-2">
-                  <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5" />
+                  <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5" />
                   <div className="text-sm">
-                    <p className="font-medium text-yellow-800 mb-1">Pro Tip:</p>
-                    <p className="text-yellow-700">
+                    <p className="font-medium text-yellow-400 mb-1">Pro Tip:</p>
+                    <p className="text-yellow-400/80">
                       Monitor your battery health monthly. Sudden drops in capacity may indicate hardware issues.
                     </p>
                   </div>

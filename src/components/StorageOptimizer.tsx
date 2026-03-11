@@ -254,7 +254,7 @@ const StorageOptimizer = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Image className="h-5 w-5 text-purple-600" />
+                  <Image className="h-5 w-5 text-accent" />
                   Duplicate Photos
                 </CardTitle>
                 <CardDescription>{analysis.duplicatePhotos.length} duplicates found</CardDescription>

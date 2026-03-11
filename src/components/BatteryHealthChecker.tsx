@@ -317,11 +317,11 @@ const BatteryHealthChecker = () => {
             <CardContent>
               <div className="space-y-3">
                 {recommendations.map((rec, index) => (
-                  <div key={index} className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                    <div className="w-6 h-6 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+                  <div key={index} className="flex items-start gap-3 p-3 bg-primary/10 rounded-lg">
+                    <div className="w-6 h-6 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
                       {index + 1}
                     </div>
-                    <span className="text-blue-800 text-sm">{rec}</span>
+                    <span className="text-foreground text-sm">{rec}</span>
                   </div>
                 ))}
               </div>

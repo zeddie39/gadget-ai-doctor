@@ -777,8 +777,8 @@ What's going on with your device? 🤔`;
       )}
       
       {/* Chat Container */}
-      <div className="h-96 flex flex-col border rounded-lg bg-white shadow-sm">
-        <div className="flex-1 overflow-y-auto space-y-4 p-4 bg-gray-50">
+      <div className="h-96 flex flex-col border border-border rounded-lg bg-card shadow-sm">
+        <div className="flex-1 overflow-y-auto space-y-4 p-4 bg-muted/30">
         {messages.map((message) => (
           <div
             key={message.id}

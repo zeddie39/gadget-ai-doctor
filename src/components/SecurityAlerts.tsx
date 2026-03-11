@@ -267,13 +267,13 @@ const SecurityAlerts = () => {
             </CardContent>
           </Card>
 
-          <Card className="border-blue-200 bg-blue-50">
+          <Card className="border-primary/30 bg-primary/10">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2">
-                <Eye className="h-5 w-5 text-blue-600" />
+                <Eye className="h-5 w-5 text-primary" />
                 <div>
-                  <p className="text-2xl font-bold text-blue-600">{activeAlerts.length}</p>
-                  <p className="text-sm text-blue-700">Total Alerts</p>
+                  <p className="text-2xl font-bold text-primary">{activeAlerts.length}</p>
+                  <p className="text-sm text-primary/80">Total Alerts</p>
                 </div>
               </div>
             </CardContent>

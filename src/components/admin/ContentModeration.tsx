@@ -117,7 +117,7 @@ export default function ContentModeration() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
-                <ThumbsUp className="w-8 h-8 mx-auto mb-2 text-green-600" />
+                <ThumbsUp className="w-8 h-8 mx-auto mb-2 text-emerald-500" />
                 <p className="text-2xl font-bold">{positiveFeedback}</p>
                 <p className="text-sm text-muted-foreground">Positive Reviews</p>
               </div>

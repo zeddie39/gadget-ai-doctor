@@ -282,7 +282,7 @@ const BatteryHealthChecker = () => {
                 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-600">Cycle Count</span>
+                    <span className="text-muted-foreground">Cycle Count</span>
                     <p className="font-semibold">{batteryHealth.cycleCount}</p>
                   </div>
                   <div>

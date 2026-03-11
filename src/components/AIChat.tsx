@@ -750,7 +750,7 @@ What's going on with your device? 🤔`;
     <div className="w-full max-w-4xl mx-auto space-y-4">
       {/* Device Info Header */}
       {deviceInfo && (
-        <Card className="p-3 bg-gradient-to-r from-blue-50 to-green-50 border-blue-200">
+        <Card className="p-3 bg-primary/10 border-primary/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Smartphone className="h-5 w-5 text-blue-600" />

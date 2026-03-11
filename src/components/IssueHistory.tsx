@@ -208,7 +208,7 @@ const IssueHistory = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-yellow-600" />
+              <Clock className="h-5 w-5 text-yellow-500" />
               <div>
                 <p className="text-2xl font-bold">{issues.length - getResolvedCount()}</p>
                 <p className="text-sm text-gray-600">Pending</p>

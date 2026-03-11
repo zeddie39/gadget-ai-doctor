@@ -727,13 +727,13 @@ const TroubleshootingWizard = () => {
         </div>
 
         {currentStepData.isComplete ? (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-            <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
-            <h4 className="text-lg font-semibold text-green-800 mb-2">
+          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-6 text-center">
+            <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto mb-4" />
+            <h4 className="text-lg font-semibold text-emerald-400 mb-2">
               {currentStepData.title}
             </h4>
-            <p className="text-green-700 mb-4">{currentStepData.description}</p>
-            <Button onClick={resetWizard} className="bg-green-600 hover:bg-green-700">
+            <p className="text-emerald-400/80 mb-4">{currentStepData.description}</p>
+            <Button onClick={resetWizard} className="bg-emerald-600 hover:bg-emerald-700 text-white">
               Troubleshoot Another Issue
             </Button>
           </div>

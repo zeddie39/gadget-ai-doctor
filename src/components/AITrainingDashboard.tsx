@@ -236,7 +236,7 @@ const AITrainingDashboard = () => {
                     </div>
                   ))}
                   {(!metrics?.commonIssues || metrics.commonIssues.length === 0) && (
-                    <div className="flex items-center gap-2 text-green-600">
+                    <div className="flex items-center gap-2 text-emerald-500">
                       <CheckCircle className="h-4 w-4" />
                       <span className="text-sm">No major issues reported!</span>
                     </div>

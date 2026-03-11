@@ -256,7 +256,7 @@ export default function UserManagement() {
 
                     <div className="flex gap-2">
                       {user.isSuperAdmin ? (
-                        <Badge variant="default" className="bg-gradient-to-r from-purple-600 to-blue-600">
+                        <Badge variant="default" className="bg-gradient-to-r from-amber-500 to-yellow-600 text-black">
                           Super Admin
                         </Badge>
                       ) : user.roles.includes('admin') ? (

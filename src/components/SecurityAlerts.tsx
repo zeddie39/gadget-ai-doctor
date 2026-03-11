@@ -297,9 +297,9 @@ const SecurityAlerts = () => {
 
       {/* Critical Alerts Banner */}
       {criticalCount > 0 && (
-        <Alert className="border-red-200 bg-red-50">
-          <AlertTriangle className="h-4 w-4 text-red-600" />
-          <AlertDescription className="text-red-800">
+        <Alert className="border-destructive/30 bg-destructive/10">
+          <AlertTriangle className="h-4 w-4 text-destructive" />
+          <AlertDescription className="text-destructive">
             <strong>Critical Security Alert!</strong> You have {criticalCount} critical issue{criticalCount > 1 ? 's' : ''} that require immediate attention.
           </AlertDescription>
         </Alert>

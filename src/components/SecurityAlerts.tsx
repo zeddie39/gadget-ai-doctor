@@ -318,9 +318,9 @@ const SecurityAlerts = () => {
         ) : activeAlerts.length === 0 ? (
           <Card>
             <CardContent className="text-center py-12">
-              <Shield className="h-12 w-12 mx-auto mb-4 text-green-500" />
-              <p className="text-lg font-medium text-green-700">All Clear!</p>
-              <p className="text-gray-600">No security or performance issues detected</p>
+              <Shield className="h-12 w-12 mx-auto mb-4 text-emerald-500" />
+              <p className="text-lg font-medium text-emerald-400">All Clear!</p>
+              <p className="text-muted-foreground">No security or performance issues detected</p>
             </CardContent>
           </Card>
         ) : (

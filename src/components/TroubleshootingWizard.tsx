@@ -712,15 +712,15 @@ const TroubleshootingWizard = () => {
           />
         </div>
         
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <p className="text-blue-800 font-medium mb-2">{currentStepData.description}</p>
+        <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 mb-6">
+          <p className="text-foreground font-medium mb-2">{currentStepData.description}</p>
           <div className="space-y-2">
             {currentStepData.instructions.map((instruction, index) => (
               <div key={index} className="flex items-start gap-2">
-                <span className="bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center mt-0.5 flex-shrink-0">
+                <span className="bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center mt-0.5 flex-shrink-0">
                   {index + 1}
                 </span>
-                <span className="text-blue-700">{instruction}</span>
+                <span className="text-foreground/80">{instruction}</span>
               </div>
             ))}
           </div>

@@ -367,7 +367,7 @@ const SecurityAlerts = () => {
                         <Button
                           onClick={() => takeAction(alert)}
                           size="sm"
-                          className="bg-blue-600 hover:bg-blue-700"
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground"
                         >
                           Take Action
                         </Button>

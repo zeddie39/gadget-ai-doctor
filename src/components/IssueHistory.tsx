@@ -220,7 +220,7 @@ const IssueHistory = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-purple-600" />
+              <DollarSign className="h-5 w-5 text-accent" />
               <div>
                 <p className="text-2xl font-bold">${calculateTotalCost().toFixed(2)}</p>
                 <p className="text-sm text-gray-600">Total Cost</p>

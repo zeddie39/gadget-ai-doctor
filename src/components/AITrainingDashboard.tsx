@@ -171,7 +171,7 @@ const AITrainingDashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-emerald-500">
                 {metrics?.positiveRate.toFixed(1) || 0}%
               </div>
               <Progress value={metrics?.positiveRate || 0} className="mt-2" />

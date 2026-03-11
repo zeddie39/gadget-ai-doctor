@@ -282,7 +282,7 @@ const StorageOptimizer = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Folder className="h-5 w-5 text-orange-600" />
+                  <Folder className="h-5 w-5 text-yellow-500" />
                   Cache Files
                 </CardTitle>
                 <CardDescription>{analysis.cacheFiles.length} cache types found</CardDescription>

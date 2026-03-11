@@ -844,8 +844,8 @@ What's going on with your device? 🤔`;
               <div className="flex gap-1 mt-1 ml-12">
                 <span className={`text-xs px-2 py-1 rounded ${
                   message.feedback === 'positive'
-                    ? 'text-green-600 bg-green-50'
-                    : 'text-red-600 bg-red-50'
+                    ? 'text-emerald-400 bg-emerald-500/10'
+                    : 'text-destructive bg-destructive/10'
                 }`}>
                   {message.feedback === 'positive' ? '👍 Helpful' : '👎 Not helpful'}
                 </span>

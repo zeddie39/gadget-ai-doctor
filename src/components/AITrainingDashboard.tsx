@@ -223,7 +223,7 @@ const AITrainingDashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5 text-orange-600" />
+                  <AlertCircle className="h-5 w-5 text-yellow-500" />
                   Common Issues
                 </CardTitle>
                 <CardDescription>Areas needing AI improvement</CardDescription>

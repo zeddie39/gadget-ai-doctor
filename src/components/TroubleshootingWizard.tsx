@@ -655,7 +655,7 @@ const TroubleshootingWizard = () => {
                 <Button 
                   onClick={startTroubleshooting}
                   size="lg"
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg"
+                  className="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-black shadow-lg"
                 >
                   Start Troubleshooting
                   <ChevronRight className="ml-2 h-4 w-4" />

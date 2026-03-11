@@ -824,7 +824,7 @@ What's going on with your device? 🤔`;
                   onClick={() => submitFeedback(message.id, true, messages.find(m => m.id === message.id - 1)?.text)}
                   size="sm"
                   variant="ghost"
-                  className="h-6 px-2 text-xs text-green-600 hover:text-green-700 hover:bg-green-50"
+                  className="h-6 px-2 text-xs text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10"
                 >
                   <ThumbsUp className="h-3 w-3 mr-1" />
                   Good

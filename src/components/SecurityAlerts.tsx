@@ -174,8 +174,8 @@ const SecurityAlerts = () => {
   };
 
   const getAlertIcon = (type: string, severity: string) => {
-    const iconClass = severity === 'critical' || severity === 'high' ? 'text-red-600' : 
-                     severity === 'medium' ? 'text-yellow-600' : 'text-blue-600';
+    const iconClass = severity === 'critical' || severity === 'high' ? 'text-destructive' : 
+                     severity === 'medium' ? 'text-yellow-500' : 'text-primary';
     
     switch (type) {
       case 'security': return <Shield className={`h-5 w-5 ${iconClass}`} />;

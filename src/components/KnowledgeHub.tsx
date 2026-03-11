@@ -927,7 +927,7 @@ const KnowledgeHub = () => {
       <div className="max-w-7xl mx-auto px-6 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-slate-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent">
+          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text text-transparent">
             Knowledge Hub
           </h1>
           <p className="text-xl text-slate-600 font-light max-w-2xl mx-auto leading-relaxed">

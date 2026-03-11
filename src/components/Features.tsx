@@ -36,13 +36,13 @@ const Features = () => {
   ];
 
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-950">
+    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-background">
       <div className="mx-auto max-w-7xl">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold sm:text-5xl mb-4 text-white">
+          <h2 className="text-4xl font-bold sm:text-5xl mb-4 text-foreground">
             Powerful AI-Driven Features
           </h2>
-          <p className="text-lg text-gray-400 max-w-3xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
             Advanced diagnostic tools and intelligent recommendations to keep your gadgets running at their best
           </p>
         </div>
@@ -51,18 +51,18 @@ const Features = () => {
           {features.map((feature, index) => (
             <Card
               key={index}
-              className="group hover:shadow-2xl hover:shadow-cyan-500/10 transition-all duration-300 hover:scale-[1.03] border border-white/10 bg-white/5 backdrop-blur-md"
+              className="group hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 hover:scale-[1.03] border border-border bg-card backdrop-blur-md"
             >
               <CardHeader className="text-center pb-4">
                 <div className="mx-auto w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                   <feature.icon className="h-7 w-7 text-primary" />
                 </div>
-                <CardTitle className="text-lg font-semibold text-white">
+                <CardTitle className="text-lg font-semibold text-card-foreground">
                   {feature.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-gray-400 text-center leading-relaxed">
+                <CardDescription className="text-muted-foreground text-center leading-relaxed">
                   {feature.description}
                 </CardDescription>
               </CardContent>

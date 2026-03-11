@@ -24,13 +24,13 @@ const HowItWorks = () => {
   ];
 
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-900">
+    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-secondary">
       <div className="mx-auto max-w-7xl">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold sm:text-5xl mb-4 text-white">
+          <h2 className="text-4xl font-bold sm:text-5xl mb-4 text-foreground">
             How ElectroDoctor Works
           </h2>
-          <p className="text-lg text-gray-400 max-w-3xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
             Get expert device diagnostics in three simple steps
           </p>
         </div>
@@ -42,12 +42,12 @@ const HowItWorks = () => {
                 <step.icon className="h-10 w-10 text-primary" />
               </div>
               <div className="text-4xl font-bold text-primary/30 mb-2">{index + 1}</div>
-              <h3 className="text-xl font-semibold text-white mb-3">{step.title}</h3>
-              <p className="text-gray-400 leading-relaxed max-w-sm mx-auto">{step.description}</p>
+              <h3 className="text-xl font-semibold text-foreground mb-3">{step.title}</h3>
+              <p className="text-muted-foreground leading-relaxed max-w-sm mx-auto">{step.description}</p>
 
               {index < steps.length - 1 && (
                 <div className="hidden md:block absolute top-10 -right-4 z-10">
-                  <ArrowRight className="h-6 w-6 text-gray-600" />
+                  <ArrowRight className="h-6 w-6 text-muted-foreground" />
                 </div>
               )}
             </div>
@@ -58,7 +58,7 @@ const HowItWorks = () => {
           <Button
             onClick={() => navigate('/diagnose')}
             size="lg"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground px-12 py-4 text-lg font-semibold rounded-xl shadow-lg shadow-cyan-500/20 hover:shadow-xl transition-all duration-300 hover:scale-105"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-12 py-4 text-lg font-semibold rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl transition-all duration-300 hover:scale-105"
           >
             Start Diagnosing Now
             <ArrowRight className="ml-2 h-5 w-5" />

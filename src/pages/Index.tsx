@@ -44,7 +44,7 @@ const Index = () => {
               onClick={() => navigate('/install')}
               variant="ghost"
               size="sm"
-              className="text-teal-300 hover:text-white hover:bg-white/10"
+              className="text-amber-400 hover:text-white hover:bg-white/10"
             >
               <Download className="h-4 w-4 mr-1" />
               Install

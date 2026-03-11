@@ -20,7 +20,6 @@ const Admin = () => {
   const [activeTab, setActiveTab] = useState('users');
 
   useEffect(() => {
-    // Check authentication
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (!session) {
@@ -69,10 +68,10 @@ const Admin = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Shield className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
-          <p className="text-lg text-gray-600">Loading admin panel...</p>
+          <p className="text-lg text-muted-foreground">Loading admin panel...</p>
         </div>
       </div>
     );
@@ -80,7 +79,7 @@ const Admin = () => {
 
   if (!session || !isAdmin) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
@@ -105,17 +104,17 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50 py-8 px-4">
+    <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-start mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              <span className="bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent flex items-center gap-2">
-                <Shield className="w-8 h-8 text-blue-600" />
+            <h1 className="text-4xl font-bold mb-4">
+              <span className="bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text text-transparent flex items-center gap-2">
+                <Shield className="w-8 h-8 text-primary" />
                 Admin Panel
               </span>
             </h1>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-muted-foreground">
               Manage users, monitor analytics, and moderate platform content
             </p>
           </div>

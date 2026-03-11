@@ -279,15 +279,15 @@ const SecurityAlerts = () => {
             </CardContent>
           </Card>
 
-          <Card className="border-green-200 bg-green-50">
+          <Card className="border-emerald-500/30 bg-emerald-500/10">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2">
-                <Zap className="h-5 w-5 text-green-600" />
+                <Zap className="h-5 w-5 text-emerald-500" />
                 <div>
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="text-2xl font-bold text-emerald-500">
                     {activeAlerts.filter(alert => alert.actionable).length}
                   </p>
-                  <p className="text-sm text-green-700">Actionable</p>
+                  <p className="text-sm text-emerald-400">Actionable</p>
                 </div>
               </div>
             </CardContent>

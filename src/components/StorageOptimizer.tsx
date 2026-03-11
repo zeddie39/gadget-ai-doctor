@@ -156,10 +156,10 @@ const StorageOptimizer = () => {
 
   const getItemIcon = (type: string) => {
     switch (type) {
-      case 'app': return <Zap className="h-4 w-4 text-blue-600" />;
-      case 'photo': return <Image className="h-4 w-4 text-purple-600" />;
-      case 'cache': return <Folder className="h-4 w-4 text-orange-600" />;
-      default: return <Folder className="h-4 w-4 text-gray-600" />;
+      case 'app': return <Zap className="h-4 w-4 text-primary" />;
+      case 'photo': return <Image className="h-4 w-4 text-accent" />;
+      case 'cache': return <Folder className="h-4 w-4 text-yellow-500" />;
+      default: return <Folder className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
@@ -170,7 +170,7 @@ const StorageOptimizer = () => {
           onClick={runStorageAnalysis}
           disabled={isScanning}
           size="lg"
-          className="bg-purple-600 hover:bg-purple-700"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           {isScanning ? (
             <>
@@ -205,15 +205,15 @@ const StorageOptimizer = () => {
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 pt-4">
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <p className="text-2xl font-bold text-green-600">{formatSize(analysis.potentialCleanupSize)}</p>
-                    <p className="text-sm text-green-700">Can be freed</p>
+                  <div className="text-center p-4 bg-emerald-500/10 rounded-lg">
+                    <p className="text-2xl font-bold text-emerald-500">{formatSize(analysis.potentialCleanupSize)}</p>
+                    <p className="text-sm text-emerald-400">Can be freed</p>
                   </div>
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <p className="text-2xl font-bold text-blue-600">
+                  <div className="text-center p-4 bg-primary/10 rounded-lg">
+                    <p className="text-2xl font-bold text-primary">
                       {Math.round(((analysis.totalStorageAvailable - analysis.totalStorageUsed) / analysis.totalStorageAvailable) * 100)}%
                     </p>
-                    <p className="text-sm text-blue-700">Free space</p>
+                    <p className="text-sm text-primary/80">Free space</p>
                   </div>
                 </div>
               </div>
@@ -226,7 +226,7 @@ const StorageOptimizer = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-blue-600" />
+                  <Zap className="h-5 w-5 text-primary" />
                   Unused Apps
                 </CardTitle>
                 <CardDescription>{analysis.unusedApps.length} apps found</CardDescription>
@@ -243,7 +243,7 @@ const StorageOptimizer = () => {
                     {getItemIcon(app.type)}
                     <div className="flex-1">
                       <p className="font-medium text-sm">{app.name}</p>
-                      <p className="text-xs text-gray-600">{formatSize(app.size)} • {app.lastUsed}</p>
+                      <p className="text-xs text-muted-foreground">{formatSize(app.size)} • {app.lastUsed}</p>
                     </div>
                   </div>
                 ))}
@@ -254,7 +254,7 @@ const StorageOptimizer = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Image className="h-5 w-5 text-purple-600" />
+                  <Image className="h-5 w-5 text-accent" />
                   Duplicate Photos
                 </CardTitle>
                 <CardDescription>{analysis.duplicatePhotos.length} duplicates found</CardDescription>
@@ -271,7 +271,7 @@ const StorageOptimizer = () => {
                     {getItemIcon(photo.type)}
                     <div className="flex-1">
                       <p className="font-medium text-sm">{photo.name}</p>
-                      <p className="text-xs text-gray-600">{formatSize(photo.size)}</p>
+                      <p className="text-xs text-muted-foreground">{formatSize(photo.size)}</p>
                     </div>
                   </div>
                 ))}
@@ -282,7 +282,7 @@ const StorageOptimizer = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Folder className="h-5 w-5 text-orange-600" />
+                  <Folder className="h-5 w-5 text-yellow-500" />
                   Cache Files
                 </CardTitle>
                 <CardDescription>{analysis.cacheFiles.length} cache types found</CardDescription>
@@ -299,7 +299,7 @@ const StorageOptimizer = () => {
                     {getItemIcon(cache.type)}
                     <div className="flex-1">
                       <p className="font-medium text-sm">{cache.name}</p>
-                      <p className="text-xs text-gray-600">{formatSize(cache.size)}</p>
+                      <p className="text-xs text-muted-foreground">{formatSize(cache.size)}</p>
                     </div>
                   </div>
                 ))}
@@ -309,18 +309,18 @@ const StorageOptimizer = () => {
 
           {/* Cleanup Actions */}
           {selectedItems.size > 0 && (
-            <Card className="border-green-200 bg-green-50">
+            <Card className="border-emerald-500/30 bg-emerald-500/10">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-semibold text-green-800">
+                    <p className="font-semibold text-emerald-400">
                       {selectedItems.size} items selected
                     </p>
-                    <p className="text-sm text-green-700">
+                    <p className="text-sm text-emerald-400/80">
                       Will free up {formatSize(calculateSelectedSize())}
                     </p>
                   </div>
-                  <Button onClick={performCleanup} className="bg-green-600 hover:bg-green-700">
+                  <Button onClick={performCleanup} className="bg-emerald-600 hover:bg-emerald-700 text-white">
                     <Trash className="mr-2 h-4 w-4" />
                     Clean Selected Items
                   </Button>
@@ -333,18 +333,18 @@ const StorageOptimizer = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+                <CheckCircle className="h-5 w-5 text-emerald-500" />
                 Optimization Recommendations
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {analysis.recommendations.map((rec, index) => (
-                  <div key={index} className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                    <div className="w-6 h-6 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+                  <div key={index} className="flex items-start gap-3 p-3 bg-primary/10 rounded-lg">
+                    <div className="w-6 h-6 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
                       {index + 1}
                     </div>
-                    <span className="text-blue-800 text-sm">{rec}</span>
+                    <span className="text-foreground text-sm">{rec}</span>
                   </div>
                 ))}
               </div>

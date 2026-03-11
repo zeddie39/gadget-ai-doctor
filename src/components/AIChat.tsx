@@ -750,15 +750,15 @@ What's going on with your device? 🤔`;
     <div className="w-full max-w-4xl mx-auto space-y-4">
       {/* Device Info Header */}
       {deviceInfo && (
-        <Card className="p-3 bg-gradient-to-r from-blue-50 to-green-50 border-blue-200">
+        <Card className="p-3 bg-primary/10 border-primary/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Smartphone className="h-5 w-5 text-blue-600" />
+              <Smartphone className="h-5 w-5 text-primary" />
               <div>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-foreground">
                   Detected: {deviceInfo.brand} {deviceInfo.type}
                 </p>
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-muted-foreground">
                   Resolution: {deviceInfo.screenResolution}
                 </p>
               </div>
@@ -777,8 +777,8 @@ What's going on with your device? 🤔`;
       )}
       
       {/* Chat Container */}
-      <div className="h-96 flex flex-col border rounded-lg bg-white shadow-sm">
-        <div className="flex-1 overflow-y-auto space-y-4 p-4 bg-gray-50">
+      <div className="h-96 flex flex-col border border-border rounded-lg bg-card shadow-sm">
+        <div className="flex-1 overflow-y-auto space-y-4 p-4 bg-muted/30">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -787,18 +787,18 @@ What's going on with your device? 🤔`;
             }`}
           >
             <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-              message.isUser ? 'bg-blue-600' : 'bg-green-600'
+              message.isUser ? 'bg-primary' : 'bg-accent'
             }`}>
               {message.isUser ? (
-                <User className="h-4 w-4 text-white" />
+                <User className="h-4 w-4 text-primary-foreground" />
               ) : (
-                <Bot className="h-4 w-4 text-white" />
+                <Bot className="h-4 w-4 text-accent-foreground" />
               )}
             </div>
             <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg relative group ${
               message.isUser
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-900 border'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-card text-card-foreground border border-border'
             }`}>
               <div className="text-sm whitespace-pre-line">{message.text}</div>
               {!message.isUser && (
@@ -824,7 +824,7 @@ What's going on with your device? 🤔`;
                   onClick={() => submitFeedback(message.id, true, messages.find(m => m.id === message.id - 1)?.text)}
                   size="sm"
                   variant="ghost"
-                  className="h-6 px-2 text-xs text-green-600 hover:text-green-700 hover:bg-green-50"
+                  className="h-6 px-2 text-xs text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10"
                 >
                   <ThumbsUp className="h-3 w-3 mr-1" />
                   Good
@@ -833,7 +833,7 @@ What's going on with your device? 🤔`;
                   onClick={() => submitFeedback(message.id, false, messages.find(m => m.id === message.id - 1)?.text)}
                   size="sm"
                   variant="ghost"
-                  className="h-6 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                  className="h-6 px-2 text-xs text-destructive hover:text-destructive/80 hover:bg-destructive/10"
                 >
                   <ThumbsDown className="h-3 w-3 mr-1" />
                   Poor
@@ -844,8 +844,8 @@ What's going on with your device? 🤔`;
               <div className="flex gap-1 mt-1 ml-12">
                 <span className={`text-xs px-2 py-1 rounded ${
                   message.feedback === 'positive'
-                    ? 'text-green-600 bg-green-50'
-                    : 'text-red-600 bg-red-50'
+                    ? 'text-emerald-400 bg-emerald-500/10'
+                    : 'text-destructive bg-destructive/10'
                 }`}>
                   {message.feedback === 'positive' ? '👍 Helpful' : '👎 Not helpful'}
                 </span>
@@ -861,7 +861,7 @@ What's going on with your device? 🤔`;
                     onClick={() => handleQuickAction(action)}
                     size="sm"
                     variant="outline"
-                    className="h-6 px-2 text-xs bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700"
+                    className="h-6 px-2 text-xs bg-primary/10 hover:bg-primary/20 border-primary/30 text-primary"
                   >
                     {action}
                   </Button>
@@ -872,14 +872,14 @@ What's going on with your device? 🤔`;
         ))}
         {isTyping && (
           <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 flex items-center justify-center">
-              <Bot className="h-4 w-4 text-white" />
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent flex items-center justify-center">
+              <Bot className="h-4 w-4 text-accent-foreground" />
             </div>
-            <div className="bg-white border px-4 py-2 rounded-lg">
+            <div className="bg-card border border-border px-4 py-2 rounded-lg">
               <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
               </div>
             </div>
           </div>
@@ -888,7 +888,7 @@ What's going on with your device? 🤔`;
         </div>
         
         {/* Input Area */}
-        <div className="p-4 border-t bg-white">
+        <div className="p-4 border-t border-border bg-card">
           <div className="flex gap-2">
         <Input
           value={inputText}
@@ -907,7 +907,7 @@ What's going on with your device? 🤔`;
             <Button 
               onClick={handleSendMessage} 
               disabled={!inputText.trim() || isTyping}
-              className="bg-green-600 hover:bg-green-700 disabled:opacity-50"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50"
             >
               <Send className="h-4 w-4" />
             </Button>
@@ -921,7 +921,7 @@ What's going on with your device? 🤔`;
                 onClick={() => setInputText(suggestion)}
                 size="sm"
                 variant="ghost"
-                className="h-6 px-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
               >
                 {suggestion}
               </Button>

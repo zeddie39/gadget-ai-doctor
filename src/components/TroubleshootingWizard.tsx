@@ -635,10 +635,10 @@ const TroubleshootingWizard = () => {
         )}
 
         {deviceType && issueCategory && (
-          <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+          <Card className="bg-primary/10 border-primary/30">
             <CardContent className="pt-6">
               <div className="text-center space-y-4">
-                <div className="flex items-center justify-center gap-4 text-sm text-gray-600">
+                <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
                     <span>Est. {estimatedTime} min</span>
@@ -655,7 +655,7 @@ const TroubleshootingWizard = () => {
                 <Button 
                   onClick={startTroubleshooting}
                   size="lg"
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg"
+                  className="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-black shadow-lg"
                 >
                   Start Troubleshooting
                   <ChevronRight className="ml-2 h-4 w-4" />
@@ -712,28 +712,28 @@ const TroubleshootingWizard = () => {
           />
         </div>
         
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <p className="text-blue-800 font-medium mb-2">{currentStepData.description}</p>
+        <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 mb-6">
+          <p className="text-foreground font-medium mb-2">{currentStepData.description}</p>
           <div className="space-y-2">
             {currentStepData.instructions.map((instruction, index) => (
               <div key={index} className="flex items-start gap-2">
-                <span className="bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center mt-0.5 flex-shrink-0">
+                <span className="bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center mt-0.5 flex-shrink-0">
                   {index + 1}
                 </span>
-                <span className="text-blue-700">{instruction}</span>
+                <span className="text-foreground/80">{instruction}</span>
               </div>
             ))}
           </div>
         </div>
 
         {currentStepData.isComplete ? (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-            <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
-            <h4 className="text-lg font-semibold text-green-800 mb-2">
+          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-6 text-center">
+            <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto mb-4" />
+            <h4 className="text-lg font-semibold text-emerald-400 mb-2">
               {currentStepData.title}
             </h4>
-            <p className="text-green-700 mb-4">{currentStepData.description}</p>
-            <Button onClick={resetWizard} className="bg-green-600 hover:bg-green-700">
+            <p className="text-emerald-400/80 mb-4">{currentStepData.description}</p>
+            <Button onClick={resetWizard} className="bg-emerald-600 hover:bg-emerald-700 text-white">
               Troubleshoot Another Issue
             </Button>
           </div>

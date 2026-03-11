@@ -108,7 +108,7 @@ export default function ContentModeration() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
-                <MessageSquare className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                <MessageSquare className="w-8 h-8 mx-auto mb-2 text-primary" />
                 <p className="text-2xl font-bold">{feedback.length}</p>
                 <p className="text-sm text-muted-foreground">Total Feedback</p>
               </div>
@@ -117,7 +117,7 @@ export default function ContentModeration() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
-                <ThumbsUp className="w-8 h-8 mx-auto mb-2 text-green-600" />
+                <ThumbsUp className="w-8 h-8 mx-auto mb-2 text-emerald-500" />
                 <p className="text-2xl font-bold">{positiveFeedback}</p>
                 <p className="text-sm text-muted-foreground">Positive Reviews</p>
               </div>
@@ -126,7 +126,7 @@ export default function ContentModeration() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
-                <ThumbsDown className="w-8 h-8 mx-auto mb-2 text-red-600" />
+                <ThumbsDown className="w-8 h-8 mx-auto mb-2 text-destructive" />
                 <p className="text-2xl font-bold">{negativeFeedback}</p>
                 <p className="text-sm text-muted-foreground">Negative Reviews</p>
               </div>
@@ -169,7 +169,7 @@ export default function ContentModeration() {
                             <Badge variant="outline">{item.feature_used}</Badge>
                             <Badge variant="outline">{item.feedback_type}</Badge>
                             {item.helpful ? (
-                              <Badge className="bg-green-600">
+                              <Badge className="bg-emerald-600">
                                 <CheckCircle className="w-3 h-3 mr-1" />
                                 Helpful
                               </Badge>

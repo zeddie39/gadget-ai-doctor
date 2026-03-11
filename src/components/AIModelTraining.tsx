@@ -303,7 +303,7 @@ const AIModelTraining: React.FC = () => {
             <Button
               onClick={trainModel}
               disabled={isTraining || !isModelReady}
-              className="flex-1 bg-gradient-to-r from-indigo-600 to-cyan-400 text-white shadow-lg"
+              className="flex-1 bg-gradient-to-r from-amber-500 to-yellow-600 text-black shadow-lg"
             >
               {isTraining ? (
                 <>

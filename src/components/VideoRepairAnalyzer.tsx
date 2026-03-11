@@ -316,7 +316,7 @@ export default function VideoRepairAnalyzer() {
                   {!isScanning && (
                     <div className="absolute inset-0 camera-placeholder">
                       <div className="camera-placeholder-icon">
-                        <Camera className="h-full w-full text-purple-400" />
+                        <Camera className="h-full w-full text-primary/60" />
                       </div>
                       <p className="text-center max-w-xs">
                         Click <strong>Start Camera</strong> to begin real-time analysis

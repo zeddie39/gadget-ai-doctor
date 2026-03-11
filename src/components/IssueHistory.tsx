@@ -184,7 +184,7 @@ const IssueHistory = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-blue-600" />
+              <FileText className="h-5 w-5 text-primary" />
               <div>
                 <p className="text-2xl font-bold">{issues.length}</p>
                 <p className="text-sm text-gray-600">Total Issues</p>
@@ -196,7 +196,7 @@ const IssueHistory = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+              <CheckCircle className="h-5 w-5 text-emerald-500" />
               <div>
                 <p className="text-2xl font-bold">{getResolvedCount()}</p>
                 <p className="text-sm text-gray-600">Resolved</p>
@@ -208,7 +208,7 @@ const IssueHistory = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-yellow-600" />
+              <Clock className="h-5 w-5 text-yellow-500" />
               <div>
                 <p className="text-2xl font-bold">{issues.length - getResolvedCount()}</p>
                 <p className="text-sm text-gray-600">Pending</p>
@@ -220,7 +220,7 @@ const IssueHistory = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-purple-600" />
+              <DollarSign className="h-5 w-5 text-accent" />
               <div>
                 <p className="text-2xl font-bold">${calculateTotalCost().toFixed(2)}</p>
                 <p className="text-sm text-gray-600">Total Cost</p>
@@ -235,7 +235,7 @@ const IssueHistory = () => {
         <h2 className="text-2xl font-bold">Issue History</h2>
         <Dialog open={isAddingIssue} onOpenChange={setIsAddingIssue}>
           <DialogTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
               <Plus className="mr-2 h-4 w-4" />
               Add New Issue
             </Button>
@@ -313,7 +313,7 @@ const IssueHistory = () => {
       <div className="space-y-4">
         {isLoading ? (
           <div className="text-center py-8">
-            <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
             <p>Loading issue history...</p>
           </div>
         ) : issues.length === 0 ? (
@@ -326,7 +326,7 @@ const IssueHistory = () => {
           </Card>
         ) : (
           issues.map((issue) => (
-            <Card key={issue.id} className="border-l-4 border-l-blue-500">
+            <Card key={issue.id} className="border-l-4 border-l-primary">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
@@ -367,12 +367,12 @@ const IssueHistory = () => {
                     <div className="flex items-center gap-4">
                       {issue.repairCost && (
                         <div className="flex items-center gap-1">
-                          <DollarSign className="h-4 w-4 text-green-600" />
+                          <DollarSign className="h-4 w-4 text-emerald-500" />
                           <span className="font-medium">${issue.repairCost.toFixed(2)}</span>
                         </div>
                       )}
                       {issue.resolved && (
-                        <div className="flex items-center gap-1 text-green-600">
+                        <div className="flex items-center gap-1 text-emerald-500">
                           <CheckCircle className="h-4 w-4" />
                           <span className="text-sm">Resolved</span>
                         </div>
@@ -384,7 +384,7 @@ const IssueHistory = () => {
                         <Button
                           size="sm"
                           onClick={() => updateIssueStatus(issue.id, 'completed', true)}
-                          className="bg-green-600 hover:bg-green-700"
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white"
                         >
                           Mark Resolved
                         </Button>

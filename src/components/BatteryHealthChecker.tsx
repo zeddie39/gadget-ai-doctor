@@ -159,12 +159,12 @@ const BatteryHealthChecker = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'excellent': return 'text-green-600';
-      case 'good': return 'text-blue-600';
-      case 'fair': return 'text-yellow-600';
-      case 'poor': return 'text-orange-600';
-      case 'critical': return 'text-red-600';
-      default: return 'text-gray-600';
+      case 'excellent': return 'text-emerald-500';
+      case 'good': return 'text-primary';
+      case 'fair': return 'text-yellow-500';
+      case 'poor': return 'text-orange-500';
+      case 'critical': return 'text-destructive';
+      default: return 'text-muted-foreground';
     }
   };
 
@@ -172,14 +172,14 @@ const BatteryHealthChecker = () => {
     switch (status) {
       case 'excellent':
       case 'good':
-        return <CheckCircle className="h-5 w-5 text-green-600" />;
+        return <CheckCircle className="h-5 w-5 text-emerald-500" />;
       case 'fair':
-        return <TrendingDown className="h-5 w-5 text-yellow-600" />;
+        return <TrendingDown className="h-5 w-5 text-yellow-500" />;
       case 'poor':
       case 'critical':
-        return <AlertTriangle className="h-5 w-5 text-red-600" />;
+        return <AlertTriangle className="h-5 w-5 text-destructive" />;
       default:
-        return <Battery className="h-5 w-5 text-gray-600" />;
+        return <Battery className="h-5 w-5 text-muted-foreground" />;
     }
   };
 
@@ -195,7 +195,7 @@ const BatteryHealthChecker = () => {
           onClick={runBatteryCheck}
           disabled={isChecking}
           size="lg"
-          className="bg-orange-600 hover:bg-orange-700"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           {isChecking ? (
             <>
@@ -212,10 +212,10 @@ const BatteryHealthChecker = () => {
       </div>
 
       {error && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-yellow-600" />
-            <span className="text-yellow-800">{error}</span>
+            <AlertTriangle className="h-5 w-5 text-yellow-500" />
+            <span className="text-yellow-400">{error}</span>
           </div>
         </div>
       )}
@@ -224,22 +224,22 @@ const BatteryHealthChecker = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-green-600" />
+              <Zap className="h-5 w-5 text-primary" />
               Current Battery Status
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Battery Level</p>
+                <p className="text-sm text-muted-foreground mb-1">Battery Level</p>
                 <div className="flex items-center gap-2">
                   <Progress value={batteryInfo.level} className="flex-1" />
                   <span className="font-semibold">{batteryInfo.level}%</span>
                 </div>
               </div>
               <div>
-                <p className="text-sm text-gray-600 mb-1">Charging Status</p>
-                <p className={`font-semibold ${batteryInfo.charging ? 'text-green-600' : 'text-gray-800'}`}>
+                <p className="text-sm text-muted-foreground mb-1">Charging Status</p>
+                <p className={`font-semibold ${batteryInfo.charging ? 'text-emerald-500' : 'text-foreground'}`}>
                   {batteryInfo.charging ? 'Charging' : 'Not Charging'}
                 </p>
               </div>
@@ -253,7 +253,7 @@ const BatteryHealthChecker = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Battery className="h-5 w-5 text-blue-600" />
+                <Battery className="h-5 w-5 text-primary" />
                 Battery Health Analysis
               </CardTitle>
               <CardDescription>
@@ -261,7 +261,7 @@ const BatteryHealthChecker = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                 <span className="font-medium">Overall Status</span>
                 <div className="flex items-center gap-2">
                   {getStatusIcon(batteryHealth.status)}
@@ -282,19 +282,19 @@ const BatteryHealthChecker = () => {
                 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-600">Cycle Count</span>
+                    <span className="text-muted-foreground">Cycle Count</span>
                     <p className="font-semibold">{batteryHealth.cycleCount}</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Temperature</span>
+                    <span className="text-muted-foreground">Temperature</span>
                     <p className="font-semibold">{batteryHealth.temperature}°C</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Voltage</span>
+                    <span className="text-muted-foreground">Voltage</span>
                     <p className="font-semibold">{batteryHealth.voltage}V</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Status</span>
+                    <span className="text-muted-foreground">Status</span>
                     <p className={`font-semibold capitalize ${getStatusColor(batteryHealth.status)}`}>
                       {batteryHealth.status}
                     </p>
@@ -307,7 +307,7 @@ const BatteryHealthChecker = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-purple-600" />
+                <TrendingUp className="h-5 w-5 text-accent" />
                 Optimization Recommendations
               </CardTitle>
               <CardDescription>
@@ -317,21 +317,21 @@ const BatteryHealthChecker = () => {
             <CardContent>
               <div className="space-y-3">
                 {recommendations.map((rec, index) => (
-                  <div key={index} className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                    <div className="w-6 h-6 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+                  <div key={index} className="flex items-start gap-3 p-3 bg-primary/10 rounded-lg">
+                    <div className="w-6 h-6 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
                       {index + 1}
                     </div>
-                    <span className="text-blue-800 text-sm">{rec}</span>
+                    <span className="text-foreground text-sm">{rec}</span>
                   </div>
                 ))}
               </div>
               
-              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                 <div className="flex items-start gap-2">
-                  <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5" />
+                  <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5" />
                   <div className="text-sm">
-                    <p className="font-medium text-yellow-800 mb-1">Pro Tip:</p>
-                    <p className="text-yellow-700">
+                    <p className="font-medium text-yellow-400 mb-1">Pro Tip:</p>
+                    <p className="text-yellow-400/80">
                       Monitor your battery health monthly. Sudden drops in capacity may indicate hardware issues.
                     </p>
                   </div>

@@ -115,7 +115,7 @@ const AITrainingDashboard = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <RefreshCw className="h-8 w-8 animate-spin text-blue-600" />
+        <RefreshCw className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -130,7 +130,7 @@ const AITrainingDashboard = () => {
         <Button 
           onClick={triggerRetraining}
           disabled={retraining}
-          className="bg-gradient-to-r from-indigo-600 to-cyan-400 text-white shadow-lg"
+          className="bg-gradient-to-r from-amber-500 to-yellow-600 text-black shadow-lg"
         >
           <Brain className="h-4 w-4 mr-2" />
           {retraining ? 'Retraining...' : 'Retrain AI Model'}
@@ -151,7 +151,7 @@ const AITrainingDashboard = () => {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-blue-600" />
+                <BarChart3 className="h-4 w-4 text-primary" />
                 Total Feedback
               </CardTitle>
             </CardHeader>
@@ -166,12 +166,12 @@ const AITrainingDashboard = () => {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Target className="h-4 w-4 text-green-600" />
+                <Target className="h-4 w-4 text-emerald-500" />
                 Success Rate
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-emerald-500">
                 {metrics?.positiveRate.toFixed(1) || 0}%
               </div>
               <Progress value={metrics?.positiveRate || 0} className="mt-2" />
@@ -181,12 +181,12 @@ const AITrainingDashboard = () => {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-orange-600" />
+                <AlertCircle className="h-4 w-4 text-yellow-500" />
                 Needs Improvement
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-600">
+              <div className="text-2xl font-bold text-yellow-500">
                 {metrics?.improvementAreas.length || 0}
               </div>
               <p className="text-xs text-gray-500 mt-1">Features below 70% accuracy</p>
@@ -200,7 +200,7 @@ const AITrainingDashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-blue-600" />
+                  <TrendingUp className="h-5 w-5 text-primary" />
                   Feature Performance
                 </CardTitle>
                 <CardDescription>AI accuracy by diagnostic feature</CardDescription>
@@ -223,7 +223,7 @@ const AITrainingDashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5 text-orange-600" />
+                  <AlertCircle className="h-5 w-5 text-yellow-500" />
                   Common Issues
                 </CardTitle>
                 <CardDescription>Areas needing AI improvement</CardDescription>
@@ -231,12 +231,12 @@ const AITrainingDashboard = () => {
               <CardContent>
                 <div className="space-y-2">
                   {metrics?.commonIssues.map((issue, index) => (
-                    <div key={index} className="p-2 bg-orange-50 rounded border-l-4 border-orange-400">
-                      <p className="text-sm text-orange-800">{issue}</p>
+                    <div key={index} className="p-2 bg-yellow-500/10 rounded border-l-4 border-yellow-500">
+                      <p className="text-sm text-foreground">{issue}</p>
                     </div>
                   ))}
                   {(!metrics?.commonIssues || metrics.commonIssues.length === 0) && (
-                    <div className="flex items-center gap-2 text-green-600">
+                    <div className="flex items-center gap-2 text-emerald-500">
                       <CheckCircle className="h-4 w-4" />
                       <span className="text-sm">No major issues reported!</span>
                     </div>

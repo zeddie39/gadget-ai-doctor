@@ -28,7 +28,6 @@ const Diagnose = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // Check authentication
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
@@ -81,10 +80,10 @@ const Diagnose = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Lock className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
-          <p className="text-lg text-gray-600">Loading...</p>
+          <p className="text-lg text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -123,7 +122,6 @@ const Diagnose = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="flex flex-wrap justify-center gap-2 h-auto p-3">
-            {/* Diagnostics Group */}
             <span className="w-full text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground text-center mb-1">Diagnostics</span>
             <TabsTrigger value="photo" className="nav-pill">
               <Camera className="h-4 w-4" />
@@ -150,7 +148,6 @@ const Diagnose = () => {
               <span className="text-xs">Cleaner</span>
             </TabsTrigger>
 
-            {/* Insights & Tools Group */}
             <span className="w-full text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground text-center mt-2 mb-1">Insights & Tools</span>
             <TabsTrigger value="health" className="nav-pill">
               <Shield className="h-4 w-4" />
@@ -182,7 +179,7 @@ const Diagnose = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Camera className="h-6 w-6 text-blue-600" />
+                  <Camera className="h-6 w-6 text-primary" />
                   AI Photo Diagnosis
                 </CardTitle>
                 <CardDescription>
@@ -203,7 +200,7 @@ const Diagnose = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <MessageCircle className="h-6 w-6 text-green-600" />
+                  <MessageCircle className="h-6 w-6 text-primary" />
                   Live AI Chat Support
                 </CardTitle>
                 <CardDescription>
@@ -220,7 +217,7 @@ const Diagnose = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Wrench className="h-6 w-6 text-purple-600" />
+                  <Wrench className="h-6 w-6 text-primary" />
                   Step-by-Step Troubleshooting Wizard
                 </CardTitle>
                 <CardDescription>
@@ -237,7 +234,7 @@ const Diagnose = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Battery className="h-6 w-6 text-orange-600" />
+                  <Battery className="h-6 w-6 text-primary" />
                   Battery Health & Usage Monitor
                 </CardTitle>
                 <CardDescription>
@@ -254,7 +251,7 @@ const Diagnose = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Trash className="h-6 w-6 text-purple-600" />
+                  <Trash className="h-6 w-6 text-primary" />
                   Smart Storage Cleaner & Optimizer
                 </CardTitle>
                 <CardDescription>
@@ -271,7 +268,7 @@ const Diagnose = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-6 w-6 text-indigo-600" />
+                  <Shield className="h-6 w-6 text-primary" />
                   Gadget Health Score & AI Rating
                 </CardTitle>
                 <CardDescription>
@@ -288,7 +285,7 @@ const Diagnose = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-6 w-6 text-blue-600" />
+                  <FileText className="h-6 w-6 text-primary" />
                   Issue History & Repair Tracker
                 </CardTitle>
                 <CardDescription>
@@ -313,7 +310,7 @@ const Diagnose = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Brain className="h-6 w-6 text-purple-600" />
+                  <Brain className="h-6 w-6 text-primary" />
                   AI Training & Analytics
                 </CardTitle>
                 <CardDescription>

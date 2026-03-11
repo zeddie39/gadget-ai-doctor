@@ -234,17 +234,17 @@ const HealthScore = () => {
   };
 
   const getScoreColor = (score: number): string => {
-    if (score >= 85) return 'text-green-600';
-    if (score >= 70) return 'text-blue-600';
-    if (score >= 50) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 85) return 'text-emerald-500';
+    if (score >= 70) return 'text-primary';
+    if (score >= 50) return 'text-yellow-500';
+    return 'text-destructive';
   };
 
   const getScoreBackground = (score: number): string => {
-    if (score >= 85) return 'bg-green-50 border-green-200';
-    if (score >= 70) return 'bg-blue-50 border-blue-200';
-    if (score >= 50) return 'bg-yellow-50 border-yellow-200';
-    return 'bg-red-50 border-red-200';
+    if (score >= 85) return 'bg-emerald-500/10 border-emerald-500/30';
+    if (score >= 70) return 'bg-primary/10 border-primary/30';
+    if (score >= 50) return 'bg-yellow-500/10 border-yellow-500/30';
+    return 'bg-destructive/10 border-destructive/30';
   };
 
   const getHealthStatus = (score: number): string => {
@@ -271,7 +271,7 @@ const HealthScore = () => {
           onClick={runHealthAnalysis}
           disabled={isAnalyzing}
           size="lg"
-          className="bg-indigo-600 hover:bg-indigo-700"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           {isAnalyzing ? (
             <>
@@ -304,8 +304,8 @@ const HealthScore = () => {
             <CardContent>
               <div className="flex items-center justify-center gap-4 mb-4">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">+{healthData.potentialImprovement}%</p>
-                  <p className="text-sm text-gray-600">Potential Improvement</p>
+                  <p className="text-2xl font-bold text-emerald-500">+{healthData.potentialImprovement}%</p>
+                  <p className="text-sm text-muted-foreground">Potential Improvement</p>
                 </div>
               </div>
               <Progress value={healthData.overallScore} className="h-3" />
@@ -323,7 +323,7 @@ const HealthScore = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold mb-2" style={{ color: value >= 75 ? '#10b981' : value >= 50 ? '#f59e0b' : '#ef4444' }}>
+                  <div className="text-2xl font-bold mb-2" style={{ color: value >= 75 ? 'hsl(35, 92%, 45%)' : value >= 50 ? 'hsl(45, 93%, 47%)' : 'hsl(0, 84%, 60%)' }}>
                     {value}%
                   </div>
                   <Progress value={value} className="h-2" />
@@ -337,18 +337,18 @@ const HealthScore = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                  <AlertTriangle className="h-5 w-5 text-yellow-500" />
                   Recommendations
                 </CardTitle>
                 <CardDescription>Actions to maintain device health</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 {healthData.recommendations.map((rec, index) => (
-                  <div key={index} className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
-                    <div className="w-6 h-6 bg-yellow-600 text-white text-xs rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+                  <div key={index} className="flex items-start gap-3 p-3 bg-yellow-500/10 rounded-lg">
+                    <div className="w-6 h-6 bg-yellow-500 text-black text-xs rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
                       {index + 1}
                     </div>
-                    <span className="text-yellow-800 text-sm">{rec}</span>
+                    <span className="text-foreground text-sm">{rec}</span>
                   </div>
                 ))}
               </CardContent>
@@ -357,16 +357,16 @@ const HealthScore = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-green-600" />
+                  <TrendingUp className="h-5 w-5 text-emerald-500" />
                   Improvement Tips
                 </CardTitle>
                 <CardDescription>Specific actions to boost your score</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 {healthData.improvementTips.map((tip, index) => (
-                  <div key={index} className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-green-800 text-sm">{tip}</span>
+                  <div key={index} className="flex items-start gap-3 p-3 bg-emerald-500/10 rounded-lg">
+                    <CheckCircle className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-foreground text-sm">{tip}</span>
                   </div>
                 ))}
               </CardContent>
@@ -380,8 +380,8 @@ const HealthScore = () => {
               <CardDescription>Track your device health over time</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-gray-500">
-                <Shield className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+              <div className="text-center py-8 text-muted-foreground">
+                <Shield className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
                 <p>Run multiple health checks to see trends and improvements</p>
               </div>
             </CardContent>

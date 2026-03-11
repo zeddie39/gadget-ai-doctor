@@ -378,8 +378,8 @@ const PhotoUpload = () => {
         <div
           className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-colors duration-200 ${
             dragActive 
-              ? 'border-blue-500 bg-blue-50' 
-              : 'border-gray-300 hover:border-gray-400'
+              ? 'border-primary bg-primary/10' 
+              : 'border-border hover:border-muted-foreground'
           }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
@@ -402,7 +402,7 @@ const PhotoUpload = () => {
             onChange={handleFileInput}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
-          <Button className="bg-blue-600 hover:bg-blue-700">
+          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
             <Upload className="mr-2 h-4 w-4" />
             Choose File
           </Button>
@@ -497,7 +497,7 @@ const PhotoUpload = () => {
           
           {analyzing ? (
             <div className="text-center py-8">
-              <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Analyzing your device...
               </h3>
@@ -519,9 +519,9 @@ const PhotoUpload = () => {
                     </p>
                     
                     {(diagnosisResult as any).visual_analysis && (
-                      <div className="mb-4 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-                        <h4 className="font-medium text-blue-900 mb-1">Visual Analysis:</h4>
-                        <p className="text-sm text-blue-800">
+                       <div className="mb-4 p-3 bg-primary/10 rounded-lg border-l-4 border-primary">
+                         <h4 className="font-medium text-foreground mb-1">Visual Analysis:</h4>
+                        <p className="text-sm text-foreground/80">
                           {(diagnosisResult as any).visual_analysis}
                         </p>
                       </div>

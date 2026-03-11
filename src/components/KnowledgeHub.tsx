@@ -815,12 +815,12 @@ const KnowledgeHub = () => {
 
   if (selectedArticle) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 font-inter">
+      <div className="min-h-screen bg-background font-inter">
         <div className="max-w-4xl mx-auto px-6 py-8">
           <Button 
             onClick={() => setSelectedArticle(null)}
             variant="outline" 
-            className="mb-8 font-medium hover:bg-blue-50 border-blue-200 text-blue-700"
+            className="mb-8 font-medium hover:bg-primary/10 border-primary/30 text-primary"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Knowledge Hub
@@ -877,7 +877,7 @@ const KnowledgeHub = () => {
                     if (line.startsWith('- ')) {
                       return (
                         <div key={index} className="flex items-start gap-3 mb-3 ml-6">
-                          <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full mt-2.5 flex-shrink-0 shadow-sm"></div>
+                          <div className="w-2 h-2 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full mt-2.5 flex-shrink-0 shadow-sm"></div>
                           <span className="text-slate-700 leading-relaxed">{line.substring(2)}</span>
                         </div>
                       );
@@ -888,7 +888,7 @@ const KnowledgeHub = () => {
                       const text = line.replace(/^\d+\. /, '');
                       return (
                         <div key={index} className="flex items-start gap-4 mb-3 ml-6">
-                          <div className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1 shadow-md font-medium">
+                          <div className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black text-sm rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-1 shadow-md font-medium">
                             {number}
                           </div>
                           <span className="text-slate-700 leading-relaxed">{text}</span>
@@ -923,11 +923,11 @@ const KnowledgeHub = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 font-inter">
+    <div className="min-h-screen bg-background font-inter">
       <div className="max-w-7xl mx-auto px-6 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-slate-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent">
+          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text text-transparent">
             Knowledge Hub
           </h1>
           <p className="text-xl text-slate-600 font-light max-w-2xl mx-auto leading-relaxed">
@@ -957,8 +957,8 @@ const KnowledgeHub = () => {
                 onClick={() => setSelectedCategory(category.id)}
                 className={`flex items-center gap-2 px-4 py-2 font-medium transition-all duration-200 ${
                   selectedCategory === category.id 
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:shadow-xl' 
-                    : 'bg-white/80 backdrop-blur-sm border-slate-200 text-slate-700 hover:bg-blue-50 hover:border-blue-300 shadow-md'
+                    ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-black shadow-lg hover:shadow-xl' 
+                    : 'bg-card backdrop-blur-sm border-border text-foreground hover:bg-primary/10 hover:border-primary/30 shadow-md'
                 }`}
               >
                 <IconComponent className="h-4 w-4" />

@@ -165,17 +165,17 @@ const SecurityAlerts = () => {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
-      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-blue-100 text-blue-800 border-blue-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'critical': return 'bg-destructive/20 text-destructive border-destructive/30';
+      case 'high': return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+      case 'medium': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      case 'low': return 'bg-primary/20 text-primary border-primary/30';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
   const getAlertIcon = (type: string, severity: string) => {
-    const iconClass = severity === 'critical' || severity === 'high' ? 'text-red-600' : 
-                     severity === 'medium' ? 'text-yellow-600' : 'text-blue-600';
+    const iconClass = severity === 'critical' || severity === 'high' ? 'text-destructive' : 
+                     severity === 'medium' ? 'text-yellow-500' : 'text-primary';
     
     switch (type) {
       case 'security': return <Shield className={`h-5 w-5 ${iconClass}`} />;
@@ -211,14 +211,14 @@ const SecurityAlerts = () => {
       <div className="text-center space-y-4">
         <div>
           <h1 className="text-3xl font-bold mb-2">Security & Performance Monitor</h1>
-          <p className="text-gray-600">Real-time monitoring and alerts for device security and performance</p>
+        <p className="text-muted-foreground">Real-time monitoring and alerts for device security and performance</p>
         </div>
         
         <Button
           onClick={runSecurityScan}
           disabled={isScanning}
           size="lg"
-          className="bg-red-600 hover:bg-red-700"
+          className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
         >
           {isScanning ? (
             <>
@@ -234,7 +234,7 @@ const SecurityAlerts = () => {
         </Button>
         
         {lastScan && (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Last scan: {formatTimestamp(lastScan)}
           </p>
         )}
@@ -243,51 +243,51 @@ const SecurityAlerts = () => {
       {/* Alert Summary */}
       {activeAlerts.length > 0 && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="border-red-200 bg-red-50">
+          <Card className="border-destructive/30 bg-destructive/10">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
+                <AlertTriangle className="h-5 w-5 text-destructive" />
                 <div>
-                  <p className="text-2xl font-bold text-red-600">{criticalCount}</p>
-                  <p className="text-sm text-red-700">Critical</p>
+                  <p className="text-2xl font-bold text-destructive">{criticalCount}</p>
+                  <p className="text-sm text-destructive/80">Critical</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-orange-200 bg-orange-50">
+          <Card className="border-orange-500/30 bg-orange-500/10">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-orange-600" />
+                <AlertTriangle className="h-5 w-5 text-orange-500" />
                 <div>
-                  <p className="text-2xl font-bold text-orange-600">{highCount}</p>
-                  <p className="text-sm text-orange-700">High Priority</p>
+                  <p className="text-2xl font-bold text-orange-500">{highCount}</p>
+                  <p className="text-sm text-orange-400">High Priority</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-blue-200 bg-blue-50">
+          <Card className="border-primary/30 bg-primary/10">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2">
-                <Eye className="h-5 w-5 text-blue-600" />
+                <Eye className="h-5 w-5 text-primary" />
                 <div>
-                  <p className="text-2xl font-bold text-blue-600">{activeAlerts.length}</p>
-                  <p className="text-sm text-blue-700">Total Alerts</p>
+                  <p className="text-2xl font-bold text-primary">{activeAlerts.length}</p>
+                  <p className="text-sm text-primary/80">Total Alerts</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-green-200 bg-green-50">
+          <Card className="border-emerald-500/30 bg-emerald-500/10">
             <CardContent className="pt-6">
               <div className="flex items-center gap-2">
-                <Zap className="h-5 w-5 text-green-600" />
+                <Zap className="h-5 w-5 text-emerald-500" />
                 <div>
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className="text-2xl font-bold text-emerald-500">
                     {activeAlerts.filter(alert => alert.actionable).length}
                   </p>
-                  <p className="text-sm text-green-700">Actionable</p>
+                  <p className="text-sm text-emerald-400">Actionable</p>
                 </div>
               </div>
             </CardContent>
@@ -297,9 +297,9 @@ const SecurityAlerts = () => {
 
       {/* Critical Alerts Banner */}
       {criticalCount > 0 && (
-        <Alert className="border-red-200 bg-red-50">
-          <AlertTriangle className="h-4 w-4 text-red-600" />
-          <AlertDescription className="text-red-800">
+        <Alert className="border-destructive/30 bg-destructive/10">
+          <AlertTriangle className="h-4 w-4 text-destructive" />
+          <AlertDescription className="text-destructive">
             <strong>Critical Security Alert!</strong> You have {criticalCount} critical issue{criticalCount > 1 ? 's' : ''} that require immediate attention.
           </AlertDescription>
         </Alert>
@@ -310,17 +310,17 @@ const SecurityAlerts = () => {
         {isScanning ? (
           <Card>
             <CardContent className="text-center py-12">
-              <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
               <p className="text-lg font-medium mb-2">Scanning for Security Threats</p>
-              <p className="text-gray-600">Checking apps, permissions, network security, and performance issues...</p>
+              <p className="text-muted-foreground">Checking apps, permissions, network security, and performance issues...</p>
             </CardContent>
           </Card>
         ) : activeAlerts.length === 0 ? (
           <Card>
             <CardContent className="text-center py-12">
-              <Shield className="h-12 w-12 mx-auto mb-4 text-green-500" />
-              <p className="text-lg font-medium text-green-700">All Clear!</p>
-              <p className="text-gray-600">No security or performance issues detected</p>
+              <Shield className="h-12 w-12 mx-auto mb-4 text-emerald-500" />
+              <p className="text-lg font-medium text-emerald-400">All Clear!</p>
+              <p className="text-muted-foreground">No security or performance issues detected</p>
             </CardContent>
           </Card>
         ) : (
@@ -330,7 +330,7 @@ const SecurityAlerts = () => {
               return severityOrder[b.severity] - severityOrder[a.severity];
             })
             .map((alert) => (
-              <Card key={alert.id} className={`border-l-4 ${alert.severity === 'critical' ? 'border-l-red-500' : alert.severity === 'high' ? 'border-l-orange-500' : alert.severity === 'medium' ? 'border-l-yellow-500' : 'border-l-blue-500'}`}>
+              <Card key={alert.id} className={`border-l-4 ${alert.severity === 'critical' ? 'border-l-destructive' : alert.severity === 'high' ? 'border-l-orange-500' : alert.severity === 'medium' ? 'border-l-yellow-500' : 'border-l-primary'}`}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3 flex-1">
@@ -351,14 +351,14 @@ const SecurityAlerts = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                    <p className="text-sm text-blue-800">
+                  <div className="bg-primary/10 border border-primary/30 rounded-lg p-3 mb-4">
+                    <p className="text-sm text-foreground">
                       <strong>Recommendation:</strong> {alert.recommendation}
                     </p>
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-muted-foreground">
                       Detected {formatTimestamp(alert.timestamp)}
                     </span>
                     
@@ -367,7 +367,7 @@ const SecurityAlerts = () => {
                         <Button
                           onClick={() => takeAction(alert)}
                           size="sm"
-                          className="bg-blue-600 hover:bg-blue-700"
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground"
                         >
                           Take Action
                         </Button>

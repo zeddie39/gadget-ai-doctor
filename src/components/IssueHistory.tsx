@@ -235,7 +235,7 @@ const IssueHistory = () => {
         <h2 className="text-2xl font-bold">Issue History</h2>
         <Dialog open={isAddingIssue} onOpenChange={setIsAddingIssue}>
           <DialogTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
               <Plus className="mr-2 h-4 w-4" />
               Add New Issue
             </Button>

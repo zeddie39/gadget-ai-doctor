@@ -299,7 +299,7 @@ const StorageOptimizer = () => {
                     {getItemIcon(cache.type)}
                     <div className="flex-1">
                       <p className="font-medium text-sm">{cache.name}</p>
-                      <p className="text-xs text-gray-600">{formatSize(cache.size)}</p>
+                      <p className="text-xs text-muted-foreground">{formatSize(cache.size)}</p>
                     </div>
                   </div>
                 ))}

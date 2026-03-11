@@ -497,7 +497,7 @@ const PhotoUpload = () => {
           
           {analyzing ? (
             <div className="text-center py-8">
-              <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 Analyzing your device...
               </h3>

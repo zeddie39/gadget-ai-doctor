@@ -921,7 +921,7 @@ What's going on with your device? 🤔`;
                 onClick={() => setInputText(suggestion)}
                 size="sm"
                 variant="ghost"
-                className="h-6 px-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
               >
                 {suggestion}
               </Button>

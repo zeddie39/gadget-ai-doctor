@@ -130,7 +130,7 @@ const AITrainingDashboard = () => {
         <Button 
           onClick={triggerRetraining}
           disabled={retraining}
-          className="bg-gradient-to-r from-indigo-600 to-cyan-400 text-white shadow-lg"
+          className="bg-gradient-to-r from-amber-500 to-yellow-600 text-black shadow-lg"
         >
           <Brain className="h-4 w-4 mr-2" />
           {retraining ? 'Retraining...' : 'Retrain AI Model'}

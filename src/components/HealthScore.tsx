@@ -364,9 +364,9 @@ const HealthScore = () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 {healthData.improvementTips.map((tip, index) => (
-                  <div key={index} className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-green-800 text-sm">{tip}</span>
+                  <div key={index} className="flex items-start gap-3 p-3 bg-emerald-500/10 rounded-lg">
+                    <CheckCircle className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-foreground text-sm">{tip}</span>
                   </div>
                 ))}
               </CardContent>

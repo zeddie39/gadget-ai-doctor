@@ -195,7 +195,7 @@ const BatteryHealthChecker = () => {
           onClick={runBatteryCheck}
           disabled={isChecking}
           size="lg"
-          className="bg-orange-600 hover:bg-orange-700"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           {isChecking ? (
             <>

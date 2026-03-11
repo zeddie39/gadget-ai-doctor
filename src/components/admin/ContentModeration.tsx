@@ -169,7 +169,7 @@ export default function ContentModeration() {
                             <Badge variant="outline">{item.feature_used}</Badge>
                             <Badge variant="outline">{item.feedback_type}</Badge>
                             {item.helpful ? (
-                              <Badge className="bg-green-600">
+                              <Badge className="bg-emerald-600">
                                 <CheckCircle className="w-3 h-3 mr-1" />
                                 Helpful
                               </Badge>

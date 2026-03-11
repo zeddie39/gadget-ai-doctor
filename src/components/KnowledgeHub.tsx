@@ -957,8 +957,8 @@ const KnowledgeHub = () => {
                 onClick={() => setSelectedCategory(category.id)}
                 className={`flex items-center gap-2 px-4 py-2 font-medium transition-all duration-200 ${
                   selectedCategory === category.id 
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg hover:shadow-xl' 
-                    : 'bg-white/80 backdrop-blur-sm border-slate-200 text-slate-700 hover:bg-blue-50 hover:border-blue-300 shadow-md'
+                    ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-black shadow-lg hover:shadow-xl' 
+                    : 'bg-card backdrop-blur-sm border-border text-foreground hover:bg-primary/10 hover:border-primary/30 shadow-md'
                 }`}
               >
                 <IconComponent className="h-4 w-4" />

@@ -82,48 +82,12 @@ export default function PlatformAnalytics() {
   };
 
   const statCards = [
-    {
-      title: 'Total Users',
-      value: stats.totalUsers,
-      icon: Users,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100',
-    },
-    {
-      title: 'Photo Diagnoses',
-      value: stats.totalDiagnoses,
-      icon: Camera,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100',
-    },
-    {
-      title: 'AI Chat Messages',
-      value: stats.totalChats,
-      icon: MessageCircle,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100',
-    },
-    {
-      title: 'Battery Reports',
-      value: stats.totalBatteryReports,
-      icon: Battery,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-100',
-    },
-    {
-      title: 'Spare Parts',
-      value: stats.totalSpareParts,
-      icon: Package,
-      color: 'text-teal-600',
-      bgColor: 'bg-teal-100',
-    },
-    {
-      title: 'Total Issues',
-      value: stats.totalIssues,
-      icon: AlertTriangle,
-      color: 'text-red-600',
-      bgColor: 'bg-red-100',
-    },
+    { title: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-primary', bgColor: 'bg-primary/10' },
+    { title: 'Photo Diagnoses', value: stats.totalDiagnoses, icon: Camera, color: 'text-accent', bgColor: 'bg-accent/10' },
+    { title: 'AI Chat Messages', value: stats.totalChats, icon: MessageCircle, color: 'text-emerald-500', bgColor: 'bg-emerald-500/10' },
+    { title: 'Battery Reports', value: stats.totalBatteryReports, icon: Battery, color: 'text-yellow-500', bgColor: 'bg-yellow-500/10' },
+    { title: 'Spare Parts', value: stats.totalSpareParts, icon: Package, color: 'text-primary', bgColor: 'bg-primary/10' },
+    { title: 'Total Issues', value: stats.totalIssues, icon: AlertTriangle, color: 'text-destructive', bgColor: 'bg-destructive/10' },
   ];
 
   return (

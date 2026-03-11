@@ -294,7 +294,7 @@ const BatteryHealthChecker = () => {
                     <p className="font-semibold">{batteryHealth.voltage}V</p>
                   </div>
                   <div>
-                    <span className="text-gray-600">Status</span>
+                    <span className="text-muted-foreground">Status</span>
                     <p className={`font-semibold capitalize ${getStatusColor(batteryHealth.status)}`}>
                       {batteryHealth.status}
                     </p>

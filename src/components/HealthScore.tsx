@@ -304,8 +304,8 @@ const HealthScore = () => {
             <CardContent>
               <div className="flex items-center justify-center gap-4 mb-4">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">+{healthData.potentialImprovement}%</p>
-                  <p className="text-sm text-gray-600">Potential Improvement</p>
+                  <p className="text-2xl font-bold text-emerald-500">+{healthData.potentialImprovement}%</p>
+                  <p className="text-sm text-muted-foreground">Potential Improvement</p>
                 </div>
               </div>
               <Progress value={healthData.overallScore} className="h-3" />

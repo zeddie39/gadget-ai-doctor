@@ -52,11 +52,11 @@ const Hero = () => {
       <div className="mx-auto max-w-6xl text-center px-4 py-24 relative z-10 w-full">
         {/* Title */}
         <h1 className="text-5xl sm:text-7xl lg:text-8xl font-bold tracking-tight mb-4">
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-teal-300 drop-shadow-lg">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 drop-shadow-lg">
             ElectroDoctor
           </span>
         </h1>
-        <p className="text-xl sm:text-2xl text-cyan-200 font-medium mb-4">Smart Gadget Doctor</p>
+        <p className="text-xl sm:text-2xl text-amber-200 font-medium mb-4">Smart Gadget Doctor</p>
         <p className="text-base sm:text-lg text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed">
           AI-powered device diagnosis, repair tracking, optimization, and maintenance — all in one app.
         </p>
@@ -66,7 +66,7 @@ const Hero = () => {
           <Button
             onClick={() => handleFeatureClick('photo')}
             size="lg"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 text-lg font-semibold rounded-xl shadow-lg shadow-cyan-500/25 hover:shadow-xl transition-all duration-300 hover:scale-105"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 text-lg font-semibold rounded-xl shadow-lg shadow-amber-500/25 hover:shadow-xl transition-all duration-300 hover:scale-105"
           >
             <Camera className="mr-2 h-5 w-5" />
             Start Diagnosis
@@ -84,7 +84,7 @@ const Hero = () => {
             onClick={() => navigate('/install')}
             variant="outline"
             size="lg"
-            className="border-2 border-teal-400/40 bg-teal-500/10 backdrop-blur-sm text-teal-300 hover:bg-teal-500/20 hover:border-teal-400/60 px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-300 hover:scale-105"
+            className="border-2 border-amber-400/40 bg-amber-500/10 backdrop-blur-sm text-amber-300 hover:bg-amber-500/20 hover:border-amber-400/60 px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-300 hover:scale-105"
           >
             <Download className="mr-2 h-5 w-5" />
             Install App
@@ -99,9 +99,9 @@ const Hero = () => {
               <button
                 key={index}
                 onClick={() => handleFeatureClick(feature.tab)}
-                className="group p-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/15 hover:border-cyan-400/30 transition-all duration-300 hover:scale-105"
+                className="group p-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/15 hover:border-amber-400/30 transition-all duration-300 hover:scale-105"
               >
-                <IconComponent className="h-6 w-6 mx-auto mb-2 text-cyan-400 group-hover:text-white transition-colors" />
+                <IconComponent className="h-6 w-6 mx-auto mb-2 text-amber-400 group-hover:text-white transition-colors" />
                 <p className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">
                   {feature.label}
                 </p>
@@ -113,19 +113,19 @@ const Hero = () => {
         {/* Feature highlights */}
         <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-400">
           <div className="flex items-center gap-2">
-            <Zap className="h-4 w-4 text-yellow-400" />
+            <Zap className="h-4 w-4 text-amber-400" />
             <span>Instant AI Analysis</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-green-400 rounded-full shadow-lg shadow-green-400/50" />
+            <div className="w-3 h-3 bg-amber-400 rounded-full shadow-lg shadow-amber-400/50" />
             <span>Safe & Secure</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-cyan-400 rounded-full shadow-lg shadow-cyan-400/50" />
+            <div className="w-3 h-3 bg-yellow-400 rounded-full shadow-lg shadow-yellow-400/50" />
             <span>Expert Recommendations</span>
           </div>
           <div className="flex items-center gap-2">
-            <Brain className="h-4 w-4 text-purple-400" />
+            <Brain className="h-4 w-4 text-amber-500" />
             <span>Self-Learning AI</span>
           </div>
         </div>

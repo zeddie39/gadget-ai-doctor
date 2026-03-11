@@ -226,7 +226,7 @@ const StorageOptimizer = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-blue-600" />
+                  <Zap className="h-5 w-5 text-primary" />
                   Unused Apps
                 </CardTitle>
                 <CardDescription>{analysis.unusedApps.length} apps found</CardDescription>

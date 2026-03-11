@@ -755,10 +755,10 @@ What's going on with your device? 🤔`;
             <div className="flex items-center gap-3">
               <Smartphone className="h-5 w-5 text-primary" />
               <div>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-foreground">
                   Detected: {deviceInfo.brand} {deviceInfo.type}
                 </p>
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-muted-foreground">
                   Resolution: {deviceInfo.screenResolution}
                 </p>
               </div>

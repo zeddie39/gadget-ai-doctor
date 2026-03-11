@@ -205,15 +205,15 @@ const StorageOptimizer = () => {
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 pt-4">
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <p className="text-2xl font-bold text-green-600">{formatSize(analysis.potentialCleanupSize)}</p>
-                    <p className="text-sm text-green-700">Can be freed</p>
+                  <div className="text-center p-4 bg-emerald-500/10 rounded-lg">
+                    <p className="text-2xl font-bold text-emerald-500">{formatSize(analysis.potentialCleanupSize)}</p>
+                    <p className="text-sm text-emerald-400">Can be freed</p>
                   </div>
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <p className="text-2xl font-bold text-blue-600">
+                  <div className="text-center p-4 bg-primary/10 rounded-lg">
+                    <p className="text-2xl font-bold text-primary">
                       {Math.round(((analysis.totalStorageAvailable - analysis.totalStorageUsed) / analysis.totalStorageAvailable) * 100)}%
                     </p>
-                    <p className="text-sm text-blue-700">Free space</p>
+                    <p className="text-sm text-primary/80">Free space</p>
                   </div>
                 </div>
               </div>

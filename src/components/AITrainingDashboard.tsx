@@ -166,7 +166,7 @@ const AITrainingDashboard = () => {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Target className="h-4 w-4 text-green-600" />
+                <Target className="h-4 w-4 text-emerald-500" />
                 Success Rate
               </CardTitle>
             </CardHeader>

@@ -787,18 +787,18 @@ What's going on with your device? 🤔`;
             }`}
           >
             <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-              message.isUser ? 'bg-blue-600' : 'bg-green-600'
+              message.isUser ? 'bg-primary' : 'bg-accent'
             }`}>
               {message.isUser ? (
-                <User className="h-4 w-4 text-white" />
+                <User className="h-4 w-4 text-primary-foreground" />
               ) : (
-                <Bot className="h-4 w-4 text-white" />
+                <Bot className="h-4 w-4 text-accent-foreground" />
               )}
             </div>
             <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg relative group ${
               message.isUser
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-900 border'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-card text-card-foreground border border-border'
             }`}>
               <div className="text-sm whitespace-pre-line">{message.text}</div>
               {!message.isUser && (

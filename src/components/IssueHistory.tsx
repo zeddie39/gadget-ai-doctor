@@ -196,7 +196,7 @@ const IssueHistory = () => {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+              <CheckCircle className="h-5 w-5 text-emerald-500" />
               <div>
                 <p className="text-2xl font-bold">{getResolvedCount()}</p>
                 <p className="text-sm text-gray-600">Resolved</p>

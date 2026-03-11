@@ -872,7 +872,7 @@ What's going on with your device? 🤔`;
         ))}
         {isTyping && (
           <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 flex items-center justify-center">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent flex items-center justify-center">
               <Bot className="h-4 w-4 text-white" />
             </div>
             <div className="bg-white border px-4 py-2 rounded-lg">

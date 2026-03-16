@@ -99,15 +99,21 @@ const Index = () => {
 
       {/* Footer */}
       <footer className="bg-gray-950 border-t border-white/10 py-10 px-4">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-gray-400 text-sm">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-white">ElectroDoctor</span>
-            <span>© {new Date().getFullYear()}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span>Sponsored by</span>
-            <img src="/ZTech electrictronics logo.png" alt="ZTech" className="w-5 h-5" />
-            <span className="font-medium text-gray-300">ZTech Electronics</span>
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-muted-foreground text-sm">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-foreground">ElectroDoctor</span>
+              <span>© {new Date().getFullYear()}</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <Link to="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+              <Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+            </div>
+            <div className="flex items-center gap-2">
+              <span>Sponsored by</span>
+              <img src="/ZTech electrictronics logo.png" alt="ZTech" className="w-5 h-5" />
+              <span className="font-medium text-foreground/80">ZTech Electronics</span>
+            </div>
           </div>
         </div>
       </footer>

@@ -51,10 +51,15 @@ const Index = () => {
               Install
             </Button>
             {session ? (
-              <Button onClick={handleSignOut} variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10">
-                <LogOut className="h-4 w-4 mr-1" />
-                Sign Out
-              </Button>
+              <>
+                <Button onClick={() => navigate('/profile')} variant="ghost" size="sm" className="text-white hover:bg-white/10">
+                  <User className="h-4 w-4 mr-1" /> Profile
+                </Button>
+                <Button onClick={handleSignOut} variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10">
+                  <LogOut className="h-4 w-4 mr-1" />
+                  Sign Out
+                </Button>
+              </>
             ) : (
               <Button onClick={() => navigate('/auth')} size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
                 <LogIn className="h-4 w-4 mr-1" />

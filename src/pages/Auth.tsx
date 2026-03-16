@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -228,6 +228,11 @@ const Auth = () => {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Creating account..." : "Sign Up"}
                 </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  By signing up, you agree to our{' '}
+                  <Link to="/terms" className="text-primary hover:underline">Terms of Service</Link>{' '}and{' '}
+                  <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
+                </p>
               </form>
             </TabsContent>
           </Tabs>

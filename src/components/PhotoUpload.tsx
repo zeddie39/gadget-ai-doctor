@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, Camera, X, CheckCircle, AlertTriangle, AlertCircle, Scan } from 'lucide-react';
+import { Upload, Camera, X, CheckCircle, AlertTriangle, AlertCircle, Scan, Brain, Wrench } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
@@ -361,13 +362,13 @@ const PhotoUpload = () => {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'critical':
-        return 'border-red-200 bg-red-50';
+        return 'border-destructive/30 bg-destructive/10';
       case 'medium':
-        return 'border-yellow-200 bg-yellow-50';
+        return 'border-accent/30 bg-accent/10';
       case 'minor':
-        return 'border-green-200 bg-green-50';
+        return 'border-emerald-500/30 bg-emerald-500/10';
       default:
-        return 'border-gray-200 bg-gray-50';
+        return 'border-border bg-muted';
     }
   };
 

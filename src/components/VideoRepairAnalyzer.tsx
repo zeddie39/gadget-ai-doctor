@@ -31,7 +31,6 @@ export default function VideoRepairAnalyzer() {
     const loadModel = async () => {
       try {
         console.log('Loading TensorFlow.js model...');
-        toast.success('Loading AI model...');
         const loadedModel = await objectDetection.load();
         setModel(loadedModel);
         console.log('Object detection model loaded successfully');
@@ -42,8 +41,7 @@ export default function VideoRepairAnalyzer() {
       }
     };
 
-    // Add a small delay to ensure TensorFlow.js is ready
-    setTimeout(loadModel, 1000);
+    loadModel();
 
     return () => {
       stopCamera();

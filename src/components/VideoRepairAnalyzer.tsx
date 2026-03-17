@@ -65,23 +65,34 @@ export default function VideoRepairAnalyzer() {
 
   const startCamera = async () => {
     try {
+      // CRITICAL: getUserMedia called directly in click handler for mobile/Capacitor compatibility
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           width: { ideal: 1280 },
           height: { ideal: 720 },
           facingMode: 'environment'
-        }
+        },
+        audio: false
       });
 
       if (videoRef.current && stream) {
         videoRef.current.srcObject = stream;
+        videoRef.current.setAttribute('playsinline', 'true');
+        videoRef.current.setAttribute('webkit-playsinline', 'true');
+        await videoRef.current.play();
         streamRef.current = stream;
         setIsScanning(true);
         toast.success('Camera started successfully');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error accessing camera:', error);
-      toast.error('Unable to access camera');
+      if (error.name === 'NotAllowedError') {
+        toast.error('Camera access denied. Please allow camera permissions in your device settings.');
+      } else if (error.name === 'NotFoundError') {
+        toast.error('No camera found on this device.');
+      } else {
+        toast.error('Unable to access camera. Try again.');
+      }
     }
   };
 

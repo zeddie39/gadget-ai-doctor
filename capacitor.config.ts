@@ -4,10 +4,18 @@ const config: CapacitorConfig = {
   appId: 'com.gadget.aidoctor',
   appName: 'gadget-ai-doctor',
   webDir: 'dist',
-  // server: {
-  //   url: 'https://4ccf9efc-e09f-42b0-ac5c-6379c996d43d.lovableproject.com?forceHideBadge=true',
-  //   cleartext: true,
-  // },
+  server: {
+    url: 'https://4ccf9efc-e09f-42b0-ac5c-6379c996d43d.lovableproject.com?forceHideBadge=true',
+    cleartext: true,
+  },
+  android: {
+    allowMixedContent: true,
+  },
+  plugins: {
+    CapacitorHttp: {
+      enabled: true,
+    },
+  },
 };
 
 export default config;

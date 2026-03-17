@@ -130,7 +130,7 @@ const Diagnose = () => {
   }
 
   return (
-    <div className="min-h-screen premium-gradient p-3 md:p-6 text-foreground">
+    <div className="min-h-screen premium-gradient p-2 sm:p-3 md:p-6 text-foreground">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Proactive Health Dashboard */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">

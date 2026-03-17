@@ -362,13 +362,13 @@ const PhotoUpload = () => {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'critical':
-        return 'border-red-200 bg-red-50';
+        return 'border-destructive/30 bg-destructive/10';
       case 'medium':
-        return 'border-yellow-200 bg-yellow-50';
+        return 'border-accent/30 bg-accent/10';
       case 'minor':
-        return 'border-green-200 bg-green-50';
+        return 'border-emerald-500/30 bg-emerald-500/10';
       default:
-        return 'border-gray-200 bg-gray-50';
+        return 'border-border bg-muted';
     }
   };
 

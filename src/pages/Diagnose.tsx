@@ -5,7 +5,7 @@ import { Session } from '@supabase/supabase-js';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, MessageCircle, Settings, Battery, Wrench, Trash, Shield, BookOpen, FileText, AlertTriangle, Brain, LogOut, Lock, Video, Package, ShieldCheck } from 'lucide-react';
+import { Camera, MessageSquare, Settings, Battery, Wrench, Trash, Shield, BookOpen, FileText, AlertTriangle, Brain, LogOut, Lock, Video, Package, ShieldCheck, Activity, HardDrive, Cpu, User, LayoutDashboard, ScanLine, Sparkles } from 'lucide-react';
 import PhotoUpload from '../components/PhotoUpload';
 import AIChat from '../components/AIChat';
 import TroubleshootingWizard from '../components/TroubleshootingWizard';
@@ -65,6 +65,42 @@ const Diagnose = () => {
     }
   };
 
+  // Real-time Health Metrics
+  const [metrics, setMetrics] = useState({
+    battery: 0,
+    storage: 0,
+    memory: 0,
+    isCharging: false
+  });
+
+  useEffect(() => {
+    const updateMetrics = async () => {
+      // Battery
+      if ('getBattery' in navigator) {
+        const b = await (navigator as any).getBattery();
+        setMetrics(prev => ({ ...prev, battery: Math.round(b.level * 100), isCharging: b.charging }));
+      }
+      
+      // Storage
+      if ('storage' in navigator && 'estimate' in navigator.storage) {
+        const { usage, quota } = await navigator.storage.estimate();
+        if (usage && quota) {
+          setMetrics(prev => ({ ...prev, storage: Math.round((usage / quota) * 100) }));
+        }
+      }
+
+      // Memory (JS Heap)
+      if ('memory' in performance) {
+        const m = (performance as any).memory;
+        setMetrics(prev => ({ ...prev, memory: Math.round((m.usedJSHeapSize / m.jsHeapSizeLimit) * 100) }));
+      }
+    };
+
+    updateMetrics();
+    const interval = setInterval(updateMetrics, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     const tab = searchParams.get('tab');
     const validTabs = ['photo', 'video', 'chat', 'troubleshoot', 'battery', 'storage', 'health', 'history', 'knowledge', 'security', 'training', 'inventory'];
@@ -94,99 +130,138 @@ const Diagnose = () => {
   }
 
   return (
-    <div className="min-h-screen glass p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
-          <div className="flex items-center gap-3">
-            <img src="/ZTech electrictronics logo.png" alt="ZTech Logo" className="h-10 w-10 rounded-lg object-contain" />
+    <div className="min-h-screen premium-gradient p-3 md:p-6 text-foreground">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Proactive Health Dashboard */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+          {[
+            { label: 'Battery', val: metrics.battery, icon: Battery, unit: '%', color: metrics.battery < 20 ? 'text-red-500' : 'text-emerald-500', sub: metrics.isCharging ? 'Charging' : 'On Battery' },
+            { label: 'Storage', val: metrics.storage, icon: HardDrive, unit: '%', color: metrics.storage > 90 ? 'text-red-500' : 'text-cyan-500', sub: 'Capacity' },
+            { label: 'Memory', val: metrics.memory, icon: Activity, unit: '%', color: metrics.memory > 80 ? 'text-orange-500' : 'text-purple-500', sub: 'JS Heap' }
+          ].map((item, i) => (
+            <Card key={i} className="smart-glass border-none group overflow-hidden rounded-2xl">
+              <div className="p-4 flex items-center gap-4">
+                <div className={`p-3 rounded-2xl bg-white/5 group-hover:bg-white/10 transition-colors ${item.color}`}>
+                  <item.icon className="w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between items-baseline mb-1">
+                    <span className="text-sm font-medium text-muted-foreground">{item.label}</span>
+                    <span className={`text-lg font-bold ${item.color}`}>{item.val}{item.unit}</span>
+                  </div>
+                  <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full transition-all duration-1000 ease-out ${item.color.replace('text-', 'bg-')}`} 
+                      style={{ width: `${item.val}%` }} 
+                    />
+                  </div>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1.5 font-semibold">
+                    {item.sub}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-2xl bg-primary/20 smart-glass border-primary/20 glow-border">
+              <Cpu className="w-8 h-8 text-primary animate-pulse" />
+            </div>
             <div>
-              <h1 className="hero-title text-xl sm:text-2xl lg:text-3xl">ElectroDoctor Diagnostic Center</h1>
-              <p className="subtle-muted text-xs sm:text-sm mt-0.5">
-                AI-powered gadget diagnosis, optimization & repair tracking
+              <h1 className="text-2xl md:text-3xl font-black tracking-tight bg-gradient-to-br from-white to-white/50 bg-clip-text text-transparent leading-tight">
+                Diagnostic Hub
+              </h1>
+              <p className="text-muted-foreground text-sm font-medium flex items-center gap-2 mt-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                AI Systems Fully Operational
               </p>
             </div>
           </div>
           <div className="flex gap-2 shrink-0">
             {isAdmin && (
-              <Button onClick={() => navigate('/admin')} variant="outline" size="sm" className="nav-pill">
+              <Button onClick={() => navigate('/admin')} variant="outline" size="sm" className="smart-glass border-primary/20 text-primary hover:bg-primary/20 font-bold rounded-xl">
                 <ShieldCheck className="h-4 w-4 mr-2" />
                 Admin Panel
               </Button>
             )}
-            <Button onClick={handleSignOut} variant="outline" size="sm" className="nav-pill">
+            <Button onClick={handleSignOut} variant="outline" size="sm" className="smart-glass border-white/5 hover:bg-white/10 text-white rounded-xl">
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out
             </Button>
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex flex-wrap justify-center gap-2 h-auto p-3">
-            <span className="w-full text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground text-center mb-1">Diagnostics</span>
-            <TabsTrigger value="photo" className="nav-pill">
-              <Camera className="h-4 w-4" />
-              <span className="text-xs">Photo</span>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-8">
+          <TabsList className="flex flex-wrap justify-center gap-2 h-auto p-3 bg-white/5 smart-glass border-white/10 rounded-2xl">
+            <span className="w-full text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground/60 text-center mb-2">Technical Diagnostics</span>
+            <TabsTrigger value="photo" className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+              <Camera className="h-4 w-4 text-amber-500" />
+              <span className="text-xs font-bold uppercase">Photo</span>
             </TabsTrigger>
-            <TabsTrigger value="video" className="nav-pill">
-              <Video className="h-4 w-4" />
-              <span className="text-xs">Video</span>
+            <TabsTrigger value="video" className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+              <Video className="h-4 w-4 text-blue-500" />
+              <span className="text-xs font-bold uppercase">Video</span>
             </TabsTrigger>
-            <TabsTrigger value="chat" className="nav-pill">
-              <MessageCircle className="h-4 w-4" />
-              <span className="text-xs">AI Chat</span>
+            <TabsTrigger value="chat" className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+              <MessageSquare className="h-4 w-4 text-emerald-500" />
+              <span className="text-xs font-bold uppercase">Support</span>
             </TabsTrigger>
-            <TabsTrigger value="troubleshoot" className="nav-pill">
-              <Wrench className="h-4 w-4" />
-              <span className="text-xs">Wizard</span>
+            <TabsTrigger value="troubleshoot" className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+              <Wrench className="h-4 w-4 text-purple-500" />
+              <span className="text-xs font-bold uppercase">Wizard</span>
             </TabsTrigger>
-            <TabsTrigger value="battery" className="nav-pill">
-              <Battery className="h-4 w-4" />
-              <span className="text-xs">Battery</span>
+            <TabsTrigger value="battery" className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+              <Battery className="h-4 w-4 text-red-500" />
+              <span className="text-xs font-bold uppercase">Battery</span>
             </TabsTrigger>
-            <TabsTrigger value="storage" className="nav-pill">
-              <Trash className="h-4 w-4" />
-              <span className="text-xs">Cleaner</span>
+            <TabsTrigger value="storage" className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+              <Trash className="h-4 w-4 text-cyan-500" />
+              <span className="text-xs font-bold uppercase">Cleaner</span>
             </TabsTrigger>
 
-            <span className="w-full text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground text-center mt-2 mb-1">Insights & Tools</span>
-            <TabsTrigger value="health" className="nav-pill">
-              <Shield className="h-4 w-4" />
-              <span className="text-xs">Health</span>
+            <span className="w-full text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground/60 text-center mt-4 mb-2">Systems & Insights</span>
+            <TabsTrigger value="health" className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+              <Shield className="h-4 w-4 text-indigo-500" />
+              <span className="text-xs font-bold uppercase">Health</span>
             </TabsTrigger>
-            <TabsTrigger value="history" className="nav-pill">
-              <FileText className="h-4 w-4" />
-              <span className="text-xs">History</span>
+            <TabsTrigger value="history" className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+              <FileText className="h-4 w-4 text-gray-400" />
+              <span className="text-xs font-bold uppercase">History</span>
             </TabsTrigger>
-            <TabsTrigger value="knowledge" className="nav-pill">
-              <BookOpen className="h-4 w-4" />
-              <span className="text-xs">Knowledge</span>
+            <TabsTrigger value="knowledge" className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+              <BookOpen className="h-4 w-4 text-green-500" />
+              <span className="text-xs font-bold uppercase">Knowledge</span>
             </TabsTrigger>
-            <TabsTrigger value="security" className="nav-pill">
-              <AlertTriangle className="h-4 w-4" />
-              <span className="text-xs">Security</span>
+            <TabsTrigger value="security" className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+              <AlertTriangle className="h-4 w-4 text-red-400" />
+              <span className="text-xs font-bold uppercase">Security</span>
             </TabsTrigger>
-            <TabsTrigger value="training" className="nav-pill">
-              <Brain className="h-4 w-4" />
-              <span className="text-xs">AI Training</span>
+            <TabsTrigger value="training" className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+              <Brain className="h-4 w-4 text-pink-500" />
+              <span className="text-xs font-bold uppercase">Training</span>
             </TabsTrigger>
-            <TabsTrigger value="inventory" className="nav-pill">
-              <Package className="h-4 w-4" />
-              <span className="text-xs">Inventory</span>
+            <TabsTrigger value="inventory" className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+              <Package className="h-4 w-4 text-orange-400" />
+              <span className="text-xs font-bold uppercase">Inventory</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="photo">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Camera className="h-6 w-6 text-primary" />
+          <TabsContent value="photo" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <Card className="smart-glass border-none p-2 rounded-3xl overflow-hidden shadow-2xl">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-3 text-2xl font-black">
+                  <div className="p-2 rounded-xl bg-amber-500/20">
+                    <Camera className="h-6 w-6 text-amber-500" />
+                  </div>
                   AI Photo Diagnosis
                 </CardTitle>
-                <CardDescription>
-                  Upload photos of your device for AI-powered damage detection and severity assessment
+                <CardDescription className="text-muted-foreground/80 font-medium">
+                  Upload photos for AI-powered damage detection and technical assessment
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-4">
                 <PhotoUpload />
               </CardContent>
             </Card>

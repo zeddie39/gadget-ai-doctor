@@ -750,24 +750,26 @@ What's going on with your device? 🤔`;
     <div className="w-full max-w-4xl mx-auto space-y-4">
       {/* Device Info Header */}
       {deviceInfo && (
-        <Card className="p-3 bg-primary/10 border-primary/30">
-          <div className="flex items-center justify-between">
+        <Card className="p-4 bg-primary/10 border-primary/30 shadow-inner">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <Smartphone className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-sm font-medium text-foreground">
-                  Detected: {deviceInfo.brand} {deviceInfo.type}
+              <div className="p-2 rounded-full bg-primary/20">
+                <Smartphone className="h-5 w-5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-foreground truncate">
+                  {deviceInfo.brand} {deviceInfo.type}
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  Resolution: {deviceInfo.screenResolution}
+                <p className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-tight font-medium">
+                  Res: {deviceInfo.screenResolution}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant={isOnline ? "default" : "destructive"} className="text-xs">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Badge variant={isOnline ? "default" : "destructive"} className="text-[10px] px-2 py-0.5">
                 {isOnline ? "🟢 Online" : "🔴 Offline"}
               </Badge>
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-[10px] px-2 py-0.5 bg-background/50">
                 <Zap className="h-3 w-3 mr-1" />
                 AI Ready
               </Badge>
@@ -795,10 +797,10 @@ What's going on with your device? 🤔`;
                 <Bot className="h-4 w-4 text-accent-foreground" />
               )}
             </div>
-            <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg relative group ${
+            <div className={`max-w-[85%] sm:max-w-md px-4 py-2.5 rounded-2xl relative group shadow-sm ${
               message.isUser
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-card text-card-foreground border border-border'
+                ? 'bg-primary text-primary-foreground rounded-tr-none'
+                : 'bg-card text-card-foreground border border-border rounded-tl-none'
             }`}>
               <div className="text-sm whitespace-pre-line">{message.text}</div>
               {!message.isUser && (
@@ -888,40 +890,44 @@ What's going on with your device? 🤔`;
         </div>
         
         {/* Input Area */}
-        <div className="p-4 border-t border-border bg-card">
-          <div className="flex gap-2">
-        <Input
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Ask about device issues, safety tips, or optimizations..."
-          className="flex-1"
-        />
-        <Button
-          onClick={isRecording ? stopRecording : startRecording}
-          variant={isRecording ? "destructive" : "outline"}
-          size="icon"
-        >
-          {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-        </Button>
+        <div className="p-3 md:p-4 border-t border-border bg-card/50 backdrop-blur-sm">
+          <div className="flex items-center gap-2">
+            <div className="flex-1 relative">
+              <Input
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Ask about device issues..."
+                className="pr-10 rounded-xl border-2 focus-visible:ring-primary h-11"
+              />
+              <button
+                onClick={isRecording ? stopRecording : startRecording}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors ${
+                  isRecording ? "text-destructive" : "text-muted-foreground hover:text-primary"
+                }`}
+              >
+                {isRecording ? <MicOff className="h-5 w-5 animate-pulse" /> : <Mic className="h-5 w-5" />}
+              </button>
+            </div>
             <Button 
               onClick={handleSendMessage} 
               disabled={!inputText.trim() || isTyping}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50"
+              size="icon"
+              className="h-11 w-11 shrink-0 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg disabled:opacity-50"
             >
-              <Send className="h-4 w-4" />
+              <Send className="h-5 w-5" />
             </Button>
           </div>
           
-          {/* Quick Suggestions */}
-          <div className="flex flex-wrap gap-2 mt-2">
+          {/* Quick Suggestions - Premium Styling */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 mt-1">
             {['Battery draining fast', 'Device overheating', 'Screen not responding', 'Storage full'].map((suggestion) => (
               <Button
                 key={suggestion}
                 onClick={() => setInputText(suggestion)}
                 size="sm"
-                variant="ghost"
-                className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
+                variant="outline"
+                className="h-8 px-3 text-[11px] whitespace-nowrap rounded-full bg-background/80 border-primary/20 text-muted-foreground hover:text-primary hover:border-primary transition-all shrink-0"
               >
                 {suggestion}
               </Button>

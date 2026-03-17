@@ -376,49 +376,61 @@ const PhotoUpload = () => {
       
       {!uploadedImage ? (
         <div
-          className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-colors duration-200 ${
+          className={`relative border-2 border-dashed rounded-3xl p-12 text-center transition-all duration-300 smart-glass ${
             dragActive 
-              ? 'border-primary bg-primary/10' 
-              : 'border-border hover:border-muted-foreground'
+              ? 'border-primary bg-primary/20 scale-[1.02]' 
+              : 'border-white/10 hover:border-primary/50'
           }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
         >
-          <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Drop your device image here, or click to select
+          <div className="p-6 rounded-full bg-primary/10 w-fit mx-auto mb-6 group-hover:bg-primary/20 transition-colors">
+            <Upload className="h-12 w-12 text-primary animate-bounce" />
+          </div>
+          <h3 className="text-xl font-black text-foreground mb-2">
+            AI Vision Diagnosis
           </h3>
-          <p className="text-gray-500 mb-4">
-            Supports JPG, PNG, WebP files up to 10MB
+          <p className="text-muted-foreground mb-6 font-medium">
+            Drop your device image here, or click to browse
           </p>
-          <p className="text-sm text-gray-400 mb-4">
-            AI will detect: Screen cracks • Water damage • Battery swelling • Hardware issues
-          </p>
+          <div className="flex flex-wrap justify-center gap-4 mb-8">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <CheckCircle className="w-3 h-3 text-emerald-500" /> Screen Cracks
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <CheckCircle className="w-3 h-3 text-blue-500" /> Water Damage
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <CheckCircle className="w-3 h-3 text-red-500" /> Hardware Safety
+            </div>
+          </div>
           <input
             type="file"
             accept="image/*"
             onChange={handleFileInput}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
-          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 rounded-xl shadow-lg shadow-primary/20">
             <Upload className="mr-2 h-4 w-4" />
-            Choose File
+            SELECT IMAGE
           </Button>
         </div>
       ) : (
         <div className="space-y-6">
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-card rounded-lg border border-primary/50">
+            <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/10 smart-glass">
               <div className="flex items-center gap-3">
-                <Scan className="w-5 h-5 text-primary" />
+                <div className="p-2 rounded-xl bg-primary/20">
+                  <Scan className="w-5 h-5 text-primary" />
+                </div>
                 <div>
-                  <Label htmlFor="synthetic-stimuli-photo" className="text-sm font-medium">
+                  <Label htmlFor="synthetic-stimuli-photo" className="text-sm font-bold">
                     Synthetic Stimuli Overlay
                   </Label>
-                  <p className="text-xs text-muted-foreground">
-                    AR measurement guides and analysis overlays
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                    AR measurement & analysis guides
                   </p>
                 </div>
               </div>
@@ -426,6 +438,7 @@ const PhotoUpload = () => {
                 id="synthetic-stimuli-photo"
                 checked={syntheticStimuli}
                 onCheckedChange={setSyntheticStimuli}
+                className="data-[state=checked]:bg-primary"
               />
             </div>
             
@@ -496,76 +509,104 @@ const PhotoUpload = () => {
           </div>
           
           {analyzing ? (
-            <div className="text-center py-8">
-              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Analyzing your device...
+            <div className="text-center py-12 smart-glass rounded-3xl border-none shadow-xl">
+              <div className="relative w-20 h-20 mx-auto mb-6">
+                <div className="absolute inset-0 border-4 border-primary/20 rounded-full" />
+                <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                <div className="absolute inset-4 bg-primary/10 rounded-full flex items-center justify-center">
+                  <Brain className="w-6 h-6 text-primary animate-pulse" />
+                </div>
+              </div>
+              <h3 className="text-xl font-black text-foreground mb-2">
+                Neural Analysis Initiated...
               </h3>
-              <p className="text-gray-600">
-                AI is detecting damage patterns, checking for cracks, water damage, and hardware issues
+              <p className="text-muted-foreground max-w-sm mx-auto text-sm px-4">
+                Our AI model is currently scanning damage patterns and cross-referencing hardware failure databases.
               </p>
             </div>
           ) : diagnosisResult ? (
             <>
-              <div className={`border rounded-lg p-6 ${getSeverityColor(diagnosisResult.severity)}`}>
-                <div className="flex items-start gap-3 mb-4">
-                  {getSeverityIcon(diagnosisResult.severity)}
+              <div className={`border-none rounded-3xl p-8 smart-glass shadow-2xl overflow-hidden relative ${getSeverityColor(diagnosisResult.severity)}`}>
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                  <Brain className="w-24 h-24" />
+                </div>
+                
+                <div className="flex items-start gap-4 mb-8">
+                  <div className="p-3 rounded-2xl bg-white/10 shadow-inner">
+                    {getSeverityIcon(diagnosisResult.severity)}
+                  </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                      {(diagnosisResult as any).device_type || diagnosisResult.issue} Analysis
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-2">
-                      Confidence: {Math.round(diagnosisResult.confidence * 100)}%
+                    <div className="flex justify-between items-center mb-1">
+                      <h3 className="text-2xl font-black text-foreground">
+                        {(diagnosisResult as any).device_type || diagnosisResult.issue}
+                      </h3>
+                      <Badge variant="outline" className="bg-white/5 border-white/10 font-bold">
+                        {Math.round(diagnosisResult.confidence * 100)}% Confidence
+                      </Badge>
+                    </div>
+                    <p className="text-xs uppercase tracking-widest font-black text-muted-foreground">
+                      Diagnostic ID: {diagnosisId?.slice(0, 8)}
                     </p>
-                    
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-6">
                     {(diagnosisResult as any).visual_analysis && (
-                       <div className="mb-4 p-3 bg-primary/10 rounded-lg border-l-4 border-primary">
-                         <h4 className="font-medium text-foreground mb-1">Visual Analysis:</h4>
-                        <p className="text-sm text-foreground/80">
+                       <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                         <h4 className="text-xs font-black uppercase tracking-wider text-primary mb-3 flex items-center gap-2">
+                           <Scan className="w-3 h-3" /> Visual Observation
+                         </h4>
+                        <p className="text-sm leading-relaxed text-foreground/90 font-medium">
                           {(diagnosisResult as any).visual_analysis}
                         </p>
                       </div>
                     )}
                     
-                    <div className="mb-4">
-                      <h4 className="font-medium text-gray-900 mb-1">Issue Identified:</h4>
-                      <p className="text-gray-700">
+                    <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-red-400 mb-3 flex items-center gap-2">
+                        <AlertTriangle className="w-3 h-3" /> Primary Issue
+                      </h4>
+                      <p className="text-lg font-bold text-foreground">
                         {diagnosisResult.issue}
                       </p>
                     </div>
-                    
-                    <p className="text-gray-700 mb-4">
-                      {diagnosisResult.description}
-                    </p>
+                  </div>
+
+                  <div className="p-6 bg-white/10 rounded-2xl shadow-inner border border-white/5">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-emerald-400 mb-4 flex items-center gap-2">
+                      <Wrench className="w-3 h-3" /> Repair Protocol
+                    </h4>
+                    <ul className="space-y-3">
+                      {diagnosisResult.recommendations.map((rec, index) => (
+                        <li key={index} className="text-sm text-foreground/80 flex items-start gap-3 group">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0 group-hover:scale-150 transition-transform" />
+                          <span className="font-medium">{rec}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
                 
-                <div className="mb-4">
-                  <h4 className="font-semibold text-gray-900 mb-2">Recommendations:</h4>
-                  <ul className="space-y-1">
-                    {diagnosisResult.recommendations.map((rec, index) => (
-                      <li key={index} className="text-sm text-gray-700 flex items-start gap-2">
-                        <span className="text-blue-600 mt-1">•</span>
-                        {rec}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                
-                <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    diagnosisResult.severity === 'critical' ? 'bg-red-100 text-red-800' :
-                    diagnosisResult.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-green-100 text-green-800'
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 pt-6 border-t border-white/10">
+                  <div className={`px-4 py-2 rounded-xl text-[10px] font-black tracking-widest uppercase flex items-center gap-2 ${
+                    diagnosisResult.severity === 'critical' ? 'bg-red-500/20 text-red-500' :
+                    diagnosisResult.severity === 'medium' ? 'bg-yellow-500/20 text-yellow-500' :
+                    'bg-emerald-500/20 text-emerald-500'
                   }`}>
-                    {diagnosisResult.severity.toUpperCase()} PRIORITY
-                  </span>
+                    <div className={`w-2 h-2 rounded-full animate-pulse ${
+                      diagnosisResult.severity === 'critical' ? 'bg-red-500' :
+                      diagnosisResult.severity === 'medium' ? 'bg-yellow-500' :
+                      'bg-emerald-500'
+                    }`} />
+                    {diagnosisResult.severity} PRIORITY STATUS
+                  </div>
                   <Button
                     onClick={clearImage}
-                    variant="outline"
-                    size="sm"
+                    variant="ghost"
+                    className="smart-glass border-white/5 hover:bg-white/10 font-bold px-6 rounded-xl transition-all hover:scale-105"
                   >
-                    Analyze Another Image
+                    Diagnose Another
                   </Button>
                 </div>
               </div>

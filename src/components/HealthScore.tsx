@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Shield, Battery, Folder, Zap, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Shield, Battery, Folder, Zap, TrendingUp, AlertTriangle, CheckCircle, Activity, HardDrive, Cpu, Gauge, Sparkles } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -256,135 +257,187 @@ const HealthScore = () => {
 
   const getMetricIcon = (metric: string) => {
     switch (metric) {
-      case 'storage': return <Folder className="h-5 w-5" />;
+      case 'storage': return <HardDrive className="h-5 w-5" />;
       case 'battery': return <Battery className="h-5 w-5" />;
-      case 'temperature': return <Zap className="h-5 w-5" />;
-      case 'usage': return <Shield className="h-5 w-5" />;
+      case 'temperature': return <Gauge className="h-5 w-5" />;
+      case 'usage': return <Activity className="h-5 w-5" />;
       default: return <Shield className="h-5 w-5" />;
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <div className="text-center">
-        <Button
-          onClick={runHealthAnalysis}
-          disabled={isAnalyzing}
-          size="lg"
-          className="bg-primary hover:bg-primary/90 text-primary-foreground"
-        >
-          {isAnalyzing ? (
-            <>
-              <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
-              Analyzing Device Health...
-            </>
-          ) : (
-            <>
-              <Shield className="mr-2 h-5 w-5" />
-              Run Health Check
-            </>
-          )}
-        </Button>
+    <div className="max-w-6xl mx-auto space-y-10 animate-in fade-in duration-700">
+      <div className="relative group">
+        <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-emerald-500/50 rounded-[2rem] blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+        <Card className="relative smart-glass border-none overflow-hidden rounded-[2rem] p-8 shadow-2xl">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="text-left space-y-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] uppercase tracking-widest font-black text-muted-foreground">Real-time Telemetry Active</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-black tracking-tight text-foreground">
+                Device Neural <span className="text-primary italic">Pulse</span>
+              </h2>
+              <p className="text-muted-foreground max-w-md font-medium">
+                Analyze hardware health, storage efficiency, and thermal performance with our neural diagnostic engine.
+              </p>
+              <Button
+                onClick={runHealthAnalysis}
+                disabled={isAnalyzing}
+                className="group relative bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 py-6 rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-105 active:scale-95 overflow-hidden"
+              >
+                {isAnalyzing ? (
+                  <div className="flex items-center gap-3">
+                    <div className="animate-spin w-5 h-5 border-2 border-white/20 border-t-white rounded-full"></div>
+                    <span>SCANNING SYSTEMS...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <Gauge className="w-5 h-5" />
+                    <span>INITIATE DIAGNOSIS</span>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+              </Button>
+            </div>
+
+            <div className="relative w-48 h-48 md:w-56 md:h-56">
+               <svg className="w-full h-full transform -rotate-90">
+                <circle
+                  cx="50%"
+                  cy="50%"
+                  r="45%"
+                  className="stroke-white/5"
+                  strokeWidth="8"
+                  fill="transparent"
+                />
+                <circle
+                  cx="50%"
+                  cy="50%"
+                  r="45%"
+                  className={`transition-all duration-1000 ease-out ${healthData ? getScoreColor(healthData.overallScore).replace('text-', 'stroke-') : 'stroke-primary/20'}`}
+                  strokeWidth="8"
+                  strokeDasharray="282.7"
+                  strokeDashoffset={282.7 * (1 - (healthData?.overallScore || 0) / 100)}
+                  strokeLinecap="round"
+                  fill="transparent"
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className={`text-5xl font-black ${healthData ? getScoreColor(healthData.overallScore) : 'text-muted-foreground/20'}`}>
+                  {healthData ? healthData.overallScore : '--'}
+                </span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mt-1">
+                  Health Index
+                </span>
+              </div>
+              {isAnalyzing && (
+                <div className="absolute inset-0 smart-scan opacity-40 rounded-full" />
+              )}
+            </div>
+          </div>
+        </Card>
       </div>
 
       {healthData && (
-        <div className="space-y-6">
-          {/* Overall Health Score */}
-          <Card className={`border-2 ${getScoreBackground(healthData.overallScore)}`}>
-            <CardHeader className="text-center">
-              <CardTitle className="text-3xl font-bold">
-                <span className={getScoreColor(healthData.overallScore)}>
-                  {healthData.overallScore}%
-                </span>
-              </CardTitle>
-              <CardDescription className="text-lg font-medium">
-                {getHealthStatus(healthData.overallScore)}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-center gap-4 mb-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-emerald-500">+{healthData.potentialImprovement}%</p>
-                  <p className="text-sm text-muted-foreground">Potential Improvement</p>
-                </div>
-              </div>
-              <Progress value={healthData.overallScore} className="h-3" />
-            </CardContent>
-          </Card>
-
-          {/* Detailed Metrics */}
+        <div className="space-y-8 animate-in slide-in-from-bottom-8 duration-500">
+          {/* Detailed Performance Metrics */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {Object.entries(healthData.metrics).map(([key, value]) => (
-              <Card key={key}>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-sm">
+              <Card key={key} className="smart-glass border-none group hover:bg-white/10 transition-all cursor-default rounded-3xl p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className={`p-3 rounded-2xl bg-white/5 transition-transform group-hover:scale-110 ${getScoreColor(value)}`}>
                     {getMetricIcon(key)}
-                    {key.charAt(0).toUpperCase() + key.slice(1)}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold mb-2" style={{ color: value >= 75 ? 'hsl(35, 92%, 45%)' : value >= 50 ? 'hsl(45, 93%, 47%)' : 'hsl(0, 84%, 60%)' }}>
-                    {value}%
                   </div>
-                  <Progress value={value} className="h-2" />
-                </CardContent>
+                  <Badge variant="outline" className="bg-white/5 border-white/10 text-[10px] font-black">
+                    METRIC {key.toUpperCase().slice(0,3)}
+                  </Badge>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-sm font-black uppercase tracking-wider text-muted-foreground/70">{key}</span>
+                    <span className={`text-2xl font-black ${getScoreColor(value)}`}>{value}%</span>
+                  </div>
+                  <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full transition-all duration-1000 ${getScoreColor(value).replace('text-', 'bg-')}`} 
+                      style={{ width: `${value}%` }} 
+                    />
+                  </div>
+                </div>
               </Card>
             ))}
           </div>
 
-          {/* Recommendations and Tips */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                  Recommendations
-                </CardTitle>
-                <CardDescription>Actions to maintain device health</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Intelligent Insight Protocol */}
+            <Card className="smart-glass border-none rounded-[2rem] p-8 shadow-xl">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="p-3 rounded-2xl bg-amber-500/10">
+                  <Sparkles className="h-6 w-6 text-amber-500" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-foreground">AI Optimizaton Protocol</h3>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Recommended Actions</p>
+                </div>
+              </div>
+              <div className="space-y-4">
                 {healthData.recommendations.map((rec, index) => (
-                  <div key={index} className="flex items-start gap-3 p-3 bg-yellow-500/10 rounded-lg">
-                    <div className="w-6 h-6 bg-yellow-500 text-black text-xs rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
+                  <div key={index} className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-amber-500/30 transition-colors group">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 font-black shrink-0 group-hover:bg-amber-500/20 transition-colors">
                       {index + 1}
                     </div>
-                    <span className="text-foreground text-sm">{rec}</span>
+                    <span className="text-sm font-bold text-foreground/90">{rec}</span>
                   </div>
                 ))}
-              </CardContent>
+              </div>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-emerald-500" />
-                  Improvement Tips
-                </CardTitle>
-                <CardDescription>Specific actions to boost your score</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {healthData.improvementTips.map((tip, index) => (
-                  <div key={index} className="flex items-start gap-3 p-3 bg-emerald-500/10 rounded-lg">
-                    <CheckCircle className="h-5 w-5 text-emerald-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-foreground text-sm">{tip}</span>
-                  </div>
-                ))}
-              </CardContent>
+            {/* Projected Improvement */}
+            <Card className="smart-glass border-none rounded-[2rem] p-8 shadow-xl bg-gradient-to-br from-white/5 to-emerald-500/5">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="p-3 rounded-2xl bg-emerald-500/10">
+                  <TrendingUp className="h-6 w-6 text-emerald-500" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-foreground">Efficiency Potential</h3>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Growth Analytics</p>
+                </div>
+              </div>
+              
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <div className="text-6xl font-black text-emerald-500 mb-2">
+                  +{healthData.potentialImprovement}%
+                </div>
+                <p className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-8">
+                  Available Performance Boost
+                </p>
+                
+                <div className="w-full space-y-4">
+                  {healthData.improvementTips.map((tip, index) => (
+                    <div key={index} className="flex items-start gap-3 p-4 bg-emerald-500/5 rounded-2xl border border-emerald-500/10">
+                      <div className="p-1 rounded-full bg-emerald-500/20 mt-0.5">
+                        <CheckCircle className="h-3 w-3 text-emerald-500" />
+                      </div>
+                      <span className="text-xs font-bold text-foreground/80 leading-relaxed text-left">{tip}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </Card>
           </div>
 
-          {/* Health History */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Health Trends</CardTitle>
-              <CardDescription>Track your device health over time</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                <Shield className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                <p>Run multiple health checks to see trends and improvements</p>
-              </div>
-            </CardContent>
+          {/* Telemetry Log */}
+          <Card className="smart-glass border-none rounded-[2rem] p-8 shadow-xl opacity-60 hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-3 mb-6">
+               <Activity className="h-5 w-5 text-muted-foreground" />
+               <h3 className="text-lg font-black text-muted-foreground uppercase tracking-widest">Telemetry History</h3>
+            </div>
+            <div className="text-center py-12 border-2 border-dashed border-white/5 rounded-3xl">
+              <Shield className="h-12 w-12 mx-auto mb-4 text-muted-foreground/20" />
+              <p className="text-sm font-black text-muted-foreground/40 uppercase tracking-widest">Awaiting Sequential Analysis Data</p>
+            </div>
           </Card>
         </div>
       )}

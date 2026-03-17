@@ -3,8 +3,8 @@
 /* Glassmorphism Container */
 .video-analyzer-container {
   background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 24px;
   box-shadow: 
@@ -147,6 +147,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  max-width: fit-content;
 }
 
 .status-badge.active {
@@ -229,6 +230,7 @@
   color: #000;
   border: none;
   box-shadow: 0 4px 20px rgba(0, 255, 136, 0.4);
+  white-space: nowrap;
 }
 
 /* Stats Cards */

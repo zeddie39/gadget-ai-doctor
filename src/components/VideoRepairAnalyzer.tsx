@@ -250,29 +250,29 @@ export default function VideoRepairAnalyzer() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 md:space-y-6 p-3 md:p-6">
       <Card className="video-analyzer-container overflow-hidden border-0 shadow-2xl">
-        <CardHeader className="pb-4" style={{ background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)' }}>
-          <div className="flex items-center justify-between">
+        <CardHeader className="p-4 md:pb-4" style={{ background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)' }}>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 shrink-0">
                 <Video className="h-6 w-6 text-white" />
               </div>
-              <div>
-                <CardTitle className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              <div className="min-w-0">
+                <CardTitle className="text-lg md:text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent truncate">
                   AI Video Repair Analyzer
                 </CardTitle>
-                <CardDescription className="text-sm opacity-80">
+                <CardDescription className="text-xs md:text-sm opacity-80 line-clamp-1">
                   Real-time damage detection powered by TensorFlow.js
                 </CardDescription>
               </div>
             </div>
-            <Badge className={`status-badge ${model ? 'active' : ''}`}>
+            <Badge className={`status-badge shrink-0 ${model ? 'active' : ''}`}>
               {model ? '✓ AI Ready' : '⟳ Loading...'}
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="p-6">
+        <CardContent className="p-3 md:p-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="grid w-full grid-cols-2 gap-2 p-1 bg-black/5 rounded-xl">
               <TabsTrigger value="live" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md transition-all">
@@ -326,11 +326,11 @@ export default function VideoRepairAnalyzer() {
                 </div>
               </div>
 
-              {/* Control Buttons */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Control Buttons - Mobile Optimized */}
+              <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3 md:gap-4">
                 <Button
                   onClick={isScanning ? stopCamera : startCamera}
-                  className={`btn-premium ${isScanning ? 'btn-danger-gradient' : 'btn-primary-gradient'}`}
+                  className={`btn-premium w-full ${isScanning ? 'btn-danger-gradient' : 'btn-primary-gradient'}`}
                 >
                   {isScanning ? (
                     <>
@@ -347,7 +347,7 @@ export default function VideoRepairAnalyzer() {
 
                 <Button
                   disabled={!isScanning}
-                  className="btn-premium btn-success-gradient disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="btn-premium w-full btn-success-gradient disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Scan className="h-5 w-5 mr-2" />
                   Capture Frame

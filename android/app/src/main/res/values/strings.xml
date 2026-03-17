@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">gadget-ai-doctor</string>
+    <string name="title_activity_main">gadget-ai-doctor</string>
+    <string name="package_name">com.gadget.aidoctor</string>
+    <string name="custom_url_scheme">com.gadget.aidoctor</string>
+</resources>

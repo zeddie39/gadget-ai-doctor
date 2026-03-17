@@ -64,3 +64,8 @@ venv/
 *.temp
 *.bak
 vite.config.ts.timestamp-*
+
+# Android Signing
+*.jks
+*.keystore
+release-signing.properties

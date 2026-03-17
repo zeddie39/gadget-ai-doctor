@@ -196,29 +196,29 @@ const Diagnose = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-8">
           <TabsList className="flex flex-wrap justify-start sm:justify-center gap-1.5 sm:gap-2 h-auto p-2 sm:p-3 bg-white/5 smart-glass border-white/10 rounded-2xl overflow-x-auto max-w-full">
             <span className="w-full text-[0.6rem] font-bold uppercase tracking-widest text-muted-foreground/60 text-center mb-1 sm:mb-2">Technical Diagnostics</span>
-            <TabsTrigger value="photo" className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+            <TabsTrigger value="photo" className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
               <Camera className="h-4 w-4 text-amber-500" />
-              <span className="text-xs font-bold uppercase">Photo</span>
+              <span className="text-[10px] sm:text-xs font-bold uppercase">Photo</span>
             </TabsTrigger>
-            <TabsTrigger value="video" className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+            <TabsTrigger value="video" className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
               <Video className="h-4 w-4 text-blue-500" />
-              <span className="text-xs font-bold uppercase">Video</span>
+              <span className="text-[10px] sm:text-xs font-bold uppercase">Video</span>
             </TabsTrigger>
-            <TabsTrigger value="chat" className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+            <TabsTrigger value="chat" className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
               <MessageSquare className="h-4 w-4 text-emerald-500" />
-              <span className="text-xs font-bold uppercase">Support</span>
+              <span className="text-[10px] sm:text-xs font-bold uppercase">Support</span>
             </TabsTrigger>
-            <TabsTrigger value="troubleshoot" className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+            <TabsTrigger value="troubleshoot" className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
               <Wrench className="h-4 w-4 text-purple-500" />
-              <span className="text-xs font-bold uppercase">Wizard</span>
+              <span className="text-[10px] sm:text-xs font-bold uppercase">Wizard</span>
             </TabsTrigger>
-            <TabsTrigger value="battery" className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+            <TabsTrigger value="battery" className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
               <Battery className="h-4 w-4 text-red-500" />
-              <span className="text-xs font-bold uppercase">Battery</span>
+              <span className="text-[10px] sm:text-xs font-bold uppercase">Battery</span>
             </TabsTrigger>
-            <TabsTrigger value="storage" className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+            <TabsTrigger value="storage" className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
               <Trash className="h-4 w-4 text-cyan-500" />
-              <span className="text-xs font-bold uppercase">Cleaner</span>
+              <span className="text-[10px] sm:text-xs font-bold uppercase">Cleaner</span>
             </TabsTrigger>
 
             <span className="w-full text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground/60 text-center mt-4 mb-2">Systems & Insights</span>

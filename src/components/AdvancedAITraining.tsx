@@ -181,6 +181,7 @@ const AdvancedAITraining = () => {
       const job = await simulateTraining(config.method);
       
       // Save training record to database
+      const { data: { user } } = await supabase.auth.getUser();
       await supabase.from('ai_feedback').insert({
         diagnosis_id: `training_${job.id}`,
         feature_used: 'model_training',
@@ -193,7 +194,8 @@ const AdvancedAITraining = () => {
           metrics: job.metrics,
           status: job.status
         } as any,
-        user_comments: `Automated training completed with ${config.method}`
+        user_comments: `Automated training completed with ${config.method}`,
+        user_id: user?.id
       });
 
       toast.success('Training completed successfully!');

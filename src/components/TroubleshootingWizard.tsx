@@ -512,6 +512,7 @@ const TroubleshootingWizard = () => {
 
   const saveSession = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
       await supabase.from('troubleshooting_sessions').insert({
         device_type: deviceType,
         issue_category: issueCategory,
@@ -520,7 +521,8 @@ const TroubleshootingWizard = () => {
           completed_steps: completedSteps,
           device_type: deviceType,
           issue_category: issueCategory
-        }
+        },
+        user_id: user?.id
       });
     } catch (error) {
       console.error('Error saving session:', error);

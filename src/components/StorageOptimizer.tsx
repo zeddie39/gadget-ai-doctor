@@ -83,6 +83,7 @@ const StorageOptimizer = () => {
       setAnalysis(analysisResult);
       
       // Store analysis in database
+      const { data: { user } } = await supabase.auth.getUser();
       await supabase.from('storage_analysis').insert({
         device_info: {
           user_agent: navigator.userAgent,
@@ -95,7 +96,8 @@ const StorageOptimizer = () => {
         total_storage_used: analysisResult.totalStorageUsed,
         total_storage_available: analysisResult.totalStorageAvailable,
         potential_cleanup_size: analysisResult.potentialCleanupSize,
-        recommendations: analysisResult.recommendations as any
+        recommendations: analysisResult.recommendations as any,
+        user_id: user?.id
       });
       
       toast.success('Storage analysis completed!');

@@ -212,6 +212,7 @@ const HealthScore = () => {
       setHealthData(healthScore);
       
       // Store in database
+      const { data: { user } } = await supabase.auth.getUser();
       await supabase.from('health_scores').insert({
         device_id: deviceId,
         overall_score: healthScore.overallScore,
@@ -222,7 +223,8 @@ const HealthScore = () => {
         recommendations: healthScore.recommendations as any,
         improvement_tips: healthScore.improvementTips as any,
         potential_improvement: healthScore.potentialImprovement,
-        device_info: healthScore.deviceInfo as any
+        device_info: healthScore.deviceInfo as any,
+        user_id: user?.id
       });
       
       toast.success('Health analysis completed!');

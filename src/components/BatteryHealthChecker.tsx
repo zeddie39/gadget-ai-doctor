@@ -111,6 +111,7 @@ const BatteryHealthChecker = () => {
 
   const saveBatteryReport = async (battery: BatteryInfo | null, health: BatteryHealth, recs: string[]) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
       await supabase.from('battery_reports').insert({
         device_info: {
           user_agent: navigator.userAgent,
@@ -119,7 +120,8 @@ const BatteryHealthChecker = () => {
         } as any,
         battery_level: battery?.level || null,
         battery_health: health as any,
-        recommendations: recs
+        recommendations: recs,
+        user_id: user?.id
       });
     } catch (error) {
       console.error('Error saving battery report:', error);

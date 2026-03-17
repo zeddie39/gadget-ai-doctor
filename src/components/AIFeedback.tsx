@@ -31,6 +31,7 @@ const AIFeedback: React.FC<AIFeedbackProps> = ({
     setIsSubmitting(true);
     try {
       // Use direct insert without strict typing since the table is newly created
+      const { data: { user } } = await supabase.auth.getUser();
       const { error } = await supabase
         .from('ai_feedback')
         .insert({
@@ -40,7 +41,8 @@ const AIFeedback: React.FC<AIFeedbackProps> = ({
           user_comments: comments,
           ai_response_data: aiResponse,
           helpful: feedback === 'positive',
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          user_id: user?.id
         });
 
       if (error) {

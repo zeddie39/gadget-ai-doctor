@@ -111,10 +111,12 @@ const PhotoUpload = () => {
           
           // Store enhanced AI result in database
           try {
+            const { data: { user } } = await supabase.auth.getUser();
             const { data: dbData, error } = await supabase.from('image_diagnostics').insert({
               image_url: imageData,
               diagnosis_result: enhancedResult,
-              severity_level: enhancedResult.severity
+              severity_level: enhancedResult.severity,
+              user_id: user?.id
             }).select().single();
 
             if (dbData) {
@@ -189,10 +191,12 @@ const PhotoUpload = () => {
     
     // Store in database and get ID for feedback
     try {
+      const { data: { user } } = await supabase.auth.getUser();
       const { data, error } = await supabase.from('image_diagnostics').insert({
         image_url: imageData,
         diagnosis_result: randomResult,
-        severity_level: randomResult.severity
+        severity_level: randomResult.severity,
+        user_id: user?.id
       }).select().single();
 
       if (data) {

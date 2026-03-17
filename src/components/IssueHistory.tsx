@@ -85,6 +85,7 @@ const IssueHistory = () => {
         .filter(action => action.trim() !== '')
         .map(action => action.trim());
 
+      const { data: { user } } = await supabase.auth.getUser();
       const { error } = await supabase.from('issue_history').insert({
         device_id: deviceId,
         issue_type: newIssue.issueType,
@@ -93,7 +94,8 @@ const IssueHistory = () => {
         repair_cost: newIssue.repairCost ? parseFloat(newIssue.repairCost) : null,
         actions_taken: actionsList,
         repair_status: 'pending',
-        resolved: false
+        resolved: false,
+        user_id: user?.id
       });
 
       if (error) throw error;

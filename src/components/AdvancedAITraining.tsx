@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useSubscription } from '@/hooks/useSubscription';
+import MpesaPaymentModal from '@/components/MpesaPaymentModal';
 
 interface TrainingConfig {
   method: 'openrouter-training' | 'huggingface' | 'tensorflow' | 'custom-api';
@@ -60,6 +62,9 @@ const AdvancedAITraining = () => {
   const [isTraining, setIsTraining] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
   const [apiKey, setApiKey] = useState('');
+
+  const { isPro, isLoading } = useSubscription();
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const trainingMethods = [
     {
@@ -167,6 +172,13 @@ const AdvancedAITraining = () => {
   };
 
   const startTraining = async () => {
+    if (isLoading) return;
+    
+    if (!isPro) {
+      setShowPaymentModal(true);
+      return;
+    }
+
     if (!apiKey && config.method === 'openrouter-training') {
       toast.error('API key required for OpenRouter training');
       return;
@@ -240,6 +252,14 @@ const AdvancedAITraining = () => {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
+      
+      <MpesaPaymentModal 
+        isOpen={showPaymentModal} 
+        onClose={() => setShowPaymentModal(false)}
+        onSuccess={() => setShowPaymentModal(false)}
+        priceAmount={499}
+      />
+
       <Tabs defaultValue="training" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="training">Training Methods</TabsTrigger>

@@ -189,7 +189,7 @@ CREATE POLICY "Users can insert own chat messages"
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM public.chat_sessions cs
-      WHERE cs.id = session_id
+      WHERE cs.id = chat_messages.session_id
         AND cs.user_id = auth.uid()
     )
   );

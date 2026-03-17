@@ -107,15 +107,21 @@ const AIChat = () => {
     scrollToBottom();
   }, [messages]);
 
+  const [dbSessionId, setDbSessionId] = useState<string | null>(null);
+
   useEffect(() => {
     // Create chat session
     const createSession = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        await supabase.from('chat_sessions').insert({
+        const { data, error } = await supabase.from('chat_sessions').insert({
           session_id: sessionId,
           user_id: user?.id
-        });
+        }).select('id').single();
+        
+        if (data) {
+          setDbSessionId(data.id);
+        }
       } catch (error) {
         console.error('Error creating session:', error);
       }
@@ -124,9 +130,10 @@ const AIChat = () => {
   }, [sessionId]);
 
   const storeMessage = async (message: string, isUser: boolean) => {
+    if (!dbSessionId) return;
     try {
       await supabase.from('chat_messages').insert({
-        session_id: sessionId,
+        session_id: dbSessionId,
         message,
         is_user: isUser
       });

@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, Camera, X, CheckCircle, AlertTriangle, AlertCircle, Scan } from 'lucide-react';
+import { Upload, Camera, X, CheckCircle, AlertTriangle, AlertCircle, Scan, Brain, Wrench } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';

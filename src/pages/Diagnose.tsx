@@ -194,7 +194,7 @@ const Diagnose = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-8">
-          <TabsList className="flex flex-wrap justify-center gap-2 h-auto p-3 bg-white/5 smart-glass border-white/10 rounded-2xl">
+          <TabsList className="flex flex-wrap justify-start sm:justify-center gap-1.5 sm:gap-2 h-auto p-2 sm:p-3 bg-white/5 smart-glass border-white/10 rounded-2xl overflow-x-auto max-w-full">
             <span className="w-full text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground/60 text-center mb-2">Technical Diagnostics</span>
             <TabsTrigger value="photo" className="flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
               <Camera className="h-4 w-4 text-amber-500" />

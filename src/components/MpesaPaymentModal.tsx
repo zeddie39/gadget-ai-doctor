@@ -79,7 +79,7 @@ const MpesaPaymentModal: React.FC<MpesaPaymentModalProps> = ({ isOpen, onClose, 
           return;
         }
 
-        if (data?.status === 'failed' || attempts >= maxAttempts) {
+        if ((data as any)?.status === 'failed' || attempts >= maxAttempts) {
           setIsProcessing(false);
           setStatusText('');
           toast.error(attempts >= maxAttempts ? 'Payment timed out' : 'Payment failed or was cancelled');

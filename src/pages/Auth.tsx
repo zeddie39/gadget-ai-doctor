@@ -156,7 +156,7 @@ const Auth = () => {
               <Smartphone className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl">Welcome to GadgetDoc</CardTitle>
+          <CardTitle className="text-2xl">Welcome to ElectroDoctor</CardTitle>
           <CardDescription>
             Sign in to access premium AI-powered device diagnostics
           </CardDescription>

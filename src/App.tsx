@@ -20,6 +20,7 @@ const Install = lazy(() => import("./pages/Install"));
 const Profile = lazy(() => import("./pages/Profile"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 const queryClient = new QueryClient();
 

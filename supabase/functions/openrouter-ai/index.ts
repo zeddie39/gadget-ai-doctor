@@ -89,10 +89,11 @@ serve(async (req) => {
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-  } catch (error) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error in openrouter-ai function:', error);
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: message,
       fallback: true 
     }), {
       status: 500,

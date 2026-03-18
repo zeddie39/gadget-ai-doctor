@@ -67,19 +67,19 @@ const MpesaPaymentModal: React.FC<MpesaPaymentModalProps> = ({ isOpen, onClose, 
       attempts++;
       try {
         const { data, error } = await supabase
-          .from('mpesa_transactions')
+          .from('mpesa_transactions' as any)
           .select('status')
           .eq('checkout_request_id', checkoutRequestId)
           .single();
 
-        if (data?.status === 'completed') {
+        if ((data as any)?.status === 'completed') {
           setIsProcessing(false);
           toast.success('Payment Received! Welcome to Pro.');
           onSuccess();
           return;
         }
 
-        if (data?.status === 'failed' || attempts >= maxAttempts) {
+        if ((data as any)?.status === 'failed' || attempts >= maxAttempts) {
           setIsProcessing(false);
           setStatusText('');
           toast.error(attempts >= maxAttempts ? 'Payment timed out' : 'Payment failed or was cancelled');

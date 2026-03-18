@@ -143,7 +143,7 @@ const Auth = () => {
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4 relative">
       <Link 
         to="/" 
-        className="absolute top-6 left-6 flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-white bg-slate-800/50 hover:bg-slate-700 px-4 py-2 rounded-full transition-all backdrop-blur-sm shadow-sm"
+        className="absolute top-6 left-6 flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted px-4 py-2 rounded-full transition-all backdrop-blur-sm shadow-sm"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Home
@@ -156,7 +156,7 @@ const Auth = () => {
               <Smartphone className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl">Welcome to GadgetDoc</CardTitle>
+          <CardTitle className="text-2xl">Welcome to ElectroDoctor</CardTitle>
           <CardDescription>
             Sign in to access premium AI-powered device diagnostics
           </CardDescription>

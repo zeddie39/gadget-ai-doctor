@@ -64,7 +64,7 @@ const ResetPassword = () => {
         <CardContent>
           {success ? (
             <div className="text-center space-y-4">
-              <CheckCircle className="h-16 w-16 text-emerald-500 mx-auto" />
+              <CheckCircle className="h-16 w-16 text-primary mx-auto" />
               <p className="text-foreground font-medium">Password updated!</p>
               <p className="text-muted-foreground text-sm">Redirecting to dashboard...</p>
             </div>

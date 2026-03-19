@@ -210,7 +210,7 @@ const PhotoUpload = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const { data, error } = await supabase.from('image_diagnostics').insert({
-        image_url: imageData,
+        image_url: 'uploaded-image',
         diagnosis_result: randomResult,
         severity_level: randomResult.severity,
         user_id: user?.id

@@ -507,7 +507,59 @@ export default function VideoRepairAnalyzer() {
                       />
                     </div>
                   </div>
-                  <Button className="w-full btn-premium btn-primary-gradient">
+                  <Button 
+                    className="w-full btn-premium btn-primary-gradient"
+                    onClick={async () => {
+                      if (!uploadedVideo) return;
+                      toast.info('Analyzing video frames...');
+                      // Extract a frame from the uploaded video for AI analysis
+                      const video = document.createElement('video');
+                      video.src = uploadedVideo;
+                      video.currentTime = 1;
+                      video.addEventListener('seeked', async () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = video.videoWidth || 640;
+                        canvas.height = video.videoHeight || 480;
+                        const ctx = canvas.getContext('2d');
+                        if (ctx) {
+                          ctx.drawImage(video, 0, 0);
+                          const frameData = canvas.toDataURL('image/jpeg', 0.7);
+                          try {
+                            const { data, error } = await supabase.functions.invoke('openrouter-ai', {
+                              body: {
+                                prompt: 'Analyze this video frame of an electronic device. Identify the device, visible damage or issues, and provide step-by-step repair guidance. Respond in JSON: {"device": "...", "issues": ["..."], "severity": "minor|medium|critical", "repair_steps": ["..."]}',
+                                model: 'google/gemini-2.5-flash',
+                                image: frameData,
+                                systemPrompt: 'You are an expert electronics repair technician. Analyze the video frame and provide actionable repair guidance.'
+                              }
+                            });
+                            if (!error && data?.response) {
+                              toast.success('Video analysis complete!');
+                              // Parse and display results
+                              let raw = data.response.trim();
+                              const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
+                              if (fenceMatch) raw = fenceMatch[1].trim();
+                              if (!raw.startsWith('{')) {
+                                const s = raw.indexOf('{'), e = raw.lastIndexOf('}');
+                                if (s !== -1 && e !== -1) raw = raw.slice(s, e + 1);
+                              }
+                              try {
+                                const result = JSON.parse(raw);
+                                toast.success(`Device: ${result.device || 'Unknown'} | Severity: ${result.severity || 'unknown'}`);
+                              } catch {
+                                toast.info(data.response.slice(0, 200));
+                              }
+                            } else {
+                              toast.error('Analysis failed: ' + (error?.message || 'Unknown error'));
+                            }
+                          } catch (err) {
+                            toast.error('Failed to analyze video frame');
+                          }
+                        }
+                        video.remove();
+                      }, { once: true });
+                    }}
+                  >
                     <Play className="h-5 w-5 mr-2" />
                     Analyze Video
                   </Button>

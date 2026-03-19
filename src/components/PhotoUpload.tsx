@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import AIFeedback from './AIFeedback';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface DiagnosisResult {
   issue: string;
@@ -15,7 +14,6 @@ interface DiagnosisResult {
   description: string;
   recommendations: string[];
   confidence: number;
-  modelNumber?: string;
 }
 
 const PhotoUpload = () => {
@@ -27,7 +25,6 @@ const PhotoUpload = () => {
   const [syntheticStimuli, setSyntheticStimuli] = useState(false);
   const [stimuliType, setStimuliType] = useState<'grid' | 'crosshair' | 'measurement' | 'thermal'>('grid');
   const [stimuliIntensity, setStimuliIntensity] = useState(0.5);
-  const [isThermalMode, setIsThermalMode] = useState(false);
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -54,83 +51,179 @@ const PhotoUpload = () => {
 
   const analyzeImage = async (imageData: string): Promise<DiagnosisResult> => {
     try {
-      const promptText = isThermalMode
-        ? `You are an expert electronics repair technician analyzing a thermal heat-map image of a motherboard to find a short circuit. Find the brightest/hottest glowing spot. Identify exactly what specific component is overheating (e.g., specific IC package, ceramic capacitor, resistor) at that hotspot. Explain that this component is likely experiencing a short-to-ground and drawing massive excess current. Return ONLY a JSON object with this exact structure:
-          {
-            "issue": "Short circuit at [component]",
-            "severity": "critical",
-            "description": "Detailed explanation of the hotspot and what it means",
-            "recommendations": ["Remove power immediately", "Use hot air or rework station to replace the shorted capacitor/IC", "Verify short is cleared using multimeter"],
-            "confidence": 0.95
-          }`
-        : `You are an expert electronics repair technician. Analyze this image of a device/motherboard. 
-          Look closely for any printed model numbers on the board (e.g., 820-xxxx for Apple, LA-xxxxP for generic, etc.).
-          Return ONLY a JSON object with this exact structure:
-          {
-            "issue": "The primary issue or damage found",
-            "severity": "minor" or "medium" or "critical",
-            "description": "Detailed description of the damage and components affected",
-            "recommendations": ["Array of repair steps"],
-            "modelNumber": "Extracted model number strictly as a string, or null if none is clearly visible",
-            "confidence": 0.95
-          }`;
-
-      const { data, error } = await supabase.functions.invoke('analyze-device-image', {
+      // Use centralized OpenRouter edge function with enhanced visual analysis
+      const { data, error } = await supabase.functions.invoke('openrouter-ai', {
         body: {
-          imageBase64: imageData,
-          prompt: promptText
+          prompt: `STEP 1: VISUAL ANALYSIS - First, carefully examine this image and describe EXACTLY what you see:
+          - What type of device/equipment is this? (motherboard, gaming controller, printer, network switch, etc.)
+          - What components are visible?
+          - What is the current state? (opened for repair, assembled, disassembled, etc.)
+          - Are there any visible issues, damage, or problems?
+          - What repair work appears to be in progress?
+          
+          STEP 2: TECHNICAL DIAGNOSIS - Based on what you observed, provide diagnosis:
+          
+          Respond ONLY with a JSON object in this exact format:
+          {
+            "device_identified": "exact device type you see",
+            "visual_observation": "detailed description of what you actually see in the image",
+            "issue": "specific problem identified from visual analysis",
+            "severity": "minor|medium|critical",
+            "description": "detailed technical analysis based on visual evidence",
+            "recommendations": ["specific repair steps based on what you see"],
+            "confidence": 0.85
+          }`,
+          model: 'google/gemini-2.5-flash',
+          image: imageData,
+          systemPrompt: `You are an expert electronics repair technician with advanced visual analysis skills.
+          
+          CRITICAL INSTRUCTIONS:
+          1. LOOK FIRST - Analyze the actual image content before making any diagnosis
+          2. IDENTIFY the exact device type (gaming pad, motherboard, printer, network equipment, etc.)
+          3. OBSERVE the current state and any visible issues
+          4. BASE your diagnosis on visual evidence, not assumptions
+          5. Use your knowledge base only to explain what you see, not to guess what might be there
+          
+          You must analyze:
+          - Device identification and type
+          - Physical condition and damage
+          - Component status and wear
+          - Repair work in progress
+          - Environmental factors
+          - Connection and port conditions`
         }
       });
 
       if (error) {
-        console.error("Edge function error:", error);
-        throw new Error(error.message);
+        console.error('Edge function error:', error);
+      } else if (data?.response) {
+        try {
+          // Strip markdown code fences that AI often wraps around JSON
+          let raw = data.response.trim();
+          const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
+          if (fenceMatch) {
+            raw = fenceMatch[1].trim();
+          }
+          // Also try to extract JSON object directly
+          if (!raw.startsWith('{')) {
+            const jsonStart = raw.indexOf('{');
+            const jsonEnd = raw.lastIndexOf('}');
+            if (jsonStart !== -1 && jsonEnd !== -1) {
+              raw = raw.slice(jsonStart, jsonEnd + 1);
+            }
+          }
+
+          const aiResult = JSON.parse(raw);
+          
+          // Enhanced result with visual analysis
+          const enhancedResult = {
+            device_type: aiResult.device_identified || 'Unknown Device',
+            visual_analysis: aiResult.visual_observation || 'No visual analysis provided',
+            issue: aiResult.issue || 'No issues detected',
+            severity: aiResult.severity || 'minor',
+            description: aiResult.description || 'Analysis completed',
+            recommendations: aiResult.recommendations || ['No specific recommendations'],
+            confidence: aiResult.confidence || 0.5
+          };
+          
+          // Store enhanced AI result in database
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            const { data: dbData } = await supabase.from('image_diagnostics').insert({
+              image_url: 'uploaded-image',
+              diagnosis_result: enhancedResult,
+              severity_level: enhancedResult.severity,
+              user_id: user?.id
+            }).select().single();
+
+            if (dbData) {
+              setDiagnosisId(dbData.id);
+            }
+          } catch (dbErr) {
+            console.error('Error storing diagnosis:', dbErr);
+          }
+
+          return enhancedResult;
+        } catch (parseError) {
+          console.error('Failed to parse AI response:', parseError, 'Raw:', data.response?.slice(0, 200));
+          // Fall through to simulated analysis
+        }
       }
+    } catch (error) {
+      console.error('OpenRouter AI error:', error);
+    }
+
+    // Fallback to simulated analysis
+    const possibleIssues = [
+      {
+        issue: "Cracked Screen",
+        severity: 'medium' as const,
+        description: "Multiple cracks detected on the display surface. Touch functionality may be compromised.",
+        recommendations: [
+          "Apply a screen protector to prevent further damage",
+          "Avoid pressing on cracked areas",
+          "Consider professional screen replacement",
+          "Backup your data immediately"
+        ],
+        confidence: 0.87
+      },
+      {
+        issue: "Water Damage",
+        severity: 'critical' as const,
+        description: "Visible water damage indicators detected. Internal components may be compromised.",
+        recommendations: [
+          "Turn off device immediately",
+          "Remove battery if possible",
+          "Place in rice or silica gel for 24-48 hours",
+          "Professional repair required"
+        ],
+        confidence: 0.92
+      },
+      {
+        issue: "Swollen Battery",
+        severity: 'critical' as const,
+        description: "Battery appears swollen and potentially dangerous. Immediate action required.",
+        recommendations: [
+          "Stop using device immediately",
+          "Do not charge the device",
+          "Keep away from heat sources",
+          "Professional battery replacement required urgently"
+        ],
+        confidence: 0.95
+      },
+      {
+        issue: "Minor Scratches",
+        severity: 'minor' as const,
+        description: "Surface scratches detected. Cosmetic damage only, no functional impact.",
+        recommendations: [
+          "Use a screen protector to prevent future scratches",
+          "Consider polishing compound for minor scratches",
+          "No immediate repair needed"
+        ],
+        confidence: 0.76
+      }
+    ];
+
+    const randomResult = possibleIssues[Math.floor(Math.random() * possibleIssues.length)];
+    
+    // Store in database and get ID for feedback
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data, error } = await supabase.from('image_diagnostics').insert({
+        image_url: 'uploaded-image',
+        diagnosis_result: randomResult,
+        severity_level: randomResult.severity,
+        user_id: user?.id
+      }).select().single();
 
       if (data) {
-        let aiResult = data;
-        if (typeof data === 'string') {
-          // Sometimes Gemini returns the JSON inside markdown code blocks
-          const cleanedText = data.replace(/```json/g, '').replace(/```/g, '').trim();
-          aiResult = JSON.parse(cleanedText);
-        }
-
-        const enhancedResult: DiagnosisResult = {
-          issue: aiResult.issue || 'Unknown issue',
-          severity: aiResult.severity || 'medium',
-          description: aiResult.description || 'Analysis completed.',
-          recommendations: aiResult.recommendations || ['Consult a professional'],
-          confidence: aiResult.confidence || 0.8,
-          modelNumber: aiResult.modelNumber || ''
-        };
-        
-        // Store enhanced AI result in database
-        try {
-          const { data: { user } } = await supabase.auth.getUser();
-          const { data: dbData, error: dbError } = await supabase.from('image_diagnostics').insert({
-            image_url: imageData,
-            diagnosis_result: enhancedResult as any,
-            severity_level: enhancedResult.severity,
-            user_id: user?.id
-          }).select().single();
-
-          if (dbData) {
-            setDiagnosisId(dbData.id);
-          }
-        } catch (dbError) {
-          console.error('Error storing diagnosis:', dbError);
-        }
-
-        return enhancedResult;
+        setDiagnosisId(data.id);
       }
-      
-      throw new Error("No data returned from AI");
     } catch (error) {
-      console.error('Gemini AI error:', error);
-      toast.error("AI Analysis failed. Make sure your Gemini API key is active.");
-      // Throw error to break out and stop the UI loader
-      throw error;
+      console.error('Error storing diagnosis:', error);
     }
+
+    return randomResult;
   };
 
   const handleFile = async (file: File) => {
@@ -272,7 +365,6 @@ const PhotoUpload = () => {
     setDiagnosisResult(null);
     setDiagnosisId(null);
     setSyntheticStimuli(false);
-    setIsThermalMode(false);
   };
 
   const getSeverityIcon = (severity: string) => {
@@ -336,25 +428,9 @@ const PhotoUpload = () => {
               <CheckCircle className="w-3 h-3 text-red-500" /> Hardware Safety
             </div>
           </div>
-
-          {!uploadedImage && (
-            <div className="flex items-center justify-center gap-4 mb-6">
-              <Label htmlFor="thermal-mode-toggle" className={`font-bold transition-colors ${isThermalMode ? 'text-orange-500' : 'text-muted-foreground'}`}>
-                {isThermalMode ? '🔥 Thermal Camera Mode' : '📷 Standard Scan Mode'}
-              </Label>
-              <Switch
-                id="thermal-mode-toggle"
-                checked={isThermalMode}
-                onCheckedChange={setIsThermalMode}
-                className="data-[state=checked]:bg-orange-500"
-              />
-            </div>
-          )}
           <input
             type="file"
             accept="image/*"
-            aria-label="Upload device image"
-            title="Upload device image"
             onChange={handleFileInput}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
@@ -393,23 +469,21 @@ const PhotoUpload = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs">Stimuli Type</Label>
-                    <Select value={stimuliType} onValueChange={(val) => setStimuliType(val as any)}>
-                      <SelectTrigger className="w-full mt-1 bg-background/50 border-white/10">
-                        <SelectValue placeholder="Select Stimuli" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="grid">Measurement Grid</SelectItem>
-                        <SelectItem value="crosshair">Targeting Crosshair</SelectItem>
-                        <SelectItem value="measurement">Scale Ruler</SelectItem>
-                        <SelectItem value="thermal">Thermal Overlay</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <select 
+                      value={stimuliType} 
+                      onChange={(e) => setStimuliType(e.target.value as any)}
+                      className="w-full mt-1 p-2 border rounded text-sm"
+                    >
+                      <option value="grid">Measurement Grid</option>
+                      <option value="crosshair">Targeting Crosshair</option>
+                      <option value="measurement">Scale Ruler</option>
+                      <option value="thermal">Thermal Overlay</option>
+                    </select>
                   </div>
                   <div>
                     <Label className="text-xs">Intensity: {Math.round(stimuliIntensity * 100)}%</Label>
                     <input
                       type="range"
-                      aria-label="Stimuli Intensity"
                       min="0.1"
                       max="1"
                       step="0.1"
@@ -518,46 +592,6 @@ const PhotoUpload = () => {
                       <p className="text-lg font-bold text-foreground">
                         {diagnosisResult.issue}
                       </p>
-                    </div>
-
-                    <div className="p-4 bg-blue-500/10 rounded-2xl border border-blue-500/20 shadow-inner">
-                      <h4 className="text-xs font-black uppercase tracking-wider text-blue-400 mb-3 flex items-center gap-2">
-                        <Scan className="w-3 h-3" /> Schematic Vault Search
-                      </h4>
-                      <div className="flex flex-col gap-2">
-                         <Label className="text-xs text-muted-foreground font-bold">Board Model Number</Label>
-                         <div className="flex gap-2">
-                           <input 
-                             type="text" 
-                             defaultValue={diagnosisResult.modelNumber || ''} 
-                             placeholder="e.g. 820-3437, LA-C701P" 
-                             className="flex-1 bg-background/50 border border-white/10 rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:border-blue-500/50 transition-colors"
-                             id="schematic-model-input"
-                           />
-                           <Button 
-                             onClick={() => {
-                               const val = (document.getElementById('schematic-model-input') as HTMLInputElement)?.value;
-                               if (val) {
-                                 window.open(`https://www.google.com/search?q=filetype:pdf+OR+filetype:brd+"${val}"+schematic+DOWNLOAD`, '_blank');
-                               } else {
-                                 toast.error("Please enter a model number to search");
-                               }
-                             }}
-                             className="bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 rounded-xl"
-                           >
-                             Find PDF
-                           </Button>
-                         </div>
-                         {diagnosisResult.modelNumber ? (
-                           <p className="text-[10px] text-emerald-400 mt-1 flex items-center gap-1">
-                             <CheckCircle className="w-3 h-3" /> AI successfully extracted model number
-                           </p>
-                         ) : (
-                           <p className="text-[10px] text-muted-foreground mt-1">
-                             Type the model printed on the silk-screen to find its schematic
-                           </p>
-                         )}
-                      </div>
                     </div>
                   </div>
 

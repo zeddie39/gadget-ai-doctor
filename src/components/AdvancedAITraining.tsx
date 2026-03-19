@@ -346,6 +346,7 @@ const AdvancedAITraining = () => {
                     <Label htmlFor="model">Model Selection</Label>
                     <select 
                       id="model"
+                      aria-label="Model Selection"
                       value={config.model}
                       onChange={(e) => setConfig(prev => ({ ...prev, model: e.target.value }))}
                       className="w-full px-3 py-2 border rounded-md"
@@ -360,6 +361,7 @@ const AdvancedAITraining = () => {
                     <Label htmlFor="dataset">Dataset Source</Label>
                     <select 
                       id="dataset"
+                      aria-label="Dataset Source"
                       value={config.dataset}
                       onChange={(e) => setConfig(prev => ({ ...prev, dataset: e.target.value }))}
                       className="w-full px-3 py-2 border rounded-md"

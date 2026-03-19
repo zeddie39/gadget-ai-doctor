@@ -7,8 +7,10 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Video, Upload, Camera, StopCircle, Play, AlertCircle, Scan } from 'lucide-react';
 import { toast } from 'sonner';
+import * as tf from '@tensorflow/tfjs';
 import * as objectDetection from '@tensorflow-models/coco-ssd';
 import '@tensorflow/tfjs-backend-webgl';
+import { supabase } from '@/integrations/supabase/client';
 import '../styles/video-analyzer.css';
 
 export default function VideoRepairAnalyzer() {
@@ -20,6 +22,7 @@ export default function VideoRepairAnalyzer() {
   const [damagedAreas, setDamagedAreas] = useState<any[]>([]);
   const [model, setModel] = useState<any>(null);
   const [uploadedVideo, setUploadedVideo] = useState<string | null>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -31,7 +34,20 @@ export default function VideoRepairAnalyzer() {
     const loadModel = async () => {
       try {
         console.log('Loading TensorFlow.js model...');
-        const loadedModel = await objectDetection.load();
+        
+        // Wait for TF to be fully ready and try to force WebGL
+        await tf.ready();
+        try {
+          await tf.setBackend('webgl');
+          console.log('Using WebGL backend');
+        } catch (e) {
+          console.warn('WebGL failed, falling back to CPU', e);
+          await tf.setBackend('cpu');
+        }
+        
+        const loadedModel = await objectDetection.load({
+          base: 'lite_mobilenet_v2' // Lighter model for mobile
+        });
         setModel(loadedModel);
         console.log('Object detection model loaded successfully');
         toast.success('AI model ready!');
@@ -113,6 +129,59 @@ export default function VideoRepairAnalyzer() {
     setDamageDetection(false);
     setDetectedObjects([]);
     setDamagedAreas([]);
+  };
+
+  const captureAndAnalyzeFrame = async () => {
+    if (!videoRef.current) return;
+    
+    setIsCapturing(true);
+    toast.info('Capturing frame and analyzing with Gemini AI...', { duration: 4000 });
+
+    const canvas = document.createElement('canvas');
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    const ctx = canvas.getContext('2d');
+    
+    if (ctx) {
+      ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+      const imageData = canvas.toDataURL('image/jpeg', 0.8);
+      
+      try {
+        const { data, error } = await supabase.functions.invoke('analyze-device-image', {
+          body: {
+            imageBase64: imageData,
+            prompt: `You are an expert electronics repair technician. Analyze this image of a device/motherboard. 
+            Return ONLY a JSON object with this exact structure:
+            {
+              "issue": "The primary issue or damage found",
+              "severity": "minor" or "medium" or "critical",
+              "description": "Detailed description of the damage and components affected",
+              "recommendations": ["Array of repair steps"],
+              "confidence": 0.95
+            }`
+          }
+        });
+
+        if (error) throw new Error(error.message);
+
+        let aiResult = data;
+        if (typeof data === 'string') {
+          const cleanedText = data.replace(/```json/g, '').replace(/```/g, '').trim();
+          aiResult = JSON.parse(cleanedText);
+        }
+
+        toast.success(`Analysis Complete: ${aiResult.issue}`, {
+          description: aiResult.description,
+          duration: 10000,
+        });
+
+      } catch (error) {
+         console.error('Gemini Snapshot Error:', error);
+         toast.error("Failed to analyze frame with Gemini API");
+      }
+    }
+    
+    setIsCapturing(false);
   };
 
   const detectObjects = async () => {
@@ -355,11 +424,12 @@ export default function VideoRepairAnalyzer() {
                 </Button>
 
                 <Button
-                  disabled={!isScanning}
+                  onClick={captureAndAnalyzeFrame}
+                  disabled={!isScanning || isCapturing}
                   className="btn-premium w-full btn-success-gradient disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Scan className="h-5 w-5 mr-2" />
-                  Capture Frame
+                  <Scan className={`h-5 w-5 mr-2 ${isCapturing ? 'animate-spin' : ''}`} />
+                  {isCapturing ? 'Analyzing...' : 'Capture Frame'}
                 </Button>
               </div>
 
@@ -484,6 +554,8 @@ export default function VideoRepairAnalyzer() {
                   ref={fileInputRef}
                   type="file"
                   accept="video/*"
+                  aria-label="Upload video file"
+                  title="Upload video file"
                   className="hidden"
                   onChange={(e) => {
                     const file = e.target.files?.[0];

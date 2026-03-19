@@ -13,6 +13,32 @@ import '@tensorflow/tfjs-backend-webgl';
 import { supabase } from '@/integrations/supabase/client';
 import '../styles/video-analyzer.css';
 
+// Minimum confidence threshold to filter out weak/false detections
+const MIN_CONFIDENCE = 0.65;
+
+// Map COCO-SSD classes to gadget-repair-friendly labels.
+// Only classes in this map will be shown — everything else (cat, dog, etc.) is filtered out.
+const RELEVANT_CLASS_MAP: Record<string, string> = {
+  'cell phone': 'Mobile Device',
+  'laptop': 'Laptop',
+  'keyboard': 'Keyboard',
+  'mouse': 'Mouse',
+  'remote': 'Remote / Controller',
+  'tv': 'Display / Monitor',
+  'monitor': 'Monitor',
+  'microwave': 'Microwave',
+  'oven': 'Appliance',
+  'toaster': 'Small Appliance',
+  'hair drier': 'Hair Dryer',
+  'clock': 'Clock',
+  'scissors': 'Tool',
+  'book': 'Manual / Book',
+  'person': 'Technician',
+  'bottle': 'Bottle',
+  'cup': 'Cup',
+  'knife': 'Tool',
+};
+
 export default function VideoRepairAnalyzer() {
   const [isScanning, setIsScanning] = useState(false);
   const [activeTab, setActiveTab] = useState('live');
@@ -46,7 +72,7 @@ export default function VideoRepairAnalyzer() {
         }
         
         const loadedModel = await objectDetection.load({
-          base: 'lite_mobilenet_v2' // Lighter model for mobile
+          base: 'mobilenet_v2' // Better accuracy for device detection
         });
         setModel(loadedModel);
         console.log('Object detection model loaded successfully');
@@ -201,8 +227,17 @@ export default function VideoRepairAnalyzer() {
       }
 
       try {
-        const predictions = await model.detect(video);
-        console.log('Detected objects:', predictions.length);
+        const rawPredictions = await model.detect(video);
+
+        // Filter: only keep relevant classes above the confidence threshold
+        const predictions = rawPredictions
+          .filter((p) => p.score >= MIN_CONFIDENCE && RELEVANT_CLASS_MAP[p.class])
+          .map((p) => ({
+            ...p,
+            displayLabel: RELEVANT_CLASS_MAP[p.class] || p.class,
+          }));
+
+        console.log(`Detected ${rawPredictions.length} raw → ${predictions.length} relevant objects`);
         setDetectedObjects(predictions);
 
         const ctx = canvas.getContext('2d');
@@ -211,24 +246,28 @@ export default function VideoRepairAnalyzer() {
 
           predictions.forEach((prediction) => {
             const [x, y, width, height] = prediction.bbox;
+            const label = prediction.displayLabel;
+            const pct = Math.round(prediction.score * 100);
+
+            // Color by confidence: green ≥ 85%, yellow ≥ 75%, orange otherwise
+            const color = prediction.score >= 0.85 ? '#00ff00'
+              : prediction.score >= 0.75 ? '#ffdd00' : '#ff8800';
 
             // Draw bounding box
-            ctx.strokeStyle = '#00ff00';
+            ctx.strokeStyle = color;
             ctx.lineWidth = 3;
             ctx.strokeRect(x, y, width, height);
 
             // Draw label background
-            ctx.fillStyle = 'rgba(0, 255, 0, 0.8)';
-            ctx.fillRect(x, y - 30, width, 30);
+            const labelText = `${label} (${pct}%)`;
+            const textWidth = ctx.measureText(labelText).width + 12;
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y - 30, Math.max(textWidth, width), 30);
 
             // Draw label text
             ctx.fillStyle = '#000000';
             ctx.font = 'bold 14px Arial';
-            ctx.fillText(
-              `${prediction.class} (${Math.round(prediction.score * 100)}%)`,
-              x + 5,
-              y - 8
-            );
+            ctx.fillText(labelText, x + 5, y - 8);
           });
         }
       } catch (error) {
@@ -501,7 +540,7 @@ export default function VideoRepairAnalyzer() {
                     <div className="space-y-2">
                       {detectedObjects.map((obj, index) => (
                         <div key={index} className="detection-card">
-                          <span className="font-medium">{obj.class}</span>
+                          <span className="font-medium">{obj.displayLabel || obj.class}</span>
                           <Badge variant="outline" className="bg-green-50">
                             {Math.round(obj.score * 100)}%
                           </Badge>

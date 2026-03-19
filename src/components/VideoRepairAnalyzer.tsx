@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Video, Upload, Camera, StopCircle, Play, AlertCircle, Scan } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 import * as objectDetection from '@tensorflow-models/coco-ssd';
 import '@tensorflow/tfjs-backend-webgl';
 import '../styles/video-analyzer.css';

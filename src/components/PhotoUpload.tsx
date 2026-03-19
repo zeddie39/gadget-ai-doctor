@@ -153,77 +153,23 @@ const PhotoUpload = () => {
       console.error('OpenRouter AI error:', error);
     }
 
-    // Fallback to simulated analysis
-    const possibleIssues = [
-      {
-        issue: "Cracked Screen",
-        severity: 'medium' as const,
-        description: "Multiple cracks detected on the display surface. Touch functionality may be compromised.",
-        recommendations: [
-          "Apply a screen protector to prevent further damage",
-          "Avoid pressing on cracked areas",
-          "Consider professional screen replacement",
-          "Backup your data immediately"
-        ],
-        confidence: 0.87
-      },
-      {
-        issue: "Water Damage",
-        severity: 'critical' as const,
-        description: "Visible water damage indicators detected. Internal components may be compromised.",
-        recommendations: [
-          "Turn off device immediately",
-          "Remove battery if possible",
-          "Place in rice or silica gel for 24-48 hours",
-          "Professional repair required"
-        ],
-        confidence: 0.92
-      },
-      {
-        issue: "Swollen Battery",
-        severity: 'critical' as const,
-        description: "Battery appears swollen and potentially dangerous. Immediate action required.",
-        recommendations: [
-          "Stop using device immediately",
-          "Do not charge the device",
-          "Keep away from heat sources",
-          "Professional battery replacement required urgently"
-        ],
-        confidence: 0.95
-      },
-      {
-        issue: "Minor Scratches",
-        severity: 'minor' as const,
-        description: "Surface scratches detected. Cosmetic damage only, no functional impact.",
-        recommendations: [
-          "Use a screen protector to prevent future scratches",
-          "Consider polishing compound for minor scratches",
-          "No immediate repair needed"
-        ],
-        confidence: 0.76
-      }
-    ];
-
-    const randomResult = possibleIssues[Math.floor(Math.random() * possibleIssues.length)];
+    // Fallback: AI analysis failed — show a clear error instead of a fake random diagnosis
+    toast.error('AI analysis could not process this image. Please check your connection and try again.', {
+      duration: 6000,
+    });
     
-    // Store in database and get ID for feedback
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      const { data, error } = await supabase.from('image_diagnostics').insert({
-        image_url: 'uploaded-image',
-        diagnosis_result: randomResult,
-        severity_level: randomResult.severity,
-        user_id: user?.id
-      }).select().single();
-
-      if (data) {
-        setDiagnosisId(data.id);
-      }
-    } catch (error) {
-      console.error('Error storing diagnosis:', error);
-    }
-
-    return randomResult;
+    return {
+      issue: 'Analysis Unavailable',
+      severity: 'minor' as const,
+      description: 'The AI service was unable to analyze this image. This could be due to rate limits, network issues, or the image format. Please try again in a moment.',
+      recommendations: [
+        'Try uploading the image again',
+        'Ensure you have a stable internet connection',
+        'Try a different image format (JPEG works best)',
+        'If the problem persists, use the Live Camera > Capture Frame feature instead'
+      ],
+      confidence: 0
+    };
   };
 
   const handleFile = async (file: File) => {

@@ -15,12 +15,12 @@ export const useSubscription = () => {
       }
 
       const { data: rawData, error } = await supabase
-        .from('user_subscriptions')
+        .from('user_subscriptions' as any)
         .select('tier, status, expires_at')
         .eq('user_id', session.user.id)
         .single();
         
-      const data = rawData;
+      const data = rawData as any;
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching subscription:', error);

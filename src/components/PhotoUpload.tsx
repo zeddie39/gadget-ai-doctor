@@ -94,9 +94,26 @@ const PhotoUpload = () => {
         }
       });
 
-      if (!error && data?.response) {
+      if (error) {
+        console.error('Edge function error:', error);
+      } else if (data?.response) {
         try {
-          const aiResult = JSON.parse(data.response);
+          // Strip markdown code fences that AI often wraps around JSON
+          let raw = data.response.trim();
+          const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
+          if (fenceMatch) {
+            raw = fenceMatch[1].trim();
+          }
+          // Also try to extract JSON object directly
+          if (!raw.startsWith('{')) {
+            const jsonStart = raw.indexOf('{');
+            const jsonEnd = raw.lastIndexOf('}');
+            if (jsonStart !== -1 && jsonEnd !== -1) {
+              raw = raw.slice(jsonStart, jsonEnd + 1);
+            }
+          }
+
+          const aiResult = JSON.parse(raw);
           
           // Enhanced result with visual analysis
           const enhancedResult = {
@@ -112,8 +129,8 @@ const PhotoUpload = () => {
           // Store enhanced AI result in database
           try {
             const { data: { user } } = await supabase.auth.getUser();
-            const { data: dbData, error } = await supabase.from('image_diagnostics').insert({
-              image_url: imageData,
+            const { data: dbData } = await supabase.from('image_diagnostics').insert({
+              image_url: 'uploaded-image',
               diagnosis_result: enhancedResult,
               severity_level: enhancedResult.severity,
               user_id: user?.id
@@ -122,13 +139,13 @@ const PhotoUpload = () => {
             if (dbData) {
               setDiagnosisId(dbData.id);
             }
-          } catch (error) {
-            console.error('Error storing diagnosis:', error);
+          } catch (dbErr) {
+            console.error('Error storing diagnosis:', dbErr);
           }
 
           return enhancedResult;
         } catch (parseError) {
-          console.error('Failed to parse AI response:', parseError);
+          console.error('Failed to parse AI response:', parseError, 'Raw:', data.response?.slice(0, 200));
           // Fall through to simulated analysis
         }
       }

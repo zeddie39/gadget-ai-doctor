@@ -8,35 +8,24 @@ import { Label } from '@/components/ui/label';
 import { Video, Upload, Camera, StopCircle, Play, AlertCircle, Scan } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import * as objectDetection from '@tensorflow-models/coco-ssd';
-import '@tensorflow/tfjs-backend-webgl';
+import { pipeline, env } from '@xenova/transformers';
 import '../styles/video-analyzer.css';
 
-// Minimum confidence threshold to filter out weak/false detections
-const MIN_CONFIDENCE = 0.65;
+// Setup Transformers.js to download models from HuggingFace
+env.allowLocalModels = false;
 
-// Map COCO-SSD classes to gadget-repair-friendly labels.
-// Only classes in this map will be shown — everything else (cat, dog, etc.) is filtered out.
-const RELEVANT_CLASS_MAP: Record<string, string> = {
-  'cell phone': 'Mobile Device',
-  'laptop': 'Laptop',
-  'keyboard': 'Keyboard',
-  'mouse': 'Mouse',
-  'remote': 'Remote / Controller',
-  'tv': 'Display / Monitor',
-  'monitor': 'Monitor',
-  'microwave': 'Microwave',
-  'oven': 'Appliance',
-  'toaster': 'Small Appliance',
-  'hair drier': 'Hair Dryer',
-  'clock': 'Clock',
-  'scissors': 'Tool',
-  'book': 'Manual / Book',
-  'person': 'Technician',
-  'bottle': 'Bottle',
-  'cup': 'Cup',
-  'knife': 'Tool',
-};
+// The electronics components we actually want to detect
+const ELECTRONICS_LABELS = [
+  "microchip", 
+  "capacitor", 
+  "motherboard", 
+  "ribbon cable", 
+  "battery",
+  "damaged component"
+];
+
+// Minimum confidence threshold to filter out weak/false detections
+const MIN_CONFIDENCE = 0.10; // OWL-ViT confidence scores are generally lower than traditional classifiers
 
 export default function VideoRepairAnalyzer() {
   const [isScanning, setIsScanning] = useState(false);
@@ -57,27 +46,15 @@ export default function VideoRepairAnalyzer() {
   useEffect(() => {
     const loadModel = async () => {
       try {
-        console.log('Loading TensorFlow.js model...');
-        
-        // Wait for TF to be fully ready and try to force WebGL
-        await tf.ready();
-        try {
-          await tf.setBackend('webgl');
-          console.log('Using WebGL backend');
-        } catch (e) {
-          console.warn('WebGL failed, falling back to CPU', e);
-          await tf.setBackend('cpu');
-        }
-        
-        const loadedModel = await objectDetection.load({
-          base: 'mobilenet_v2' // Better accuracy for device detection
-        });
-        setModel(loadedModel);
-        console.log('Object detection model loaded successfully');
-        toast.success('AI model ready!');
+        console.log('Loading Transformers.js Zero-Shot Object Detection model...');
+        // Load the OWL-ViT model
+        const detector = await pipeline('zero-shot-object-detection', 'Xenova/owlvit-base-patch32');
+        setModel(() => detector); // Use callback to prevent React from calling the pipeline function
+        console.log('Zero-shot object detection model loaded successfully');
+        toast.success('Local AI Vision model ready!');
       } catch (error) {
         console.error('Error loading model:', error);
-        toast.error('Failed to load AI model');
+        toast.error('Failed to load Local AI model');
       }
     };
 
@@ -172,17 +149,30 @@ export default function VideoRepairAnalyzer() {
       }
 
       try {
-        const rawPredictions = await model.detect(video);
+        // Capture the current video frame
+        const frameCanvas = document.createElement('canvas');
+        frameCanvas.width = video.videoWidth;
+        frameCanvas.height = video.videoHeight;
+        frameCanvas.getContext('2d')?.drawImage(video, 0, 0);
+        const imageUrl = frameCanvas.toDataURL('image/jpeg', 0.8);
 
-        // Filter: only keep relevant classes above the confidence threshold
-        const predictions = rawPredictions
-          .filter((p) => p.score >= MIN_CONFIDENCE && RELEVANT_CLASS_MAP[p.class])
-          .map((p) => ({
-            ...p,
-            displayLabel: RELEVANT_CLASS_MAP[p.class] || p.class,
-          }));
+        // Run zero-shot inference with our electronics labels
+        const rawPredictions = await model(imageUrl, ELECTRONICS_LABELS, { threshold: MIN_CONFIDENCE });
 
-        console.log(`Detected ${rawPredictions.length} raw → ${predictions.length} relevant objects`);
+        // Map OWL-ViT prediction format { score, label, box: { xmin, ymin, xmax, ymax } }
+        const predictions = rawPredictions.map((p: any) => ({
+          score: p.score,
+          class: p.label,
+          displayLabel: p.label.split(' ').map((w:string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+          bbox: [
+            p.box.xmin, 
+            p.box.ymin, 
+            p.box.xmax - p.box.xmin, 
+            p.box.ymax - p.box.ymin
+          ]
+        }));
+
+        console.log(`Detected ${predictions.length} relevant electronic components`);
         setDetectedObjects(predictions);
 
         const ctx = canvas.getContext('2d');

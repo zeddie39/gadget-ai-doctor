@@ -7,6 +7,10 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import AIFeedback from './AIFeedback';
+import { pipeline, env } from '@xenova/transformers';
+
+// Setup Transformers.js to download models from HuggingFace instead of looking locally
+env.allowLocalModels = false;
 
 interface DiagnosisResult {
   issue: string;
@@ -28,6 +32,28 @@ const PhotoUpload = () => {
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
+  
+  // Transformers.js local state
+  const [modelLoading, setModelLoading] = useState(false);
+  const classifierRef = useRef<any>(null);
+
+  // Load the zero-shot image classification model locally
+  const loadModel = async () => {
+    if (classifierRef.current) return classifierRef.current;
+    setModelLoading(true);
+    try {
+      // Use CLIP zero-shot model 
+      const classifier = await pipeline('zero-shot-image-classification', 'Xenova/clip-vit-base-patch32');
+      classifierRef.current = classifier;
+      return classifier;
+    } catch (e) {
+      console.error("Failed to load local AI model:", e);
+      toast.error("Failed to load local AI model. Check console.");
+      return null;
+    } finally {
+      setModelLoading(false);
+    }
+  };
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -51,125 +77,93 @@ const PhotoUpload = () => {
 
   const analyzeImage = async (imageData: string): Promise<DiagnosisResult> => {
     try {
-      // Use centralized OpenRouter edge function with enhanced visual analysis
-      const { data, error } = await supabase.functions.invoke('openrouter-ai', {
-        body: {
-          prompt: `STEP 1: VISUAL ANALYSIS - First, carefully examine this image and describe EXACTLY what you see:
-          - What type of device/equipment is this? (motherboard, gaming controller, printer, network switch, etc.)
-          - What components are visible?
-          - What is the current state? (opened for repair, assembled, disassembled, etc.)
-          - Are there any visible issues, damage, or problems?
-          - What repair work appears to be in progress?
-          
-          STEP 2: TECHNICAL DIAGNOSIS - Based on what you observed, provide diagnosis:
-          
-          Respond ONLY with a JSON object in this exact format:
-          {
-            "device_identified": "exact device type you see",
-            "visual_observation": "detailed description of what you actually see in the image",
-            "issue": "specific problem identified from visual analysis",
-            "severity": "minor|medium|critical",
-            "description": "detailed technical analysis based on visual evidence",
-            "recommendations": ["specific repair steps based on what you see"],
-            "confidence": 0.85
-          }`,
-          model: 'google/gemini-2.5-flash',
-          image: imageData,
-          systemPrompt: `You are an expert electronics repair technician with advanced visual analysis skills.
-          
-          CRITICAL INSTRUCTIONS:
-          1. LOOK FIRST - Analyze the actual image content before making any diagnosis
-          2. IDENTIFY the exact device type (gaming pad, motherboard, printer, network equipment, etc.)
-          3. OBSERVE the current state and any visible issues
-          4. BASE your diagnosis on visual evidence, not assumptions
-          5. Use your knowledge base only to explain what you see, not to guess what might be there
-          
-          You must analyze:
-          - Device identification and type
-          - Physical condition and damage
-          - Component status and wear
-          - Repair work in progress
-          - Environmental factors
-          - Connection and port conditions`
-        }
-      });
+      const classifier = await loadModel();
+      if (!classifier) throw new Error("Local model not loaded");
 
-      if (error) {
-        console.error('Edge function error:', error);
-      } else if (data?.response) {
-        try {
-          // Strip markdown code fences that AI often wraps around JSON
-          let raw = data.response.trim();
-          const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
-          if (fenceMatch) {
-            raw = fenceMatch[1].trim();
-          }
-          // Also try to extract JSON object directly
-          if (!raw.startsWith('{')) {
-            const jsonStart = raw.indexOf('{');
-            const jsonEnd = raw.lastIndexOf('}');
-            if (jsonStart !== -1 && jsonEnd !== -1) {
-              raw = raw.slice(jsonStart, jsonEnd + 1);
-            }
-          }
+      toast.info('Local AI analyzing image concepts...', { duration: 3000 });
+      
+      // Define our custom hardware labels for zero-shot classification
+      const labels = [
+        "swollen battery",
+        "cracked screen",
+        "water damage",
+        "burnt motherboard",
+        "damaged port",
+        "normal intact circuit board",
+        "normal smartphone",
+        "scratched surface"
+      ];
 
-          const aiResult = JSON.parse(raw);
-          
-          // Enhanced result with visual analysis
-          const enhancedResult = {
-            device_type: aiResult.device_identified || 'Unknown Device',
-            visual_analysis: aiResult.visual_observation || 'No visual analysis provided',
-            issue: aiResult.issue || 'No issues detected',
-            severity: aiResult.severity || 'minor',
-            description: aiResult.description || 'Analysis completed',
-            recommendations: aiResult.recommendations || ['No specific recommendations'],
-            confidence: aiResult.confidence || 0.5
-          };
-          
-          // Store enhanced AI result in database
-          try {
-            const { data: { user } } = await supabase.auth.getUser();
-            const { data: dbData } = await supabase.from('image_diagnostics').insert({
-              image_url: 'uploaded-image',
-              diagnosis_result: enhancedResult,
-              severity_level: enhancedResult.severity,
-              user_id: user?.id
-            }).select().single();
-
-            if (dbData) {
-              setDiagnosisId(dbData.id);
-            }
-          } catch (dbErr) {
-            console.error('Error storing diagnosis:', dbErr);
-          }
-
-          return enhancedResult;
-        } catch (parseError) {
-          console.error('Failed to parse AI response:', parseError, 'Raw:', data.response?.slice(0, 200));
-          // Fall through to simulated analysis
-        }
+      // Run inference locally within the browser!
+      const results = await classifier(imageData, labels);
+      
+      if (!results || results.length === 0) {
+        throw new Error("No classification results returned");
       }
-    } catch (error) {
-      console.error('OpenRouter AI error:', error);
-    }
+      
+      // results is an array sorted by score descending
+      const topMatch = results[0];
+      
+      let severity: 'critical' | 'medium' | 'minor' = 'minor';
+      const label = topMatch.label as string;
+      const issueName = label.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
-    // Fallback: AI analysis failed — show a clear error instead of a fake random diagnosis
-    toast.error('AI analysis could not process this image. Please check your connection and try again.', {
-      duration: 6000,
-    });
-    
-    return {
-      issue: 'Analysis Unavailable',
-      severity: 'minor' as const,
-      description: 'The AI service was unable to analyze this image. This could be due to rate limits, network issues, or the image format. Please try again in a moment.',
-      recommendations: [
-        'Try uploading the image again',
-        'Ensure you have a stable internet connection',
-        'Try a different image format (JPEG works best)',
-        'If the problem persists, use the Live Camera > Capture Frame feature instead'
-      ],
-      confidence: 0
-    };
+      if (label.includes('swollen') || label.includes('water') || label.includes('burnt')) {
+        severity = 'critical';
+      } else if (label.includes('cracked') || label.includes('damaged') || label.includes('scratched')) {
+        severity = 'medium';
+      }
+
+      const diagnosisOptions: Record<string, string[]> = {
+        "swollen battery": ["Stop using device immediately", "Do not charge the device", "Keep away from heat sources", "Professional battery replacement required urgently"],
+        "cracked screen": ["Apply a screen protector to prevent further damage", "Avoid pressing on cracked areas", "Consider professional screen replacement"],
+        "water damage": ["Turn off device immediately", "Remove battery if possible", "Place in silica gel", "Professional repair required"],
+        "burnt motherboard": ["Disconnect power completely", "Do not attempt to power on", "Requires board-level micro-soldering repair"],
+        "damaged port": ["Check for debris inside the port", "Do not force cables into the port", "Port replacement may be necessary"],
+        "normal intact circuit board": ["No obvious physical damage detected by AI", "Proceed with software or multimeter diagnostics"],
+        "normal smartphone": ["Device appears physically normal externally", "Proceed with functional testing"],
+        "scratched surface": ["Cosmetic damage only", "Use screen protector to prevent further scratches"]
+      };
+
+      const result: DiagnosisResult = {
+        issue: issueName,
+        severity: severity,
+        description: `Local AI Vision detected: ${issueName} (${(topMatch.score * 100).toFixed(1)}% confidence).`,
+        recommendations: diagnosisOptions[label] || ["No specific recommendations. Proceed with manual diagnostic."],
+        confidence: topMatch.score
+      };
+      
+      // Store in DB
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        const { data } = await supabase.from('image_diagnostics').insert({
+          image_url: 'uploaded-image',
+          diagnosis_result: result,
+          severity_level: severity,
+          user_id: user?.id
+        }).select().single();
+
+        if (data) {
+          setDiagnosisId(data.id);
+        }
+      } catch (e) {
+        console.error('Error storing diagnosis:', e);
+      }
+
+      return result;
+
+    } catch (error) {
+      console.error('Local AI error:', error);
+      toast.error('Local AI analysis failed. Please check browser console.');
+      
+      return {
+        issue: 'Analysis Failed',
+        severity: 'minor',
+        description: 'The local AI model could not process this image.',
+        recommendations: ['Try again', 'Reload the page to reload the AI model'],
+        confidence: 0
+      };
+    }
   };
 
   const handleFile = async (file: File) => {
@@ -381,8 +375,17 @@ const PhotoUpload = () => {
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
           <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 rounded-xl shadow-lg shadow-primary/20">
-            <Upload className="mr-2 h-4 w-4" />
-            SELECT IMAGE
+            {modelLoading ? (
+               <>
+                 <Brain className="mr-2 h-4 w-4 animate-pulse" />
+                 DOWNLOADING MODEL...
+               </>
+             ) : (
+               <>
+                 <Upload className="mr-2 h-4 w-4" />
+                 SELECT IMAGE
+               </>
+             )}
           </Button>
         </div>
       ) : (

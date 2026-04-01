@@ -19,6 +19,7 @@ import SecurityAlerts from '../components/SecurityAlerts';
 import AITrainingDashboard from '../components/AITrainingDashboard';
 import VideoRepairAnalyzer from '../components/VideoRepairAnalyzer';
 import SparePartsInventoryManager from '../components/SparePartsInventoryManager';
+import RepairCostEstimator from '../components/RepairCostEstimator';
 
 const Diagnose = () => {
   const navigate = useNavigate();

@@ -430,6 +430,10 @@ const Diagnose = () => {
           <TabsContent value="inventory">
             <SparePartsInventoryManager />
           </TabsContent>
+
+          <TabsContent value="cost-estimate" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <RepairCostEstimator />
+          </TabsContent>
         </Tabs>
       </div>
     </div>

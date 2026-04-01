@@ -62,6 +62,7 @@ const App = () => (
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/vision-trainer" element={<CustomVisionTrainerPage />} />
+              <Route path="/technicians" element={<Technicians />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

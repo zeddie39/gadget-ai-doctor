@@ -143,15 +143,14 @@ const PhotoUpload = () => {
         confidence: topMatch.score
       };
       
-      // Store in DB
+      // Store diagnosis in DB
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        const { data } = await supabase.from('image_diagnostics').insert({
-          image_url: 'uploaded-image',
-          diagnosis_result: result,
-          severity_level: severity,
-          user_id: user?.id
-        }).select().single();
+        const insertPayload = {
+          image_url: 'uploaded-image' as string,
+          diagnosis_result: result as any,
+          severity_level: severity as string,
+        };
+        const { data } = await supabase.from('image_diagnostics').insert(insertPayload).select().single();
 
         if (data) {
           setDiagnosisId(data.id);

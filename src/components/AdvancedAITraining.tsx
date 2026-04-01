@@ -24,10 +24,10 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useSubscription } from '@/hooks/useSubscription';
-import MpesaPaymentModal from '@/components/MpesaPaymentModal';
+import PaymentModal from '@/components/PaymentModal';
 
 interface TrainingConfig {
-  method: 'openrouter-training' | 'huggingface' | 'tensorflow' | 'custom-api';
+  method: 'openrouter-training' | 'huggingface' | 'tensorflow' | 'custom-api' | 'custom-vision';
   model: string;
   dataset: string;
   epochs: number;
@@ -98,14 +98,14 @@ const AdvancedAITraining = () => {
       speed: 'Very Fast'
     },
     {
-      id: 'custom-api',
-      name: 'Custom API Training',
-      description: 'Connect to external training services',
+      id: 'custom-vision',
+      name: 'Custom Vision Trainer',
+      description: 'Transfer learning on custom datasets',
       icon: <Globe className="h-5 w-5 text-green-600" />,
-      models: ['Custom Models', 'Ensemble Models'],
-      cost: 'Variable',
-      accuracy: 'Variable',
-      speed: 'Variable'
+      models: ['MobileNet', 'KNN Classifier'],
+      cost: 'Free (Local)',
+      accuracy: 'High',
+      speed: 'Instant'
     }
   ];
 
@@ -253,11 +253,10 @@ const AdvancedAITraining = () => {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       
-      <MpesaPaymentModal 
+      <PaymentModal 
         isOpen={showPaymentModal} 
         onClose={() => setShowPaymentModal(false)}
         onSuccess={() => setShowPaymentModal(false)}
-        priceAmount={499}
       />
 
       <Tabs defaultValue="training" className="w-full">
@@ -307,7 +306,7 @@ const AdvancedAITraining = () => {
                       </div>
                     </div>
 
-                    {config.method === method.id && (
+                    {config.method === method.id && method.id !== 'custom-vision' && (
                       <Button 
                         onClick={startTraining}
                         disabled={isTraining}
@@ -324,6 +323,15 @@ const AdvancedAITraining = () => {
                             Start Training
                           </>
                         )}
+                      </Button>
+                    )}
+                    {config.method === method.id && method.id === 'custom-vision' && (
+                      <Button 
+                        onClick={() => window.location.href = '/vision-trainer'}
+                        className="w-full bg-green-600 hover:bg-green-700"
+                      >
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Open Vision Trainer Studio
                       </Button>
                     )}
                   </div>
@@ -346,6 +354,7 @@ const AdvancedAITraining = () => {
                     <Label htmlFor="model">Model Selection</Label>
                     <select 
                       id="model"
+                      title="Model Setup"
                       value={config.model}
                       onChange={(e) => setConfig(prev => ({ ...prev, model: e.target.value }))}
                       className="w-full px-3 py-2 border rounded-md"
@@ -360,6 +369,7 @@ const AdvancedAITraining = () => {
                     <Label htmlFor="dataset">Dataset Source</Label>
                     <select 
                       id="dataset"
+                      title="Dataset Selection"
                       value={config.dataset}
                       onChange={(e) => setConfig(prev => ({ ...prev, dataset: e.target.value }))}
                       className="w-full px-3 py-2 border rounded-md"

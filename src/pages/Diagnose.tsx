@@ -5,7 +5,8 @@ import { Session } from '@supabase/supabase-js';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, MessageSquare, MessageCircle, Settings, Battery, Wrench, Trash, Shield, BookOpen, FileText, AlertTriangle, Brain, LogOut, Lock, Video, Package, ShieldCheck, Activity, HardDrive, Cpu, User, LayoutDashboard, ScanLine, Sparkles } from 'lucide-react';
+import { Camera, MessageSquare, MessageCircle, Settings, Battery, Wrench, Trash, Shield, BookOpen, FileText, AlertTriangle, Brain, LogOut, Lock, Video, Package, ShieldCheck, Activity, HardDrive, Cpu, User, LayoutDashboard, ScanLine, Sparkles, CircuitBoard } from 'lucide-react';
+import MotherboardScanner from '../components/MotherboardScanner';
 import PhotoUpload from '../components/PhotoUpload';
 import AIChat from '../components/AIChat';
 import TroubleshootingWizard from '../components/TroubleshootingWizard';
@@ -22,7 +23,7 @@ import SparePartsInventoryManager from '../components/SparePartsInventoryManager
 const Diagnose = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState('photo');
+  const [activeTab, setActiveTab] = useState('motherboard');
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -57,7 +58,7 @@ const Diagnose = () => {
         .select('role')
         .eq('user_id', userId)
         .eq('role', 'admin')
-        .single();
+        .maybeSingle();
 
       setIsAdmin(!!data);
     } catch (error) {
@@ -103,7 +104,7 @@ const Diagnose = () => {
 
   useEffect(() => {
     const tab = searchParams.get('tab');
-    const validTabs = ['photo', 'video', 'chat', 'troubleshoot', 'battery', 'storage', 'health', 'history', 'knowledge', 'security', 'training', 'inventory'];
+    const validTabs = ['motherboard', 'photo', 'video', 'chat', 'troubleshoot', 'battery', 'storage', 'health', 'history', 'knowledge', 'security', 'training', 'inventory'];
     if (tab && validTabs.includes(tab)) {
       setActiveTab(tab);
     }
@@ -150,9 +151,9 @@ const Diagnose = () => {
                     <span className={`text-lg font-bold ${item.color}`}>{item.val}{item.unit}</span>
                   </div>
                   <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                    <style>{`._diag_bar_${i} { width: ${item.val}%; }`}</style>
                     <div 
-                      className={`h-full transition-all duration-1000 ease-out ${item.color.replace('text-', 'bg-')}`} 
-                      style={{ width: `${item.val}%` }} 
+                      className={`h-full transition-all duration-1000 ease-out _diag_bar_${i} ${item.color.replace('text-', 'bg-')}`} 
                     />
                   </div>
                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1.5 font-semibold">
@@ -196,6 +197,10 @@ const Diagnose = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-8">
           <TabsList className="flex flex-wrap justify-start sm:justify-center gap-1.5 sm:gap-2 h-auto p-2 sm:p-3 bg-white/5 smart-glass border-white/10 rounded-2xl overflow-x-auto max-w-full">
             <span className="w-full text-[0.6rem] font-bold uppercase tracking-widest text-muted-foreground/60 text-center mb-1 sm:mb-2">Technical Diagnostics</span>
+            <TabsTrigger value="motherboard" className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+              <CircuitBoard className="h-4 w-4 text-primary" />
+              <span className="text-[10px] sm:text-xs font-bold uppercase">Board Scan</span>
+            </TabsTrigger>
             <TabsTrigger value="photo" className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
               <Camera className="h-4 w-4 text-amber-500" />
               <span className="text-[10px] sm:text-xs font-bold uppercase">Photo</span>
@@ -247,6 +252,25 @@ const Diagnose = () => {
               <span className="text-[10px] sm:text-xs font-bold uppercase">Inventory</span>
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="motherboard" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <Card className="smart-glass border-none p-2 rounded-3xl overflow-hidden shadow-2xl">
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-3 text-2xl font-black">
+                  <div className="p-2 rounded-xl bg-primary/20 neon-glow-subtle">
+                    <CircuitBoard className="h-6 w-6 text-primary" />
+                  </div>
+                  AI Motherboard Scanner
+                </CardTitle>
+                <CardDescription className="text-muted-foreground/80 font-medium">
+                  Scan any motherboard — identify model, detect faults, get repair solutions, tutorials & schematics
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <MotherboardScanner />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="photo" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <Card className="smart-glass border-none p-2 rounded-3xl overflow-hidden shadow-2xl">

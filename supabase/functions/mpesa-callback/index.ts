@@ -41,7 +41,7 @@ serve(async (req) => {
     // 2. Look up the pending transaction in our database
     const { data: transaction, error: fetchError } = await supabase
       .from('mpesa_transactions')
-      .select('id, user_id, status')
+      .select('id, user_id, status, amount')
       .eq('checkout_request_id', CheckoutRequestID)
       .single();
 
@@ -73,9 +73,21 @@ serve(async (req) => {
         transactionDate = itemMap.TransactionDate?.toString();
       }
 
-      // Upgrade the user to 'pro' tier
+      // Generate calculated expiry based on tier pricing
       const expiryDate = new Date();
-      expiryDate.setFullYear(expiryDate.getFullYear() + 1); // Give a 1 year Pro status
+      const amountPaid = transaction.amount || 399; // Default fallback to monthly
+      
+      if (amountPaid === 199) {
+        expiryDate.setDate(expiryDate.getDate() + 14); // 2 Weeks Trial
+      } else if (amountPaid === 999) {
+        expiryDate.setMonth(expiryDate.getMonth() + 3); // 3 Months (Quarterly)
+      } else if (amountPaid === 1899) {
+        expiryDate.setMonth(expiryDate.getMonth() + 6); // 6 Months (Half)
+      } else if (amountPaid === 3499) {
+        expiryDate.setFullYear(expiryDate.getFullYear() + 1); // 1 Year (Annual)
+      } else {
+        expiryDate.setMonth(expiryDate.getMonth() + 1); // 1 Month Default (399)
+      }
       
       const { error: subError } = await supabase
         .from('user_subscriptions')

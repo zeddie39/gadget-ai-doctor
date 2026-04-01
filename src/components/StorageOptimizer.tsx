@@ -238,6 +238,7 @@ const StorageOptimizer = () => {
                   <div key={index} className="flex items-center gap-3 p-2 border rounded">
                     <input
                       type="checkbox"
+                      title={`Select ${app.name}`}
                       checked={selectedItems.has(app.name)}
                       onChange={() => toggleItemSelection(app.name)}
                       className="rounded"
@@ -266,6 +267,7 @@ const StorageOptimizer = () => {
                   <div key={index} className="flex items-center gap-3 p-2 border rounded">
                     <input
                       type="checkbox"
+                      title={`Select ${photo.name}`}
                       checked={selectedItems.has(photo.name)}
                       onChange={() => toggleItemSelection(photo.name)}
                       className="rounded"
@@ -294,6 +296,7 @@ const StorageOptimizer = () => {
                   <div key={index} className="flex items-center gap-3 p-2 border rounded">
                     <input
                       type="checkbox"
+                      title={`Select ${cache.name}`}
                       checked={selectedItems.has(cache.name)}
                       onChange={() => toggleItemSelection(cache.name)}
                       className="rounded"

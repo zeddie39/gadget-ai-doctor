@@ -13,7 +13,16 @@ interface MpesaPaymentModalProps {
   priceAmount?: number;
 }
 
-const MpesaPaymentModal: React.FC<MpesaPaymentModalProps> = ({ isOpen, onClose, onSuccess, priceAmount = 299 }) => {
+const TIERS = [
+  { id: 'trial', name: '2 Weeks', price: 199, popular: false },
+  { id: 'monthly', name: '1 Month', price: 399, popular: true },
+  { id: 'quarterly', name: '3 Months', price: 999, popular: false },
+  { id: 'half', name: '6 Months', price: 1899, popular: false },
+  { id: 'annual', name: '1 Year', price: 3499, popular: false }
+];
+
+const MpesaPaymentModal: React.FC<MpesaPaymentModalProps> = ({ isOpen, onClose, onSuccess }) => {
+  const [selectedTier, setSelectedTier] = useState(TIERS[1]);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [statusText, setStatusText] = useState('');
@@ -38,7 +47,7 @@ const MpesaPaymentModal: React.FC<MpesaPaymentModalProps> = ({ isOpen, onClose, 
 
       // Call the Edge Function
       const { data, error } = await supabase.functions.invoke('mpesa-stk-push', {
-        body: { phoneNumber, amount: priceAmount },
+        body: { phoneNumber, amount: selectedTier.price },
       });
 
       if (error || !data?.success) {
@@ -132,9 +141,35 @@ const MpesaPaymentModal: React.FC<MpesaPaymentModalProps> = ({ isOpen, onClose, 
           </div>
 
           <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-sm text-slate-400">Total Price</span>
-              <span className="text-2xl font-bold tracking-tight text-white">KES {priceAmount}</span>
+            <div className="mb-4">
+              <label className="text-xs font-medium text-emerald-400 uppercase tracking-wider mb-2 block">
+                Select Subscription Plan
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {TIERS.map((tier) => (
+                  <div 
+                    key={tier.id}
+                    onClick={() => setSelectedTier(tier)}
+                    className={`relative cursor-pointer p-3 rounded-lg border text-center transition-all ${
+                      selectedTier.id === tier.id 
+                        ? 'border-emerald-500 bg-emerald-500/20 shadow-md shadow-emerald-500/20' 
+                        : 'border-slate-700 hover:border-slate-500 hover:bg-slate-800'
+                    }`}
+                  >
+                    {tier.popular && (
+                      <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-blue-500 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        Popular
+                      </div>
+                    )}
+                    <div className={`text-xs font-medium mb-1 ${selectedTier.id === tier.id ? 'text-white' : 'text-slate-300'}`}>
+                      {tier.name}
+                    </div>
+                    <div className={`text-sm font-bold ${selectedTier.id === tier.id ? 'text-emerald-400' : 'text-slate-400'}`}>
+                      KES {tier.price}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="space-y-3">
@@ -177,7 +212,7 @@ const MpesaPaymentModal: React.FC<MpesaPaymentModalProps> = ({ isOpen, onClose, 
             disabled={isProcessing || !phoneNumber}
             className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-8 shadow-lg shadow-emerald-500/20"
           >
-            {isProcessing ? 'Waiting for M-Pesa...' : 'Pay with M-Pesa'}
+            {isProcessing ? 'Waiting...' : `Pay KES ${selectedTier.price}`}
           </Button>
         </DialogFooter>
       </DialogContent>

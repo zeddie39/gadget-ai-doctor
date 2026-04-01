@@ -160,7 +160,7 @@ const GeminiAIIntegration: React.FC = () => {
           'X-Title': 'AI PCB Analyzer'
         },
         body: JSON.stringify({
-          model: 'openai/gpt-4o-mini',
+          model: 'google/gemini-2.5-flash',
           messages: [
             {
               role: 'user',
@@ -559,8 +559,8 @@ const GeminiAIIntegration: React.FC = () => {
                     </div>
                     
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Dataset</label>
-                      <select className="w-full p-2 border rounded">
+                      <label htmlFor="training-dataset-select" className="text-sm font-medium mb-2 block">Dataset</label>
+                      <select id="training-dataset-select" className="w-full p-2 border rounded">
                         {datasets.map(dataset => (
                           <option key={dataset.name} value={dataset.name}>
                             {dataset.name} ({dataset.size} samples)
@@ -801,8 +801,8 @@ const GeminiAIIntegration: React.FC = () => {
                           <Input placeholder="e.g., Mobile Device Components" />
                         </div>
                         <div>
-                          <label className="text-sm font-medium mb-2 block">Category</label>
-                          <select className="w-full p-2 border rounded">
+                          <label htmlFor="upload-category-select" className="text-sm font-medium mb-2 block">Category</label>
+                          <select id="upload-category-select" className="w-full p-2 border rounded">
                             <option>Component Detection</option>
                             <option>Defect Classification</option>
                             <option>Board Layout Analysis</option>
@@ -838,10 +838,11 @@ const GeminiAIIntegration: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div>
-                        <label className="text-sm font-medium mb-2 block">
+                        <label htmlFor="config-temperature-range" className="text-sm font-medium mb-2 block">
                           Temperature ({modelConfig.temperature})
                         </label>
                         <input
+                          id="config-temperature-range"
                           type="range"
                           min="0"
                           max="2"
@@ -859,10 +860,11 @@ const GeminiAIIntegration: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium mb-2 block">
+                        <label htmlFor="config-topp-range" className="text-sm font-medium mb-2 block">
                           Top-P ({modelConfig.topP})
                         </label>
                         <input
+                          id="config-topp-range"
                           type="range"
                           min="0"
                           max="1"

@@ -20,13 +20,22 @@ self.addEventListener('install', (event) => {
 
 // Fetch event - serve from cache when offline
 self.addEventListener('fetch', (event) => {
+  // Bypass cache for APIs, extensions, and non-GET requests
+  if (
+    event.request.method !== 'GET' ||
+    event.request.url.startsWith('chrome-extension') ||
+    event.request.url.includes('supabase.co') ||
+    event.request.url.includes('/functions/v1/')
+  ) {
+    return; // Let the browser handle standard network fetching for these
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
         // Return cached version or fetch from network
         return response || fetch(event.request);
-      }
-    )
+      }).catch(() => fetch(event.request))
   );
 });
 

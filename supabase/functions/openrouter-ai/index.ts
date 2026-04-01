@@ -1,7 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,76 +16,58 @@ serve(async (req) => {
   try {
     const { prompt, model = 'google/gemini-2.5-flash', image, systemPrompt } = await req.json();
 
-    console.log('Lovable AI request:', { model, hasImage: !!image, promptLength: prompt?.length });
+    console.log('Gemini AI request:', { hasImage: !!image, promptLength: prompt?.length });
 
-    if (!lovableApiKey) {
-      throw new Error('Lovable API key not configured');
+    if (!geminiApiKey) {
+      throw new Error('GEMINI_API_KEY not configured in Supabase secrets');
     }
 
-    const messages = [
-      ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
-      {
-        role: 'user',
-        content: image 
-          ? [
-              { type: 'text', text: prompt },
-              { type: 'image_url', image_url: { url: image } }
-            ]
-          : prompt
-      }
-    ];
+    const parts = [];
+    if (systemPrompt) {
+      parts.push({ text: `SYSTEM: ${systemPrompt}\n\nUSER: ${prompt}` });
+    } else {
+      parts.push({ text: prompt });
+    }
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    if (image) {
+      // Strip base64 prefix if exists
+      const base64Data = image.includes(',') ? image.split(',')[1] : image;
+      parts.push({
+        inlineData: {
+          mimeType: 'image/jpeg',
+          data: base64Data
+        }
+      });
+    }
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages
+        contents: [{ parts }]
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Lovable AI Gateway error:', response.status, errorText);
-      
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ 
-          error: 'Rate limit exceeded. Please try again later.',
-          fallback: true 
-        }), {
-          status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ 
-          error: 'AI credits exhausted. Please top up your account.',
-          fallback: true 
-        }), {
-          status: 402,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      
-      throw new Error(`Lovable AI Gateway error: ${response.status}`);
+      console.error('Gemini API error:', response.status, errorText);
+      throw new Error(`Gemini API error: ${response.status}`);
     }
 
     const data = await response.json();
-    const generatedText = data.choices?.[0]?.message?.content;
+    const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!generatedText) {
       throw new Error('No response generated from AI');
     }
 
-    console.log('Lovable AI response generated successfully');
+    console.log('Gemini AI response generated successfully');
 
     return new Response(JSON.stringify({ 
       response: generatedText,
-      model: data.model || model 
+      model: 'gemini-2.5-flash' 
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -94,9 +76,10 @@ serve(async (req) => {
     console.error('Error in openrouter-ai function:', error);
     return new Response(JSON.stringify({ 
       error: message,
+      errorDetails: error,
       fallback: true 
     }), {
-      status: 500,
+      status: 200, // Return 200 so the client can read the error payload
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

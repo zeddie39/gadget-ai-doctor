@@ -9,6 +9,8 @@ import { Video, Upload, Camera, StopCircle, Play, AlertCircle, Scan } from 'luci
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { pipeline, env } from '@xenova/transformers';
+import PaymentModal from './PaymentModal';
+import { useSubscription } from '@/hooks/useSubscription';
 import '../styles/video-analyzer.css';
 
 // Setup Transformers.js to download models from HuggingFace
@@ -22,6 +24,20 @@ const ELECTRONICS_LABELS = [
   "ribbon cable", 
   "battery",
   "damaged component"
+];
+
+// Damage-specific labels for real AI-powered damage detection
+const DAMAGE_LABELS = [
+  "burn mark",
+  "corrosion",
+  "cracked glass",
+  "water damage",
+  "rust",
+  "broken connector",
+  "swollen battery",
+  "melted plastic",
+  "scratched surface",
+  "missing component"
 ];
 
 // Minimum confidence threshold to filter out weak/false detections
@@ -42,6 +58,17 @@ export default function VideoRepairAnalyzer() {
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const detectionIntervalRef = useRef<number | null>(null);
+
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [videoScanCount, setVideoScanCount] = useState(0);
+  const { isPro } = useSubscription();
+
+  useEffect(() => {
+    const saved = localStorage.getItem('freeVideoScanCount');
+    if (saved) {
+      setVideoScanCount(parseInt(saved, 10));
+    }
+  }, []);
 
   useEffect(() => {
     const loadModel = async () => {
@@ -72,7 +99,7 @@ export default function VideoRepairAnalyzer() {
     if ((realtimeDetection || damageDetection) && isScanning && videoRef.current) {
       if (realtimeDetection && model) {
         detectObjects();
-      } else if (damageDetection) {
+      } else if (damageDetection && model) {
         detectDamage();
       }
     } else if (!realtimeDetection && !damageDetection && detectionIntervalRef.current) {
@@ -81,6 +108,11 @@ export default function VideoRepairAnalyzer() {
   }, [realtimeDetection, damageDetection, isScanning, model]);
 
   const startCamera = async () => {
+    if (!isPro && videoScanCount >= 3) {
+      setShowPaymentModal(true);
+      return;
+    }
+
     try {
       // CRITICAL: getUserMedia called directly in click handler for mobile/Capacitor compatibility
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -100,6 +132,14 @@ export default function VideoRepairAnalyzer() {
         streamRef.current = stream;
         setIsScanning(true);
         toast.success('Camera started successfully');
+        
+        if (!isPro) {
+          setVideoScanCount(prev => {
+            const newCount = prev + 1;
+            localStorage.setItem('freeVideoScanCount', newCount.toString());
+            return newCount;
+          });
+        }
       }
     } catch (error: any) {
       console.error('Error accessing camera:', error);
@@ -217,8 +257,11 @@ export default function VideoRepairAnalyzer() {
   };
 
   const detectDamage = async () => {
-    if (!videoRef.current || !overlayCanvasRef.current || !damageDetection) {
-      console.log('Damage detection stopped: missing requirements');
+    if (!model || !videoRef.current || !overlayCanvasRef.current || !damageDetection) {
+      console.log('Damage detection stopped: missing requirements (model needed)');
+      if (!model && damageDetection) {
+        toast.error('AI model still loading. Please wait...');
+      }
       return;
     }
 
@@ -232,77 +275,96 @@ export default function VideoRepairAnalyzer() {
         canvas.height = video.videoHeight;
       }
 
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      try {
+        // Capture the current video frame
+        const frameCanvas = document.createElement('canvas');
+        frameCanvas.width = video.videoWidth;
+        frameCanvas.height = video.videoHeight;
+        frameCanvas.getContext('2d')?.drawImage(video, 0, 0);
+        const imageUrl = frameCanvas.toDataURL('image/jpeg', 0.8);
 
-        // Generate random damage areas for demonstration
-        const simulatedDamage = [
-          {
-            x: Math.random() * (canvas.width - 100),
-            y: Math.random() * (canvas.height - 100),
-            width: 60 + Math.random() * 40,
-            height: 30 + Math.random() * 20,
-            type: 'Burn mark',
-            severity: 'High'
-          },
-          {
-            x: Math.random() * (canvas.width - 100),
-            y: Math.random() * (canvas.height - 100),
-            width: 40 + Math.random() * 30,
-            height: 25 + Math.random() * 15,
-            type: 'Corrosion',
-            severity: 'Medium'
-          },
-          {
-            x: Math.random() * (canvas.width - 100),
-            y: Math.random() * (canvas.height - 100),
-            width: 30 + Math.random() * 20,
-            height: 20 + Math.random() * 10,
-            type: 'Crack',
-            severity: 'Low'
+        // Run zero-shot inference with damage-specific labels
+        const rawPredictions = await model(imageUrl, DAMAGE_LABELS, { threshold: MIN_CONFIDENCE });
+
+        // Classify severity based on label type
+        const getSeverity = (label: string): string => {
+          const highSeverity = ['burn mark', 'swollen battery', 'melted plastic', 'water damage'];
+          const medSeverity = ['corrosion', 'rust', 'broken connector', 'missing component'];
+          if (highSeverity.includes(label)) return 'High';
+          if (medSeverity.includes(label)) return 'Medium';
+          return 'Low';
+        };
+
+        // Map predictions to damage areas
+        const damages = rawPredictions.map((p: any) => ({
+          x: p.box.xmin,
+          y: p.box.ymin,
+          width: p.box.xmax - p.box.xmin,
+          height: p.box.ymax - p.box.ymin,
+          type: p.label.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+          severity: getSeverity(p.label),
+          score: p.score
+        }));
+
+        console.log(`AI Damage Detection: found ${damages.length} potential damage areas`);
+        setDamagedAreas(damages);
+
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          damages.forEach((damage: any) => {
+            const color = damage.severity === 'High' ? '#ff0000' :
+              damage.severity === 'Medium' ? '#ff8800' : '#ffaa00';
+
+            // Draw damage area with pulsing effect
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.setLineDash([8, 4]);
+            ctx.strokeRect(damage.x, damage.y, damage.width, damage.height);
+            ctx.setLineDash([]);
+
+            // Draw label background
+            const labelText = `${damage.type} (${Math.round(damage.score * 100)}%)`;
+            const textWidth = ctx.measureText(labelText).width + 16;
+            ctx.fillStyle = color;
+            ctx.fillRect(damage.x, damage.y - 30, Math.max(textWidth, damage.width), 30);
+
+            // Draw label text
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 12px Arial';
+            ctx.fillText(labelText, damage.x + 5, damage.y - 10);
+          });
+
+          // Show "No damage found" overlay if clean
+          if (damages.length === 0) {
+            ctx.fillStyle = 'rgba(0, 200, 0, 0.15)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#00ff00';
+            ctx.font = 'bold 18px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('✓ No visible damage detected', canvas.width / 2, canvas.height / 2);
+            ctx.textAlign = 'start';
           }
-        ];
-
-        console.log('Simulating damage detection:', simulatedDamage.length, 'areas');
-        setDamagedAreas(simulatedDamage);
-
-        simulatedDamage.forEach((damage) => {
-          const color = damage.severity === 'High' ? '#ff0000' :
-            damage.severity === 'Medium' ? '#ff8800' : '#ffaa00';
-
-          // Draw damage area
-          ctx.strokeStyle = color;
-          ctx.lineWidth = 3;
-          ctx.strokeRect(damage.x, damage.y, damage.width, damage.height);
-
-          // Draw label background
-          ctx.fillStyle = color;
-          ctx.fillRect(damage.x, damage.y - 30, damage.width + 60, 30);
-
-          // Draw label text
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 12px Arial';
-          ctx.fillText(
-            `${damage.type} (${damage.severity})`,
-            damage.x + 5,
-            damage.y - 8
-          );
-        });
+        }
+      } catch (error) {
+        console.error('Error in damage detection:', error);
       }
     }
 
     if (damageDetection && isScanning) {
+      // Throttle to every 3 seconds since damage detection with AI is heavier
       setTimeout(() => {
         if (damageDetection) {
           detectionIntervalRef.current = requestAnimationFrame(detectDamage);
         }
-      }, 2000); // Update every 2 seconds for damage detection
+      }, 3000);
     }
   };
 
   return (
     <div className="space-y-4 md:space-y-6 p-3 md:p-6">
+      <PaymentModal isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)} onSuccess={() => setShowPaymentModal(false)} />
       <Card className="video-analyzer-container overflow-hidden border-0 shadow-2xl">
         <CardHeader className="p-4 md:pb-4" style={{ background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)' }}>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -319,9 +381,21 @@ export default function VideoRepairAnalyzer() {
                 </CardDescription>
               </div>
             </div>
-            <Badge className={`status-badge shrink-0 ${model ? 'active' : ''}`}>
-              {model ? '✓ AI Ready' : '⟳ Loading...'}
-            </Badge>
+            <div className="flex flex-col items-end gap-2">
+              <Badge className={`status-badge shrink-0 ${model ? 'active' : ''}`}>
+                {model ? '✓ AI Ready' : '⟳ Loading...'}
+              </Badge>
+              {!isPro && (
+                <Button 
+                  size="sm"
+                  className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white border-0 shadow-lg font-bold px-4 h-9"
+                  onClick={() => setShowPaymentModal(true)}
+                >
+                  <span className="opacity-90 mr-2 font-medium bg-black/20 px-2 py-0.5 rounded text-xs">{Math.max(0, 3 - videoScanCount)}/3 Free</span> 
+                  UPGRADE TO PRO
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-3 md:p-6">
@@ -340,7 +414,7 @@ export default function VideoRepairAnalyzer() {
             <TabsContent value="live" className="space-y-6">
               {/* Video Container with Animated Border */}
               <div className="video-container-wrapper">
-                <div className="video-container-inner relative" style={{ aspectRatio: '16/9' }}>
+                <div className="video-container-inner relative aspect-video">
                   <video
                     ref={videoRef}
                     autoPlay
@@ -451,10 +525,10 @@ export default function VideoRepairAnalyzer() {
                     />
                   </div>
                   <p className="text-sm text-gray-500">
-                    Detects burns, corrosion, and cracks
+                    AI-powered burn, corrosion & crack detection
                   </p>
                   <Badge className={`mt-2 status-badge ${damageDetection ? 'scanning' : 'inactive'}`}>
-                    {damageDetection ? 'Scanning' : 'Off'}
+                    {damageDetection ? (model ? 'AI Scanning' : 'Loading Model...') : 'Off'}
                   </Badge>
                 </div>
               </div>
@@ -500,9 +574,14 @@ export default function VideoRepairAnalyzer() {
                       {damagedAreas.map((damage, index) => (
                         <div key={index} className={`detection-card severity-${damage.severity.toLowerCase()}`}>
                           <span className="font-medium">{damage.type}</span>
-                          <Badge variant={damage.severity === 'High' ? 'destructive' : 'default'}>
-                            {damage.severity}
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="bg-orange-50">
+                              {damage.score ? `${Math.round(damage.score * 100)}%` : '—'}
+                            </Badge>
+                            <Badge variant={damage.severity === 'High' ? 'destructive' : 'default'}>
+                              {damage.severity}
+                            </Badge>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -526,6 +605,7 @@ export default function VideoRepairAnalyzer() {
                 <input
                   ref={fileInputRef}
                   type="file"
+                  title="Upload Video"
                   accept="video/*"
                   className="hidden"
                   onChange={(e) => {
@@ -545,15 +625,27 @@ export default function VideoRepairAnalyzer() {
                       <video
                         src={uploadedVideo}
                         controls
-                        className="w-full rounded-lg"
-                        style={{ maxHeight: '400px' }}
+                        className="w-full rounded-lg max-h-[400px]"
                       />
                     </div>
                   </div>
                   <Button 
                     className="w-full btn-premium btn-primary-gradient"
                     onClick={async () => {
+                      if (!isPro && videoScanCount >= 3) {
+                        setShowPaymentModal(true);
+                        return;
+                      }
                       if (!uploadedVideo) return;
+                      
+                      if (!isPro) {
+                        setVideoScanCount(prev => {
+                          const newCount = prev + 1;
+                          localStorage.setItem('freeVideoScanCount', newCount.toString());
+                          return newCount;
+                        });
+                      }
+                      
                       toast.info('Analyzing video frames...');
                       // Extract a frame from the uploaded video for AI analysis
                       const video = document.createElement('video');

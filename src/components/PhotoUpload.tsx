@@ -82,16 +82,16 @@ const PhotoUpload = () => {
 
       toast.info('Local AI analyzing image concepts...', { duration: 3000 });
       
-      // Define our custom hardware labels for zero-shot classification
+      // Define highly descriptive labels for better zero-shot matching
       const labels = [
-        "swollen battery",
-        "cracked screen",
-        "water damage",
-        "burnt motherboard",
-        "damaged port",
-        "normal intact circuit board",
-        "normal smartphone",
-        "scratched surface"
+        "a swollen and expanding lithium battery",
+        "a physically broken and cracked glass screen",
+        "an electronic device with severe water damage or corrosion",
+        "a damaged circuit board with burnt, blackened, or exploded components",
+        "a damaged charging port with bent pins",
+        "a perfectly clean, normal, and undamaged circuit board",
+        "a normal smartphone in good physical condition",
+        "a device with minor cosmetic surface scratches"
       ];
 
       // Run inference locally within the browser!
@@ -106,30 +106,40 @@ const PhotoUpload = () => {
       
       let severity: 'critical' | 'medium' | 'minor' = 'minor';
       const label = topMatch.label as string;
-      const issueName = label.split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      
+      // Simplify the long descriptive string into a short issue name
+      let issueName = "Unknown Issue";
+      if (label.includes('swollen')) issueName = "Swollen Battery";
+      else if (label.includes('cracked')) issueName = "Cracked Screen";
+      else if (label.includes('water')) issueName = "Water Damage / Corrosion";
+      else if (label.includes('burnt')) issueName = "Burnt/Exploded Components";
+      else if (label.includes('port')) issueName = "Damaged Charging Port";
+      else if (label.includes('circuit board')) issueName = "Normal Intact Circuit Board";
+      else if (label.includes('smartphone')) issueName = "Normal Smartphone Condition";
+      else if (label.includes('scratches')) issueName = "Minor Surface Scratches";
 
       if (label.includes('swollen') || label.includes('water') || label.includes('burnt')) {
         severity = 'critical';
-      } else if (label.includes('cracked') || label.includes('damaged') || label.includes('scratched')) {
+      } else if (label.includes('cracked') || label.includes('port') || label.includes('scratches')) {
         severity = 'medium';
       }
 
       const diagnosisOptions: Record<string, string[]> = {
-        "swollen battery": ["Stop using device immediately", "Do not charge the device", "Keep away from heat sources", "Professional battery replacement required urgently"],
-        "cracked screen": ["Apply a screen protector to prevent further damage", "Avoid pressing on cracked areas", "Consider professional screen replacement"],
-        "water damage": ["Turn off device immediately", "Remove battery if possible", "Place in silica gel", "Professional repair required"],
-        "burnt motherboard": ["Disconnect power completely", "Do not attempt to power on", "Requires board-level micro-soldering repair"],
-        "damaged port": ["Check for debris inside the port", "Do not force cables into the port", "Port replacement may be necessary"],
-        "normal intact circuit board": ["No obvious physical damage detected by AI", "Proceed with software or multimeter diagnostics"],
-        "normal smartphone": ["Device appears physically normal externally", "Proceed with functional testing"],
-        "scratched surface": ["Cosmetic damage only", "Use screen protector to prevent further scratches"]
+        "Swollen Battery": ["Stop using device immediately", "Do not charge the device", "Keep away from heat sources", "Professional battery replacement required urgently"],
+        "Cracked Screen": ["Apply a screen protector to prevent further damage", "Avoid pressing on cracked areas", "Consider professional screen replacement"],
+        "Water Damage / Corrosion": ["Turn off device immediately", "Remove battery if possible", "Place in silica gel", "Professional board-level cleaning required"],
+        "Burnt/Exploded Components": ["Disconnect power completely", "Do not attempt to power on", "Requires board-level micro-soldering component replacement"],
+        "Damaged Charging Port": ["Check for debris inside the port", "Do not force cables into the port", "Port replacement may be necessary"],
+        "Normal Intact Circuit Board": ["No obvious physical damage detected by AI", "Proceed with multimeter diode-mode diagnostics", "Check for software or firmware issues"],
+        "Normal Smartphone Condition": ["Device appears physically normal externally", "Proceed with functional or software testing"],
+        "Minor Surface Scratches": ["Cosmetic damage only", "Use screen protector to prevent further scratches"]
       };
 
       const result: DiagnosisResult = {
         issue: issueName,
         severity: severity,
         description: `Local AI Vision detected: ${issueName} (${(topMatch.score * 100).toFixed(1)}% confidence).`,
-        recommendations: diagnosisOptions[label] || ["No specific recommendations. Proceed with manual diagnostic."],
+        recommendations: diagnosisOptions[issueName] || ["No specific recommendations. Proceed with manual diagnostic."],
         confidence: topMatch.score
       };
       
@@ -371,6 +381,8 @@ const PhotoUpload = () => {
           <input
             type="file"
             accept="image/*"
+            title="Upload Photo Input"
+            aria-label="Upload device photo"
             onChange={handleFileInput}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
@@ -419,6 +431,7 @@ const PhotoUpload = () => {
                   <div>
                     <Label className="text-xs">Stimuli Type</Label>
                     <select 
+                      title="Stimuli Type Selection"
                       value={stimuliType} 
                       onChange={(e) => setStimuliType(e.target.value as any)}
                       className="w-full mt-1 p-2 border rounded text-sm"
@@ -432,6 +445,7 @@ const PhotoUpload = () => {
                   <div>
                     <Label className="text-xs">Intensity: {Math.round(stimuliIntensity * 100)}%</Label>
                     <input
+                      title="Stimuli Intensity Range"
                       type="range"
                       min="0.1"
                       max="1"
@@ -455,8 +469,7 @@ const PhotoUpload = () => {
               />
               <canvas
                 ref={canvasRef}
-                className="absolute top-0 left-0 w-full h-full pointer-events-none rounded-lg"
-                style={{ mixBlendMode: 'screen' }}
+                className="absolute top-0 left-0 w-full h-full pointer-events-none rounded-lg mix-blend-screen"
               />
               <Button
                 onClick={clearImage}

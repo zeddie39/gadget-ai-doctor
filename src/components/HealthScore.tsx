@@ -362,9 +362,9 @@ const HealthScore = () => {
                     <span className={`text-2xl font-black ${getScoreColor(value)}`}>{value}%</span>
                   </div>
                   <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                    <style>{`._hs_bar_${key} { width: ${value}%; }`}</style>
                     <div 
-                      className={`h-full transition-all duration-1000 ${getScoreColor(value).replace('text-', 'bg-')}`} 
-                      style={{ width: `${value}%` }} 
+                      className={`h-full transition-all duration-1000 _hs_bar_${key} ${getScoreColor(value).replace('text-', 'bg-')}`} 
                     />
                   </div>
                 </div>

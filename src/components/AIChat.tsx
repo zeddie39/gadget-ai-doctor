@@ -7,6 +7,8 @@ import { Card } from '@/components/ui/card';
 import { MessageCircle, Send, Bot, User, Mic, MicOff, Volume2, VolumeX, ThumbsUp, ThumbsDown, Smartphone, Zap, Shield, Cpu } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import PaymentModal from './PaymentModal';
+import { useSubscription } from '@/hooks/useSubscription';
 
 interface Message {
   id: number;
@@ -41,6 +43,17 @@ const AIChat = () => {
   const [deviceInfo, setDeviceInfo] = useState<any>(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [chatCount, setChatCount] = useState(0);
+  const { isPro } = useSubscription();
+
+  useEffect(() => {
+    const saved = localStorage.getItem('freeChatCount');
+    if (saved) {
+      setChatCount(parseInt(saved, 10));
+    }
+  }, []);
 
   // Detect user's device information
   useEffect(() => {
@@ -153,12 +166,8 @@ const AIChat = () => {
     }
     
     try {
-      // Use Lovable AI Gateway via edge function
-      const { data, error } = await supabase.functions.invoke('openrouter-ai', {
-        body: {
-          prompt: userInput,
-          model: 'google/gemini-2.5-flash',
-          systemPrompt: `You are an expert AI gadget doctor specializing in diagnosing and fixing electronic devices. 
+      const API_KEY = 'AIzaSyBV1DMs2VjhkJFqlj8AY-Nm1QrZZmH_oa0';
+      const systemPrompt = `You are an expert AI gadget doctor specializing in diagnosing and fixing electronic devices. 
           You have extensive knowledge about Samsung, iPhone, Infinix, and other popular device brands.
           
           Your expertise includes:
@@ -171,19 +180,34 @@ const AIChat = () => {
           
           Current user device: ${deviceInfo?.brand || 'Unknown'} ${deviceInfo?.type || 'Unknown'} (${deviceInfo?.screenResolution || 'Unknown'})
           
-          Always provide practical, safe, and actionable advice. If something is dangerous (like swollen batteries or water damage), emphasize safety first. Be concise but thorough. Use emojis sparingly for clarity.`
-        }
+          Always provide practical, safe, and actionable advice. If something is dangerous (like swollen batteries or water damage), emphasize safety first. Be concise but thorough. Use emojis sparingly for clarity.`;
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: systemPrompt }]
+          },
+          contents: [{
+            parts: [{ text: userInput }]
+          }]
+        })
       });
 
-      if (!error && data?.response) {
-        cacheResponse(userInput, data.response);
-        return data.response;
-      }
-      
-      // Handle rate limit / credit errors
-      if (data?.error) {
-        console.warn('AI Gateway error:', data.error);
-        toast.error(data.error);
+      if (response.ok) {
+        const data = await response.json();
+        const aiResponseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (aiResponseText) {
+          cacheResponse(userInput, aiResponseText);
+          return aiResponseText;
+        }
+      } else {
+        const errorData = await response.json();
+        console.warn('Gemini API error:', errorData);
+        toast.error('AI API Error: ' + (errorData.error?.message || response.statusText));
       }
     } catch (error) {
       console.error('AI API error:', error);
@@ -587,6 +611,11 @@ What's going on with your device? 🤔`;
   const handleSendMessage = async () => {
     if (!inputText.trim()) return;
 
+    if (!isPro && chatCount >= 3) {
+      setShowPaymentModal(true);
+      return;
+    }
+
     const userMessage: Message = {
       id: messages.length + 1,
       text: inputText,
@@ -598,6 +627,14 @@ What's going on with your device? 🤔`;
     await storeMessage(inputText, true);
     setInputText('');
     setIsTyping(true);
+
+    if (!isPro) {
+      setChatCount(prev => {
+        const newCount = prev + 1;
+        localStorage.setItem('freeChatCount', newCount.toString());
+        return newCount;
+      });
+    }
 
     // Simulate AI processing time
     setTimeout(async () => {
@@ -759,6 +796,8 @@ What's going on with your device? 🤔`;
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-4">
+      <PaymentModal isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)} onSuccess={() => setShowPaymentModal(false)} />
+      
       {/* Device Info Header */}
       {deviceInfo && (
         <Card className="p-4 bg-primary/10 border-primary/30 shadow-inner">
@@ -777,6 +816,16 @@ What's going on with your device? 🤔`;
               </div>
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
+              {!isPro && (
+                <Button 
+                  size="sm"
+                  className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white border-0 shadow-lg font-bold px-4 h-9"
+                  onClick={() => setShowPaymentModal(true)}
+                >
+                  <span className="opacity-90 mr-2 font-medium bg-black/20 px-2 py-0.5 rounded text-xs">{Math.max(0, 3 - chatCount)}/3 Free</span> 
+                  UPGRADE TO PRO
+                </Button>
+              )}
               <Badge variant={isOnline ? "default" : "destructive"} className="text-[10px] px-2 py-0.5">
                 {isOnline ? "🟢 Online" : "🔴 Offline"}
               </Badge>
@@ -891,8 +940,8 @@ What's going on with your device? 🤔`;
             <div className="bg-card border border-border px-4 py-2 rounded-lg">
               <div className="flex space-x-1">
                 <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce [animation-delay:0.1s]"></div>
+                <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce [animation-delay:0.2s]"></div>
               </div>
             </div>
           </div>

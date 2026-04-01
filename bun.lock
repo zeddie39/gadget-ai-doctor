@@ -42,6 +42,8 @@
         "@supabase/supabase-js": "^2.50.0",
         "@tanstack/react-query": "^5.56.2",
         "@tensorflow-models/coco-ssd": "^2.2.3",
+        "@tensorflow-models/knn-classifier": "^1.2.6",
+        "@tensorflow-models/mobilenet": "^2.1.1",
         "@tensorflow/tfjs": "^4.22.0",
         "@tensorflow/tfjs-vis": "^1.5.1",
         "@xenova/transformers": "^2.17.2",
@@ -489,6 +491,10 @@
     "@tanstack/react-query": ["@tanstack/react-query@5.59.16", "", { "dependencies": { "@tanstack/query-core": "5.59.16" }, "peerDependencies": { "react": "^18 || ^19" } }, "sha512-MuyWheG47h6ERd4PKQ6V8gDyBu3ThNG22e1fRVwvq6ap3EqsFhyuxCAwhNP/03m/mLg+DAb0upgbPaX6VB+CkQ=="],
 
     "@tensorflow-models/coco-ssd": ["@tensorflow-models/coco-ssd@2.2.3", "", { "peerDependencies": { "@tensorflow/tfjs-converter": "^4.10.0", "@tensorflow/tfjs-core": "^4.10.0" } }, "sha512-iCLGktG/XhHbP6h2FWxqCKMp/Px0lCp6MZU1fjNhjDHeaWEC9G7S7cZrnPXsfH+NewCM53YShlrHnknxU3SQig=="],
+
+    "@tensorflow-models/knn-classifier": ["@tensorflow-models/knn-classifier@1.2.6", "", { "peerDependencies": { "@tensorflow/tfjs-backend-cpu": "^4.10.0", "@tensorflow/tfjs-core": "^4.10.0" } }, "sha512-68RG9y70bFF0qYFpF+4bGaalAiEqz54v1qBmiSo3XODJq8Bow9EcDeAQBGPz6Bxiz6VQlZOdg29xiYm8N/a2Tw=="],
+
+    "@tensorflow-models/mobilenet": ["@tensorflow-models/mobilenet@2.1.1", "", { "peerDependencies": { "@tensorflow/tfjs-converter": "^4.9.0", "@tensorflow/tfjs-core": "^4.9.0" } }, "sha512-tv4s4UFzG74PkIwl4gT64AyRnCcNUq+s8wSzge+LN/Puc1VUuInZghrobvpNlWjZtVi1x1d1NsBD//TfOr2ssA=="],
 
     "@tensorflow/tfjs": ["@tensorflow/tfjs@4.22.0", "", { "dependencies": { "@tensorflow/tfjs-backend-cpu": "4.22.0", "@tensorflow/tfjs-backend-webgl": "4.22.0", "@tensorflow/tfjs-converter": "4.22.0", "@tensorflow/tfjs-core": "4.22.0", "@tensorflow/tfjs-data": "4.22.0", "@tensorflow/tfjs-layers": "4.22.0", "argparse": "^1.0.10", "chalk": "^4.1.0", "core-js": "3.29.1", "regenerator-runtime": "^0.13.5", "yargs": "^16.0.3" }, "bin": { "tfjs-custom-module": "dist/tools/custom_module/cli.js" } }, "sha512-0TrIrXs6/b7FLhLVNmfh8Sah6JgjBPH4mZ8JGb7NU6WW+cx00qK5BcAZxw7NCzxj6N8MRAIfHq+oNbPUNG5VAg=="],
 

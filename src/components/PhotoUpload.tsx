@@ -150,7 +150,6 @@ const PhotoUpload = () => {
           image_url: 'uploaded-image',
           diagnosis_result: result,
           severity_level: severity,
-          user_id: user?.id
         }).select().single();
 
         if (data) {

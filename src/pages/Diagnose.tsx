@@ -5,7 +5,7 @@ import { Session } from '@supabase/supabase-js';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, MessageSquare, MessageCircle, Settings, Battery, Wrench, Trash, Shield, BookOpen, FileText, AlertTriangle, Brain, LogOut, Lock, Video, Package, ShieldCheck, Activity, HardDrive, Cpu, User, LayoutDashboard, ScanLine, Sparkles, CircuitBoard } from 'lucide-react';
+import { Camera, MessageSquare, MessageCircle, Settings, Battery, Wrench, Trash, Shield, BookOpen, FileText, AlertTriangle, Brain, LogOut, Lock, Video, Package, ShieldCheck, Activity, HardDrive, Cpu, User, LayoutDashboard, ScanLine, Sparkles, CircuitBoard, Calculator } from 'lucide-react';
 import MotherboardScanner from '../components/MotherboardScanner';
 import PhotoUpload from '../components/PhotoUpload';
 import AIChat from '../components/AIChat';
@@ -19,6 +19,7 @@ import SecurityAlerts from '../components/SecurityAlerts';
 import AITrainingDashboard from '../components/AITrainingDashboard';
 import VideoRepairAnalyzer from '../components/VideoRepairAnalyzer';
 import SparePartsInventoryManager from '../components/SparePartsInventoryManager';
+import RepairCostEstimator from '../components/RepairCostEstimator';
 
 const Diagnose = () => {
   const navigate = useNavigate();
@@ -104,7 +105,7 @@ const Diagnose = () => {
 
   useEffect(() => {
     const tab = searchParams.get('tab');
-    const validTabs = ['motherboard', 'photo', 'video', 'chat', 'troubleshoot', 'battery', 'storage', 'health', 'history', 'knowledge', 'security', 'training', 'inventory'];
+    const validTabs = ['motherboard', 'photo', 'video', 'chat', 'troubleshoot', 'battery', 'storage', 'health', 'history', 'knowledge', 'security', 'training', 'inventory', 'cost-estimate'];
     if (tab && validTabs.includes(tab)) {
       setActiveTab(tab);
     }
@@ -250,6 +251,10 @@ const Diagnose = () => {
             <TabsTrigger value="inventory" className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
               <Package className="h-4 w-4 text-orange-400" />
               <span className="text-[10px] sm:text-xs font-bold uppercase">Inventory</span>
+            </TabsTrigger>
+            <TabsTrigger value="cost-estimate" className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+              <Calculator className="h-4 w-4 text-emerald-500" />
+              <span className="text-[10px] sm:text-xs font-bold uppercase">Cost</span>
             </TabsTrigger>
           </TabsList>
 
@@ -424,6 +429,10 @@ const Diagnose = () => {
 
           <TabsContent value="inventory">
             <SparePartsInventoryManager />
+          </TabsContent>
+
+          <TabsContent value="cost-estimate" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <RepairCostEstimator />
           </TabsContent>
         </Tabs>
       </div>

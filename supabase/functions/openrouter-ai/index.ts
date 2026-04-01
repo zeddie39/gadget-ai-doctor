@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 
 const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
 
@@ -14,9 +15,33 @@ serve(async (req) => {
   }
 
   try {
+    // JWT Authentication - verify the user is logged in
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { prompt, model = 'google/gemini-2.5-flash', image, systemPrompt } = await req.json();
 
-    console.log('Gemini AI request:', { hasImage: !!image, promptLength: prompt?.length });
+    console.log('Gemini AI request:', { hasImage: !!image, promptLength: prompt?.length, userId: claimsData.claims.sub });
 
     if (!geminiApiKey) {
       throw new Error('GEMINI_API_KEY not configured in Supabase secrets');
@@ -30,7 +55,6 @@ serve(async (req) => {
     }
 
     if (image) {
-      // Strip base64 prefix if exists
       const base64Data = image.includes(',') ? image.split(',')[1] : image;
       parts.push({
         inlineData: {
@@ -42,12 +66,8 @@ serve(async (req) => {
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{ parts }]
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts }] }),
     });
 
     if (!response.ok) {
@@ -63,8 +83,6 @@ serve(async (req) => {
       throw new Error('No response generated from AI');
     }
 
-    console.log('Gemini AI response generated successfully');
-
     return new Response(JSON.stringify({ 
       response: generatedText,
       model: 'gemini-2.5-flash' 
@@ -76,10 +94,9 @@ serve(async (req) => {
     console.error('Error in openrouter-ai function:', error);
     return new Response(JSON.stringify({ 
       error: message,
-      errorDetails: error,
       fallback: true 
     }), {
-      status: 200, // Return 200 so the client can read the error payload
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

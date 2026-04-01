@@ -5,7 +5,7 @@ import AdminSetup from '@/components/AdminSetup';
 
 export default function AdminSetupPage() {
   const [loading, setLoading] = useState(true);
-  const [authenticated, setAuthenticated] = useState(false);
+  const [authorized, setAuthorized] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,7 +15,21 @@ export default function AdminSetupPage() {
         navigate('/auth', { replace: true });
         return;
       }
-      setAuthenticated(true);
+
+      // Only allow existing admins to access this page
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      if (!roleData) {
+        navigate('/diagnose', { replace: true });
+        return;
+      }
+
+      setAuthorized(true);
       setLoading(false);
     };
 
@@ -29,7 +43,7 @@ export default function AdminSetupPage() {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  if (loading || !authenticated) {
+  if (loading || !authorized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

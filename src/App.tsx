@@ -22,6 +22,7 @@ const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const CustomVisionTrainerPage = lazy(() => import("./pages/CustomVisionTrainerPage"));
+const Technicians = lazy(() => import("./pages/Technicians"));
 
 const queryClient = new QueryClient();
 
@@ -61,6 +62,7 @@ const App = () => (
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/vision-trainer" element={<CustomVisionTrainerPage />} />
+              <Route path="/technicians" element={<Technicians />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

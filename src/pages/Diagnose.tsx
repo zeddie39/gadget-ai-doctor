@@ -5,7 +5,7 @@ import { Session } from '@supabase/supabase-js';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, MessageSquare, MessageCircle, Settings, Battery, Wrench, Trash, Shield, BookOpen, FileText, AlertTriangle, Brain, LogOut, Lock, Video, Package, ShieldCheck, Activity, HardDrive, Cpu, User, LayoutDashboard, ScanLine, Sparkles, CircuitBoard } from 'lucide-react';
+import { Camera, MessageSquare, MessageCircle, Settings, Battery, Wrench, Trash, Shield, BookOpen, FileText, AlertTriangle, Brain, LogOut, Lock, Video, Package, ShieldCheck, Activity, HardDrive, Cpu, User, LayoutDashboard, ScanLine, Sparkles, CircuitBoard, Calculator } from 'lucide-react';
 import MotherboardScanner from '../components/MotherboardScanner';
 import PhotoUpload from '../components/PhotoUpload';
 import AIChat from '../components/AIChat';

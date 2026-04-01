@@ -105,7 +105,7 @@ const Diagnose = () => {
 
   useEffect(() => {
     const tab = searchParams.get('tab');
-    const validTabs = ['motherboard', 'photo', 'video', 'chat', 'troubleshoot', 'battery', 'storage', 'health', 'history', 'knowledge', 'security', 'training', 'inventory'];
+    const validTabs = ['motherboard', 'photo', 'video', 'chat', 'troubleshoot', 'battery', 'storage', 'health', 'history', 'knowledge', 'security', 'training', 'inventory', 'cost-estimate'];
     if (tab && validTabs.includes(tab)) {
       setActiveTab(tab);
     }

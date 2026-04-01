@@ -252,6 +252,10 @@ const Diagnose = () => {
               <Package className="h-4 w-4 text-orange-400" />
               <span className="text-[10px] sm:text-xs font-bold uppercase">Inventory</span>
             </TabsTrigger>
+            <TabsTrigger value="cost-estimate" className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg bg-transparent border-none">
+              <Calculator className="h-4 w-4 text-emerald-500" />
+              <span className="text-[10px] sm:text-xs font-bold uppercase">Cost</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="motherboard" className="animate-in fade-in slide-in-from-bottom-4 duration-500">

@@ -22,6 +22,7 @@ const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const CustomVisionTrainerPage = lazy(() => import("./pages/CustomVisionTrainerPage"));
+const Technicians = lazy(() => import("./pages/Technicians"));
 
 const queryClient = new QueryClient();
 
